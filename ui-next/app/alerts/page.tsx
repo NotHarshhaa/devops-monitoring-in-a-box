@@ -12,7 +12,7 @@ import {
   RefreshCw,
   Calendar,
   ArrowUpDown,
-  Mute,
+  VolumeX,
   MessageSquare,
   AlertCircle,
   X,
@@ -299,7 +299,7 @@ export default function AlertsPage() {
             History
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
-            <Mute className="h-4 w-4" />
+                            <VolumeX className="h-4 w-4" />
             Silences
           </Button>
         </div>
@@ -355,7 +355,7 @@ export default function AlertsPage() {
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-300">Suppressed</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-200">{suppressedCount}</p>
                 </div>
-                <Mute className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+                <VolumeX className="h-8 w-8 text-gray-500 dark:text-gray-400" />
               </div>
             </CardContent>
           </Card>
@@ -525,7 +525,7 @@ export default function AlertsPage() {
                         Comment
                       </Button>
                       <Button variant="outline" size="sm" className="h-8 gap-1">
-                        <Mute className="h-3 w-3" />
+                        <VolumeX className="h-3 w-3" />
                         Silence
                       </Button>
                       {alert.status === "firing" && (

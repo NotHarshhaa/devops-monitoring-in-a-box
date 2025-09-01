@@ -23,25 +23,16 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts"
+import { MetricsOverview, SystemLoadOverview } from "@/components/metrics-overview"
+import { MetricsChart } from "@/components/metrics-chart"
+import { 
+  useAllMetricsRange, 
+  getTimeRange,
+  useAllCurrentMetrics 
+} from "@/lib/hooks/use-prometheus-metrics"
+import { useQueryClient } from "@tanstack/react-query"
 
-// Mock data
+// Time range options
 const timeRangeData = [
   { name: "1h", value: 1 },
   { name: "6h", value: 6 },
@@ -51,57 +42,54 @@ const timeRangeData = [
   { name: "30d", value: 720 }
 ]
 
-const cpuUsageData = [
-  { time: "00:00", value: 30 },
-  { time: "04:00", value: 45 },
-  { time: "08:00", value: 65 },
-  { time: "12:00", value: 80 },
-  { time: "16:00", value: 70 },
-  { time: "20:00", value: 55 },
-  { time: "24:00", value: 40 },
-]
-
-const memoryUsageData = [
-  { time: "00:00", value: 50 },
-  { time: "04:00", value: 60 },
-  { time: "08:00", value: 70 },
-  { time: "12:00", value: 75 },
-  { time: "16:00", value: 72 },
-  { time: "20:00", value: 65 },
-  { time: "24:00", value: 58 },
-]
-
-const diskUsageData = [
-  { time: "00:00", value: 20 },
-  { time: "04:00", value: 22 },
-  { time: "08:00", value: 25 },
-  { time: "12:00", value: 28 },
-  { time: "16:00", value: 26 },
-  { time: "20:00", value: 24 },
-  { time: "24:00", value: 21 },
-]
-
-const networkTrafficData = [
-  { time: "00:00", inbound: 2, outbound: 1 },
-  { time: "04:00", inbound: 4, outbound: 3 },
-  { time: "08:00", inbound: 8, outbound: 5 },
-  { time: "12:00", inbound: 12, outbound: 7 },
-  { time: "16:00", inbound: 6, outbound: 4 },
-  { time: "20:00", inbound: 4, outbound: 3 },
-  { time: "24:00", inbound: 2, outbound: 1 },
-]
-
-const resourceDistributionData = [
-  { name: "CPU", value: 45 },
-  { name: "Memory", value: 67 },
-  { name: "Disk", value: 23 },
-  { name: "Network", value: 12 },
-]
-
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#6366f1'];
-
 export default function MetricsPage() {
   const [timeRange, setTimeRange] = React.useState("24")
+  const queryClient = useQueryClient()
+  
+  // Get time range for charts
+  const { start, end } = getTimeRange(timeRange)
+  
+  // Fetch metrics data
+  const allMetricsRange = useAllMetricsRange(timeRange)
+  const allCurrentMetrics = useAllCurrentMetrics()
+
+  // Handle manual refresh
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['all-current-metrics'] })
+    queryClient.invalidateQueries({ queryKey: ['cpu-usage-range'] })
+    queryClient.invalidateQueries({ queryKey: ['memory-usage-range'] })
+    queryClient.invalidateQueries({ queryKey: ['disk-usage-range'] })
+    queryClient.invalidateQueries({ queryKey: ['network-traffic-range'] })
+  }
+
+  // Prepare chart data
+  const prepareChartData = (cpuData: any[], memoryData: any[], diskData: any[]) => {
+    const timeMap = new Map()
+    
+    // Merge all data by timestamp
+    ;[cpuData, memoryData, diskData].forEach((dataArray, index) => {
+      dataArray.forEach((item: any) => {
+        const time = item.time
+        if (!timeMap.has(time)) {
+          timeMap.set(time, { time })
+        }
+        const entry = timeMap.get(time)
+        if (index === 0) entry.cpu = item.value
+        else if (index === 1) entry.memory = item.value
+        else if (index === 2) entry.disk = item.value
+      })
+    })
+    
+    return Array.from(timeMap.values()).sort((a, b) => a.time - b.time)
+  }
+
+  const systemResourceData = prepareChartData(
+    allMetricsRange.cpuRange.data || [],
+    allMetricsRange.memoryRange.data || [],
+    allMetricsRange.diskRange.data || []
+  )
+
+  const networkTrafficData = allMetricsRange.networkRange.data || []
 
   return (
     <div>
@@ -114,7 +102,7 @@ export default function MetricsPage() {
         >
           <h1 className="text-3xl font-bold">Metrics</h1>
           <p className="text-muted-foreground mt-2">
-            System performance metrics and analytics
+            Real-time system performance metrics from Prometheus
           </p>
         </motion.div>
 
@@ -132,17 +120,7 @@ export default function MetricsPage() {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="sm" className="gap-1">
-            <Calendar className="h-4 w-4" />
-            Custom Range
-          </Button>
-
-          <Button variant="outline" size="sm" className="gap-1">
-            <Filter className="h-4 w-4" />
-            Filter
-          </Button>
-
-          <Button variant="outline" size="sm" className="gap-1">
+          <Button variant="outline" size="sm" className="gap-1" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4" />
             Refresh
           </Button>
@@ -153,6 +131,26 @@ export default function MetricsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Real-time Metrics Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8"
+      >
+        <MetricsOverview />
+      </motion.div>
+
+      {/* System Load Overview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="mb-8"
+      >
+        <SystemLoadOverview />
+      </motion.div>
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="mb-6">
@@ -173,66 +171,24 @@ export default function MetricsPage() {
               transition={{ duration: 0.5 }}
               className="lg:col-span-2"
             >
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>System Resource Usage</CardTitle>
-                    <Button variant="outline" size="sm" className="gap-1">
-                      <ArrowUpDown className="h-4 w-4" />
-                      Sort
-                    </Button>
-                  </div>
-                  <CardDescription>
-                    CPU, memory, and disk utilization over time
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[...Array(7)].map((_, i) => ({
-                          time: cpuUsageData[i].time,
-                          cpu: cpuUsageData[i].value,
-                          memory: memoryUsageData[i].value,
-                          disk: diskUsageData[i].value,
-                        }))}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                        <XAxis dataKey="time" />
-                        <YAxis />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "var(--background)",
-                            borderColor: "var(--border)"
-                          }}
-                          formatter={(value) => [`${value}%`]}
-                        />
-                        <Legend />
-                        <Line
-                          type="monotone"
-                          dataKey="cpu"
-                          stroke="#3b82f6"
-                          strokeWidth={2}
-                          activeDot={{ r: 8 }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="memory"
-                          stroke="#10b981"
-                          strokeWidth={2}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="disk"
-                          stroke="#f59e0b"
-                          strokeWidth={2}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
+              <MetricsChart
+                title="System Resource Usage"
+                description="CPU, memory, and disk utilization over time"
+                data={systemResourceData}
+                dataKeys={[
+                  { key: 'cpu', color: '#3b82f6', name: 'CPU' },
+                  { key: 'memory', color: '#10b981', name: 'Memory' },
+                  { key: 'disk', color: '#f59e0b', name: 'Disk' },
+                ]}
+                isLoading={allMetricsRange.isLoading}
+                isError={allMetricsRange.isError}
+                errorMessage="Failed to load system resource data"
+                onRefresh={handleRefresh}
+                height={350}
+                yAxisDomain={[0, 100]}
+                formatYAxis={(value) => `${value}%`}
+                formatTooltip={(value, name) => [`${value.toFixed(1)}%`, name]}
+              />
             </motion.div>
 
             <motion.div
@@ -248,32 +204,54 @@ export default function MetricsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[350px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={resourceDistributionData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={120}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {resourceDistributionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value) => [`${value}%`, 'Usage']}
-                          contentStyle={{
-                            backgroundColor: "var(--background)",
-                            borderColor: "var(--border)"
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div className="space-y-4">
+                    {allCurrentMetrics.data ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">CPU</span>
+                          <span className="font-medium">{allCurrentMetrics.data.cpu.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${allCurrentMetrics.data.cpu}%` }}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Memory</span>
+                          <span className="font-medium">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${allCurrentMetrics.data.memory}%` }}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Disk</span>
+                          <span className="font-medium">{allCurrentMetrics.data.disk.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${allCurrentMetrics.data.disk}%` }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center text-muted-foreground py-8">
+                        {allCurrentMetrics.isLoading ? (
+                          <div className="flex items-center justify-center">
+                            <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                            Loading...
+                          </div>
+                        ) : (
+                          "No data available"
+                        )}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -286,52 +264,23 @@ export default function MetricsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Network Traffic</CardTitle>
-                  <CardDescription>
-                    Inbound and outbound network traffic
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={networkTrafficData}
-                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                        <XAxis dataKey="time" />
-                        <YAxis />
-                        <Tooltip
-                          formatter={(value) => [`${value} MB/s`]}
-                          contentStyle={{
-                            backgroundColor: "var(--background)",
-                            borderColor: "var(--border)"
-                          }}
-                        />
-                        <Legend />
-                        <Area
-                          type="monotone"
-                          dataKey="inbound"
-                          stackId="1"
-                          stroke="#3b82f6"
-                          fill="#3b82f6"
-                          fillOpacity={0.3}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="outbound"
-                          stackId="1"
-                          stroke="#ef4444"
-                          fill="#ef4444"
-                          fillOpacity={0.3}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
+              <MetricsChart
+                title="Network Traffic"
+                description="Inbound and outbound network traffic"
+                data={networkTrafficData}
+                dataKeys={[
+                  { key: 'inbound', color: '#3b82f6', name: 'Inbound' },
+                  { key: 'outbound', color: '#ef4444', name: 'Outbound' },
+                ]}
+                isLoading={allMetricsRange.networkRange.isLoading}
+                isError={allMetricsRange.networkRange.isError}
+                errorMessage="Failed to load network traffic data"
+                onRefresh={handleRefresh}
+                chartType="area"
+                height={300}
+                formatYAxis={(value) => `${value.toFixed(1)} MB/s`}
+                formatTooltip={(value, name) => [`${value.toFixed(2)} MB/s`, name]}
+              />
             </motion.div>
 
             <motion.div
@@ -347,30 +296,43 @@ export default function MetricsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={[
-                          { name: 'Used', value: 67 },
-                          { name: 'Cache', value: 18 },
-                          { name: 'Buffer', value: 8 },
-                          { name: 'Free', value: 7 },
-                        ]}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip
-                          formatter={(value) => [`${value}%`]}
-                          contentStyle={{
-                            backgroundColor: "var(--background)",
-                            borderColor: "var(--border)"
-                          }}
-                        />
-                        <Bar dataKey="value" fill="#10b981" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="space-y-4">
+                    {allCurrentMetrics.data ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Used</span>
+                          <span className="font-medium">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${allCurrentMetrics.data.memory}%` }}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Available</span>
+                          <span className="font-medium">{(100 - allCurrentMetrics.data.memory).toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${100 - allCurrentMetrics.data.memory}%` }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center text-muted-foreground py-8">
+                        {allCurrentMetrics.isLoading ? (
+                          <div className="flex items-center justify-center">
+                            <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                            Loading...
+                          </div>
+                        ) : (
+                          "No data available"
+                        )}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -381,42 +343,22 @@ export default function MetricsPage() {
         {/* CPU Tab */}
         <TabsContent value="cpu">
           <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>CPU Usage</CardTitle>
-                <CardDescription>
-                  Detailed CPU utilization metrics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={cpuUsageData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                      <XAxis dataKey="time" />
-                      <YAxis domain={[0, 100]} />
-                      <Tooltip
-                        formatter={(value) => [`${value}%`, 'CPU Usage']}
-                        contentStyle={{
-                          backgroundColor: "var(--background)",
-                          borderColor: "var(--border)"
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke="#3b82f6"
-                        strokeWidth={2}
-                        activeDot={{ r: 8 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+            <MetricsChart
+              title="CPU Usage Over Time"
+              description="Detailed CPU utilization metrics"
+              data={allMetricsRange.cpuRange.data || []}
+              dataKeys={[
+                { key: 'value', color: '#3b82f6', name: 'CPU Usage' },
+              ]}
+              isLoading={allMetricsRange.cpuRange.isLoading}
+              isError={allMetricsRange.cpuRange.isError}
+              errorMessage="Failed to load CPU usage data"
+              onRefresh={handleRefresh}
+              height={400}
+              yAxisDomain={[0, 100]}
+              formatYAxis={(value) => `${value}%`}
+              formatTooltip={(value, name) => [`${value.toFixed(1)}%`, name]}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
@@ -425,10 +367,12 @@ export default function MetricsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-3xl font-bold">45%</div>
+                    <div className="text-3xl font-bold">
+                      {allCurrentMetrics.data?.cpu ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
+                    </div>
                     <div className="flex items-center text-green-500">
                       <TrendingDown className="h-4 w-4 mr-1" />
-                      <span className="text-sm">5% lower than avg</span>
+                      <span className="text-sm">Real-time</span>
                     </div>
                   </div>
                 </CardContent>
@@ -441,15 +385,21 @@ export default function MetricsPage() {
                 <CardContent>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <div className="text-xl font-bold">0.8</div>
+                      <div className="text-xl font-bold">
+                        {allCurrentMetrics.data?.load.load1 ? allCurrentMetrics.data.load.load1.toFixed(1) : '--'}
+                      </div>
                       <div className="text-sm text-muted-foreground">1 min</div>
                     </div>
                     <div>
-                      <div className="text-xl font-bold">1.2</div>
+                      <div className="text-xl font-bold">
+                        {allCurrentMetrics.data?.load.load5 ? allCurrentMetrics.data.load.load5.toFixed(1) : '--'}
+                      </div>
                       <div className="text-sm text-muted-foreground">5 min</div>
                     </div>
                     <div>
-                      <div className="text-xl font-bold">1.5</div>
+                      <div className="text-xl font-bold">
+                        {allCurrentMetrics.data?.load.load15 ? allCurrentMetrics.data.load.load15.toFixed(1) : '--'}
+                      </div>
                       <div className="text-sm text-muted-foreground">15 min</div>
                     </div>
                   </div>
@@ -458,16 +408,24 @@ export default function MetricsPage() {
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Core Distribution</CardTitle>
+                  <CardTitle className="text-lg">Status</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[42, 38, 51, 46].map((usage, i) => (
-                      <div key={i} className="text-center">
-                        <div className="text-lg font-bold">{usage}%</div>
-                        <div className="text-xs text-muted-foreground">Core {i+1}</div>
-                      </div>
-                    ))}
+                  <div className="text-center">
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 80 
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 60
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    }`}>
+                      {allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 80 
+                        ? 'High'
+                        : allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 60
+                        ? 'Moderate'
+                        : 'Normal'
+                      }
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -477,50 +435,243 @@ export default function MetricsPage() {
 
         {/* Memory Tab */}
         <TabsContent value="memory">
-          <Card>
-            <CardHeader>
-              <CardTitle>Memory Usage</CardTitle>
-              <CardDescription>
-                RAM utilization over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Memory specific metrics would go here */}
-              <p className="text-muted-foreground">Detailed memory metrics and visualizations</p>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6">
+            <MetricsChart
+              title="Memory Usage Over Time"
+              description="RAM utilization over time"
+              data={allMetricsRange.memoryRange.data || []}
+              dataKeys={[
+                { key: 'value', color: '#10b981', name: 'Memory Usage' },
+              ]}
+              isLoading={allMetricsRange.memoryRange.isLoading}
+              isError={allMetricsRange.memoryRange.isError}
+              errorMessage="Failed to load memory usage data"
+              onRefresh={handleRefresh}
+              height={400}
+              yAxisDomain={[0, 100]}
+              formatYAxis={(value) => `${value}%`}
+              formatTooltip={(value, name) => [`${value.toFixed(1)}%`, name]}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Memory Details</CardTitle>
+                  <CardDescription>
+                    Current memory statistics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Total Usage</span>
+                      <span className="font-medium">
+                        {allCurrentMetrics.data?.memory ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${allCurrentMetrics.data?.memory || 0}%` }}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Available</span>
+                      <span className="font-medium">
+                        {allCurrentMetrics.data?.memory ? `${(100 - allCurrentMetrics.data.memory).toFixed(1)}%` : '--'}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Memory Status</CardTitle>
+                  <CardDescription>
+                    Memory health indicator
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 90 
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 75
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    }`}>
+                      {allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 90 
+                        ? 'Critical'
+                        : allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 75
+                        ? 'Warning'
+                        : 'Healthy'
+                      }
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Disk Tab */}
         <TabsContent value="disk">
-          <Card>
-            <CardHeader>
-              <CardTitle>Disk Usage</CardTitle>
-              <CardDescription>
-                Storage metrics and I/O operations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Disk specific metrics would go here */}
-              <p className="text-muted-foreground">Detailed disk metrics and visualizations</p>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6">
+            <MetricsChart
+              title="Disk Usage Over Time"
+              description="Storage metrics and I/O operations"
+              data={allMetricsRange.diskRange.data || []}
+              dataKeys={[
+                { key: 'value', color: '#f59e0b', name: 'Disk Usage' },
+              ]}
+              isLoading={allMetricsRange.diskRange.isLoading}
+              isError={allMetricsRange.diskRange.isError}
+              errorMessage="Failed to load disk usage data"
+              onRefresh={handleRefresh}
+              height={400}
+              yAxisDomain={[0, 100]}
+              formatYAxis={(value) => `${value}%`}
+              formatTooltip={(value, name) => [`${value.toFixed(1)}%`, name]}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Disk Details</CardTitle>
+                  <CardDescription>
+                    Current disk statistics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Storage Used</span>
+                      <span className="font-medium">
+                        {allCurrentMetrics.data?.disk ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${allCurrentMetrics.data?.disk || 0}%` }}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Available</span>
+                      <span className="font-medium">
+                        {allCurrentMetrics.data?.disk ? `${(100 - allCurrentMetrics.data.disk).toFixed(1)}%` : '--'}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Disk Status</CardTitle>
+                  <CardDescription>
+                    Storage health indicator
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 90 
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 80
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    }`}>
+                      {allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 90 
+                        ? 'Critical'
+                        : allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 80
+                        ? 'Warning'
+                        : 'Healthy'
+                      }
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Network Tab */}
         <TabsContent value="network">
-          <Card>
-            <CardHeader>
-              <CardTitle>Network Traffic</CardTitle>
-              <CardDescription>
-                Network throughput and connections
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Network specific metrics would go here */}
-              <p className="text-muted-foreground">Detailed network metrics and visualizations</p>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6">
+            <MetricsChart
+              title="Network Traffic Over Time"
+              description="Network throughput and connections"
+              data={allMetricsRange.networkRange.data || []}
+              dataKeys={[
+                { key: 'inbound', color: '#3b82f6', name: 'Inbound' },
+                { key: 'outbound', color: '#ef4444', name: 'Outbound' },
+              ]}
+              isLoading={allMetricsRange.networkRange.isLoading}
+              isError={allMetricsRange.networkRange.isError}
+              errorMessage="Failed to load network traffic data"
+              onRefresh={handleRefresh}
+              chartType="area"
+              height={400}
+              formatYAxis={(value) => `${value.toFixed(1)} MB/s`}
+              formatTooltip={(value, name) => [`${value.toFixed(2)} MB/s`, name]}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Network Details</CardTitle>
+                  <CardDescription>
+                    Current network statistics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Inbound</span>
+                      <span className="font-medium">
+                        {allCurrentMetrics.data?.network ? `${allCurrentMetrics.data.network.inbound.toFixed(2)} MB/s` : '--'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Outbound</span>
+                      <span className="font-medium">
+                        {allCurrentMetrics.data?.network ? `${allCurrentMetrics.data.network.outbound.toFixed(2)} MB/s` : '--'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Total</span>
+                      <span className="font-medium">
+                        {allCurrentMetrics.data?.network ? `${(allCurrentMetrics.data.network.inbound + allCurrentMetrics.data.network.outbound).toFixed(2)} MB/s` : '--'}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Network Status</CardTitle>
+                  <CardDescription>
+                    Connection health indicator
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      Active
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Network interfaces are operational
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
