@@ -53,17 +53,31 @@ const getStatusColor = (status: string) => {
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = React.useState(false)
+  const [isDesktop, setIsDesktop] = React.useState(false)
   const pathname = usePathname()
+
+  // Check if we're on desktop
+  React.useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 1024)
+    }
+    
+    checkScreenSize()
+    window.addEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
 
   // Close sidebar when route changes on mobile
   React.useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
+    if (!isDesktop) {
+      setIsOpen(false)
+    }
+  }, [pathname, isDesktop])
 
   // Close sidebar when clicking outside on mobile
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen && window.innerWidth < 1024) {
+      if (isOpen && !isDesktop) {
         const sidebar = document.getElementById('sidebar')
         const menuButton = document.getElementById('menu-button')
         if (sidebar && !sidebar.contains(event.target as Node) && 
@@ -75,7 +89,7 @@ export function Sidebar() {
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen])
+  }, [isOpen, isDesktop])
 
   return (
     <>
@@ -106,10 +120,15 @@ export function Sidebar() {
       {/* Sidebar */}
       <motion.div
         id="sidebar"
-        className="fixed inset-y-0 left-0 z-40 w-[280px] bg-background/95 backdrop-blur-sm border-r border-border/50 overflow-hidden lg:relative lg:translate-x-0"
-        initial={{ x: -280 }}
+        className={cn(
+          "w-[280px] bg-background/95 backdrop-blur-sm border-r border-border/50 overflow-hidden",
+          isDesktop 
+            ? "relative z-auto" 
+            : "fixed inset-y-0 left-0 z-40"
+        )}
+        initial={{ x: isDesktop ? 0 : -280 }}
         animate={{ 
-          x: isOpen ? 0 : -280
+          x: isDesktop ? 0 : (isOpen ? 0 : -280)
         }}
         transition={{ 
           type: "spring",
