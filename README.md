@@ -16,14 +16,6 @@ With just **one command**, you get:
 
 **🚀 What Sets Us Apart:** While most monitoring projects stop at Prometheus + Grafana, we provide a **modern, responsive web interface** that unifies all your monitoring tools into one beautiful dashboard experience!
 
-**🚀 What Sets Us Apart:** While most monitoring projects stop at Prometheus + Grafana, we provide a **modern, responsive web interface** that unifies all your monitoring tools into one beautiful dashboard experience!
-
-## ⚡ Quick Start
-
-->
-
-**🚀 What Sets Us Apart:** While most monitoring projects stop at Prometheus + Grafana, we provide a **modern, responsive web interface** that unifies all your monitoring tools into one beautiful dashboard experience!
-
 ## 🖼️ Visual Showcase
 
 See what you'll get with our modern monitoring dashboard:
