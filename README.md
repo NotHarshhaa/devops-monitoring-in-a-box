@@ -1,5 +1,9 @@
 # 📦 DevOps Monitoring in a Box
 
+<p align="center">
+  <img src="./ui-next/public/banner.png" alt="banner"/>
+</p>
+
 ## 🚀 Overview
 
 This project provides a **ready-to-use monitoring stack** for DevOps engineers and beginners.
