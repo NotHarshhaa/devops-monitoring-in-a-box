@@ -16,6 +16,57 @@ With just **one command**, you get:
 
 **🚀 What Sets Us Apart:** While most monitoring projects stop at Prometheus + Grafana, we provide a **modern, responsive web interface** that unifies all your monitoring tools into one beautiful dashboard experience!
 
+## 🖼️ Visual Showcase
+
+See what you'll get with our modern monitoring dashboard:
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="ui-next/public/dashboard.png" width="600"/><br/>
+      <b>Main Dashboard</b><br/>
+      <sub>Unified monitoring dashboard with system overview</sub>
+    </td>
+    <td align="center">
+      <img src="ui-next/public/metrics.png" width="600"/><br/>
+      <b>Metrics & Analytics</b><br/>
+      <sub>Real-time metrics visualization and analysis</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="ui-next/public/logs.png" width="600"/><br/>
+      <b>Log Management</b><br/>
+      <sub>Centralized log viewing and search</sub>
+    </td>
+    <td align="center">
+      <img src="ui-next/public/alerts.png" width="600"/><br/>
+      <b>Alert Management</b><br/>
+      <sub>Comprehensive alert monitoring and management</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="ui-next/public/services.png" width="600"/><br/>
+      <b>Service Monitoring</b><br/>
+      <sub>Service health and status overview</sub>
+    </td>
+    <td align="center">
+      <b>Settings & Configuration</b><br/>
+      <div>
+        <img src="ui-next/public/settings1.png" width="350"/>
+        <img src="ui-next/public/settings2.png" width="350"/><br/>
+        <img src="ui-next/public/settings3.png" width="350"/>
+        <img src="ui-next/public/settings4.png" width="350"/><br/>
+        <img src="ui-next/public/settings5.png" width="350"/>
+      </div>
+      <sub>Comprehensive settings and configuration options</sub>
+    </td>
+  </tr>
+</table>
+
+*Comprehensive settings and configuration options for all monitoring aspects*
+
 ## ⚡ Quick Start
 
 ```bash
