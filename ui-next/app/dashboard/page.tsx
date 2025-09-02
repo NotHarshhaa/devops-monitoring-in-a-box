@@ -10,7 +10,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Bell
+  Bell,
+  Settings
 } from "lucide-react"
 import {
   LineChart,
@@ -26,6 +27,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { DynamicMetrics, MetricsConfigSummary } from "@/components/dynamic-metrics"
+import { useDashboardConfig } from "@/lib/hooks/use-config"
 
 // Mock data - in real app, this would come from React Query API calls
 const systemMetrics = {
@@ -125,6 +128,8 @@ function getSeverityColor(severity: string) {
 }
 
 export default function DashboardPage() {
+  const { dashboardConfig, isLoading, error } = useDashboardConfig();
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -135,9 +140,11 @@ export default function DashboardPage() {
           transition={{ duration: 0.5 }}
           className="min-w-0 flex-1 pr-4"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold break-words">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold break-words">
+            {dashboardConfig?.title || 'Dashboard'}
+          </h1>
           <p className="text-muted-foreground mt-2 break-words">
-            Monitor your system health and performance
+            {dashboardConfig?.description || 'Monitor your system health and performance'}
           </p>
         </motion.div>
         <div className="flex-shrink-0 lg:block hidden">
@@ -150,140 +157,34 @@ export default function DashboardPage() {
         <ThemeToggle />
       </div>
 
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <motion.div custom={0} variants={fadeInUp} initial="hidden" animate="visible">
-          <StatCard
-            title="CPU Usage"
-            value={`${systemMetrics.cpu}%`}
-            trend="up"
-            trendValue="+5.2%"
-            icon={<Cpu className="h-6 w-6" />}
-            iconColor="text-blue-600 dark:text-blue-400"
-            iconBgColor="bg-blue-100 dark:bg-blue-900/20"
-          />
-        </motion.div>
+      {/* Dynamic Metrics */}
+      <DynamicMetrics 
+        showCards={true}
+        showCharts={false}
+        groupBy={false}
+      />
 
-        <motion.div custom={1} variants={fadeInUp} initial="hidden" animate="visible">
-          <StatCard
-            title="Memory Usage"
-            value={`${systemMetrics.memory}%`}
-            trend="up"
-            trendValue="+2.1%"
-            icon={<HardDrive className="h-6 w-6" />}
-            iconColor="text-green-600 dark:text-green-400"
-            iconBgColor="bg-green-100 dark:bg-green-900/20"
-          />
-        </motion.div>
+      {/* Configuration Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <MetricsConfigSummary />
+      </motion.div>
 
-        <motion.div custom={2} variants={fadeInUp} initial="hidden" animate="visible">
-          <StatCard
-            title="Disk Usage"
-            value={`${systemMetrics.disk}%`}
-            trend="up"
-            trendValue="+0.5%"
-            icon={<HardDrive className="h-6 w-6" />}
-            iconColor="text-yellow-600 dark:text-yellow-400"
-            iconBgColor="bg-yellow-100 dark:bg-yellow-900/20"
-          />
-        </motion.div>
-
-        <motion.div custom={3} variants={fadeInUp} initial="hidden" animate="visible">
-          <StatCard
-            title="Network I/O"
-            value={`${systemMetrics.network} MB/s`}
-            trend="up"
-            trendValue="+12.3%"
-            icon={<Network className="h-6 w-6" />}
-            iconColor="text-purple-600 dark:text-purple-400"
-            iconBgColor="bg-purple-100 dark:bg-purple-900/20"
-          />
-        </motion.div>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>System Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                    <XAxis dataKey="time" />
-                    <YAxis />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)"
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="cpu"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      name="CPU %"
-                      activeDot={{ r: 6 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="memory"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      name="Memory %"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Disk Usage Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                    <XAxis dataKey="time" />
-                    <YAxis />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)"
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="disk"
-                      stroke="#f59e0b"
-                      fill="#f59e0b"
-                      fillOpacity={0.2}
-                      name="Disk %"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+      {/* Dynamic Charts */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <DynamicMetrics 
+          showCards={false}
+          showCharts={true}
+          groupBy={true}
+        />
+      </motion.div>
 
       {/* Recent Activity & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">

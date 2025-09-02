@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ConfigLoader } from "@/components/config-loader"
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
@@ -65,12 +66,13 @@ export default function SettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="general" className="mb-8">
-        <TabsList className="grid grid-cols-5 md:w-[600px]">
+        <TabsList className="grid grid-cols-6 md:w-[720px]">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="data">Data</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="configuration">Configuration</TabsTrigger>
         </TabsList>
 
         {/* General Settings */}
@@ -643,6 +645,17 @@ export default function SettingsPage() {
                 </Button>
               </CardFooter>
             </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* Configuration Settings */}
+        <TabsContent value="configuration">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ConfigLoader />
           </motion.div>
         </TabsContent>
       </Tabs>
