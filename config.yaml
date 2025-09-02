@@ -1,0 +1,188 @@
+# DevOps Monitoring Configuration
+# This file contains the main configuration for the DevOps monitoring system
+
+dashboard:
+  refresh_interval: "15s"
+  title: "DevOps Monitor"
+  description: "System monitoring dashboard"
+  theme: "system"
+
+metrics:
+  - name: "CPU Usage"
+    query: "100 - (avg by(instance)(irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+    unit: "%"
+    chart: "line"
+    description: "Current CPU utilization across all instances"
+    thresholds:
+      warning: 70
+      critical: 85
+    color: "#3b82f6"
+    enabled: true
+    group: "System"
+  
+  - name: "Memory Usage"
+    query: "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100"
+    unit: "%"
+    chart: "line"
+    description: "Current memory utilization"
+    thresholds:
+      warning: 80
+      critical: 90
+    color: "#10b981"
+    enabled: true
+    group: "System"
+  
+  - name: "Disk Usage"
+    query: "100 - ((node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes)"
+    unit: "%"
+    chart: "line"
+    description: "Current disk utilization"
+    thresholds:
+      warning: 80
+      critical: 90
+    color: "#f59e0b"
+    enabled: true
+    group: "System"
+  
+  - name: "Network Traffic"
+    query: "rate(node_network_receive_bytes_total[5m]) + rate(node_network_transmit_bytes_total[5m])"
+    unit: "bytes/s"
+    chart: "area"
+    description: "Network traffic (inbound + outbound)"
+    color: "#8b5cf6"
+    enabled: true
+    group: "Network"
+  
+  - name: "Load Average"
+    query: "node_load1"
+    unit: ""
+    chart: "line"
+    description: "System load average (1 minute)"
+    thresholds:
+      warning: 1.0
+      critical: 2.0
+    color: "#ef4444"
+    enabled: true
+    group: "System"
+  
+  - name: "Response Time"
+    query: "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+    unit: "s"
+    chart: "line"
+    description: "95th percentile response time"
+    thresholds:
+      warning: 1.0
+      critical: 2.0
+    color: "#06b6d4"
+    enabled: true
+    group: "Application"
+  
+  - name: "Error Rate"
+    query: "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100"
+    unit: "%"
+    chart: "line"
+    description: "HTTP error rate percentage"
+    thresholds:
+      warning: 1.0
+      critical: 5.0
+    color: "#f97316"
+    enabled: true
+    group: "Application"
+  
+  - name: "Throughput"
+    query: "rate(http_requests_total[5m])"
+    unit: "req/s"
+    chart: "area"
+    description: "HTTP requests per second"
+    color: "#84cc16"
+    enabled: true
+    group: "Application"
+
+logs:
+  default_query: "{job=\"varlogs\"}"
+  limit: 100
+  time_range: "1h"
+  refresh_interval: "10s"
+  filters:
+    jobs: []
+    namespaces: []
+    severity_levels: ["error", "warning", "info"]
+
+alerts:
+  severity_levels: ["critical", "warning", "info"]
+  refresh_interval: "5s"
+  filters:
+    services: []
+    statuses: ["firing", "resolved"]
+
+services:
+  prometheus:
+    url: "http://localhost:9090"
+    enabled: true
+  grafana:
+    url: "http://localhost:3000"
+    enabled: true
+  loki:
+    url: "http://localhost:3100"
+    enabled: true
+  alertmanager:
+    url: "http://localhost:9093"
+    enabled: true
+
+# Notification Configuration
+notifications:
+  enabled: true
+  channels:
+    # Slack Integration
+    slack:
+      enabled: false
+      webhook_url: "https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL"
+      default_channel: "#alerts"
+      username: "DevOps Monitor"
+      icon_emoji: ":bell:"
+    
+    # Microsoft Teams Integration
+    teams:
+      enabled: false
+      webhook_url: "https://outlook.office.com/webhook/YOUR_TEAMS_WEBHOOK_URL"
+      title: "DevOps Monitor Alert"
+    
+    # Discord Integration
+    discord:
+      enabled: false
+      webhook_url: "https://discord.com/api/webhooks/YOUR_DISCORD_WEBHOOK_URL"
+      username: "DevOps Monitor"
+      avatar_url: ""
+    
+    # Email Integration
+    email:
+      enabled: false
+      smtp:
+        host: "localhost"
+        port: 587
+        secure: false
+        auth:
+          user: "alerts@devops-monitoring.local"
+          pass: "password"
+      from: "alerts@devops-monitoring.local"
+      to: ["admin@devops-monitoring.local", "team@devops-monitoring.local"]
+    
+    # Webhook Integration
+    webhook:
+      enabled: false
+      endpoints:
+        - name: "Custom Webhook 1"
+          url: "http://custom-webhook:8080/alerts"
+          headers:
+            Content-Type: "application/json"
+            Authorization: "Bearer YOUR_TOKEN"
+          timeout: 5000
+        - name: "Custom Webhook 2"
+          url: "http://another-webhook:8080/notifications"
+          headers:
+            Content-Type: "application/json"
+          timeout: 3000
+
+version: "1.0.0"
+created_at: "2024-01-01T00:00:00.000Z"
+updated_at: "2024-01-01T00:00:00.000Z"

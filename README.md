@@ -14,6 +14,7 @@ With just **one command**, you get:
 * **Loki** → Centralized log aggregation
 * **Alertmanager** → Alerts via Slack/Email/Webhooks
 * **Node Exporter** → System metrics (CPU, RAM, Disk, etc.)
+* **🔔 Notification Service** → Multi-channel notifications (Slack, Teams, Discord, Email, Webhooks)
 * **🎨 Modern React UI** → **Unified dashboard experience** (What makes us unique!)
 
 👉 Perfect for learning, testing, or quick local monitoring setup.

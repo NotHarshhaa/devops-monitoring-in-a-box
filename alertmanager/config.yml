@@ -86,7 +86,7 @@ receivers:
   # Default receiver
   - name: 'default'
     webhook_configs:
-      - url: 'http://webhook-receiver:5001/webhook'
+      - url: 'http://notification-service:5001/webhook'
         send_resolved: true
         http_config:
           basic_auth:
@@ -187,7 +187,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://system-monitor:8080/alerts'
+      - url: 'http://notification-service:5001/webhook'
         send_resolved: true
 
   # Application alerts receiver
@@ -199,7 +199,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://app-monitor:8080/alerts'
+      - url: 'http://notification-service:5001/webhook'
         send_resolved: true
 
   # Database alerts receiver
@@ -211,7 +211,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://db-monitor:8080/alerts'
+      - url: 'http://notification-service:5001/webhook'
         send_resolved: true
 
   # Container alerts receiver
@@ -223,7 +223,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://container-monitor:8080/alerts'
+      - url: 'http://notification-service:5001/webhook'
         send_resolved: true
 
   # Infrastructure alerts receiver
@@ -235,7 +235,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://infra-monitor:8080/alerts'
+      - url: 'http://notification-service:5001/webhook'
         send_resolved: true
 
   # Email-only receiver for low-priority alerts

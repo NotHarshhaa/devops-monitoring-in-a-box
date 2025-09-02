@@ -62,12 +62,51 @@ export interface ServicesConfig {
   };
 }
 
+export interface NotificationChannelConfig {
+  enabled?: boolean;
+  webhook_url?: string;
+  default_channel?: string;
+  username?: string;
+  icon_emoji?: string;
+  avatar_url?: string;
+  title?: string;
+  smtp?: {
+    host?: string;
+    port?: number;
+    secure?: boolean;
+    auth?: {
+      user?: string;
+      pass?: string;
+    };
+  };
+  from?: string;
+  to?: string[];
+  endpoints?: Array<{
+    name?: string;
+    url?: string;
+    headers?: Record<string, string>;
+    timeout?: number;
+  }>;
+}
+
+export interface NotificationsConfig {
+  enabled?: boolean;
+  channels?: {
+    slack?: NotificationChannelConfig;
+    teams?: NotificationChannelConfig;
+    discord?: NotificationChannelConfig;
+    email?: NotificationChannelConfig;
+    webhook?: NotificationChannelConfig;
+  };
+}
+
 export interface MonitoringConfig {
   dashboard: DashboardConfig;
   metrics: MetricConfig[];
   logs: LogsConfig;
   alerts: AlertsConfig;
   services?: ServicesConfig;
+  notifications?: NotificationsConfig;
   version?: string;
   created_at?: string;
   updated_at?: string;
@@ -82,7 +121,7 @@ export interface ConfigValidationResult {
 
 // Configuration update types
 export interface ConfigUpdate {
-  type: 'dashboard' | 'metrics' | 'logs' | 'alerts' | 'services';
+  type: 'dashboard' | 'metrics' | 'logs' | 'alerts' | 'services' | 'notifications';
   data: Partial<MonitoringConfig>;
 }
 
@@ -183,6 +222,47 @@ export const DEFAULT_CONFIG: MonitoringConfig = {
     alertmanager: {
       url: 'http://localhost:9093',
       enabled: true,
+    },
+  },
+  notifications: {
+    enabled: true,
+    channels: {
+      slack: {
+        enabled: false,
+        webhook_url: '',
+        default_channel: '#alerts',
+        username: 'DevOps Monitor',
+        icon_emoji: ':bell:',
+      },
+      teams: {
+        enabled: false,
+        webhook_url: '',
+        title: 'DevOps Monitor Alert',
+      },
+      discord: {
+        enabled: false,
+        webhook_url: '',
+        username: 'DevOps Monitor',
+        avatar_url: '',
+      },
+      email: {
+        enabled: false,
+        smtp: {
+          host: 'localhost',
+          port: 587,
+          secure: false,
+          auth: {
+            user: '',
+            pass: '',
+          },
+        },
+        from: 'alerts@devops-monitoring.local',
+        to: ['admin@devops-monitoring.local'],
+      },
+      webhook: {
+        enabled: false,
+        endpoints: [],
+      },
     },
   },
   version: '1.0.0',

@@ -1,0 +1,45 @@
+{
+  "name": "devops-monitor-notification-service",
+  "version": "1.0.0",
+  "description": "Notification service for DevOps Monitor with support for Slack, Teams, Discord, Email, and Webhooks",
+  "main": "notification-service.js",
+  "scripts": {
+    "start": "node notification-service.js",
+    "dev": "nodemon notification-service.js",
+    "test": "jest",
+    "test-notifications": "node test-notifications.js",
+    "test-health": "node test-notifications.js health",
+    "test-config": "node test-notifications.js config",
+    "test-slack": "node test-notifications.js slack",
+    "test-teams": "node test-notifications.js teams",
+    "test-discord": "node test-notifications.js discord",
+    "test-email": "node test-notifications.js email",
+    "test-webhook": "node test-notifications.js webhook"
+  },
+  "keywords": [
+    "devops",
+    "monitoring",
+    "notifications",
+    "slack",
+    "teams",
+    "discord",
+    "email",
+    "webhook"
+  ],
+  "author": "DevOps Monitor Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "nodemailer": "^6.9.7",
+    "js-yaml": "^4.1.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

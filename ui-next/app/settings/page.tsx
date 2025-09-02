@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ConfigLoader } from "@/components/config-loader"
+import { NotificationSettings } from "@/components/notification-settings"
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
@@ -66,11 +67,9 @@ export default function SettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="general" className="mb-8">
-        <TabsList className="grid grid-cols-6 md:w-[720px]">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="data">Data</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="configuration">Configuration</TabsTrigger>
         </TabsList>
@@ -645,6 +644,17 @@ export default function SettingsPage() {
                 </Button>
               </CardFooter>
             </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* Notification Settings */}
+        <TabsContent value="notifications">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <NotificationSettings />
           </motion.div>
         </TabsContent>
 
