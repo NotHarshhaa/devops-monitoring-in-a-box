@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { UserRole } from "@prisma/client"
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-demo-purposes-only",
   providers: [
     // Credentials provider for email/password login
     CredentialsProvider({
