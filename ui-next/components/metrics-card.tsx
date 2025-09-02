@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -68,89 +69,138 @@ export function MetricsCard({
 
   if (isLoading) {
     return (
-      <Card className={cn("relative overflow-hidden", className)}>
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            {icon && <div className="text-muted-foreground">{icon}</div>}
-            <CardTitle className="text-lg">{title}</CardTitle>
-          </div>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center h-16">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className={cn("relative overflow-hidden", className)}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              {icon && <div className="text-muted-foreground">{icon}</div>}
+              <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
+            </div>
+            <CardDescription className="text-sm">{description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <motion.div 
+              className="flex items-center justify-center h-16"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
   if (isError) {
     return (
-      <Card className={cn("relative overflow-hidden border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950", className)}>
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            {icon && <div className="text-muted-foreground">{icon}</div>}
-            <CardTitle className="text-lg">{title}</CardTitle>
-          </div>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-sm">{errorMessage}</span>
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className={cn("relative overflow-hidden border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950", className)}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              {icon && <div className="text-muted-foreground">{icon}</div>}
+              <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
+            </div>
+            <CardDescription className="text-sm">{description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <motion.div 
+              className="flex items-center gap-2 text-red-600 dark:text-red-400"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <AlertCircle className="h-4 w-4" />
+              <span className="text-sm">{errorMessage}</span>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <Card className={cn("relative overflow-hidden", getColorClasses(), className)}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {icon && <div className="text-muted-foreground">{icon}</div>}
-            <CardTitle className="text-lg">{title}</CardTitle>
-          </div>
-          {trend && (
-            <Badge 
-              variant="secondary" 
-              className={cn(
-                "gap-1",
-                trend === 'up' && "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900",
-                trend === 'down' && "text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900"
-              )}
-            >
-              {trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              {trendValue}
-            </Badge>
-          )}
-        </div>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold">{formatValue(value)}</span>
-            {unit && <span className="text-lg text-muted-foreground">{unit}</span>}
-          </div>
-          
-          {percentage !== undefined && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Usage</span>
-                <span className="font-medium">{percentage.toFixed(1)}%</span>
-              </div>
-              <Progress value={percentage} className="h-2" />
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>0%</span>
-                <span>100%</span>
-              </div>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <Card className={cn("relative overflow-hidden transition-all duration-200 hover:shadow-md", getColorClasses(), className)}>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              {icon && <div className="text-muted-foreground flex-shrink-0">{icon}</div>}
+              <CardTitle className="text-base sm:text-lg truncate">{title}</CardTitle>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            {trend && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Badge 
+                  variant="secondary" 
+                  className={cn(
+                    "gap-1 text-xs sm:text-sm",
+                    trend === 'up' && "text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900",
+                    trend === 'down' && "text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900"
+                  )}
+                >
+                  {trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  <span className="hidden sm:inline">{trendValue}</span>
+                </Badge>
+              </motion.div>
+            )}
+          </div>
+          <CardDescription className="text-sm">{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <motion.div 
+              className="flex items-baseline gap-1"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span className="text-2xl sm:text-3xl font-bold">{formatValue(value)}</span>
+              {unit && <span className="text-base sm:text-lg text-muted-foreground">{unit}</span>}
+            </motion.div>
+            
+            {percentage !== undefined && (
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Usage</span>
+                  <span className="font-medium">{percentage.toFixed(1)}%</span>
+                </div>
+                <Progress 
+                  value={percentage} 
+                  className="h-2" 
+                />
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

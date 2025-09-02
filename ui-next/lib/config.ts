@@ -41,6 +41,21 @@ export const config = {
     animations: {
       fadeIn: 500,
       slideUp: 500,
+      stagger: 100,
+    },
+    // Refresh intervals (in milliseconds)
+    refreshIntervals: {
+      fast: 5000,    // 5 seconds
+      normal: 15000, // 15 seconds
+      slow: 60000,   // 1 minute
+      manual: 0,     // Manual refresh only
+    },
+    // Mobile breakpoints
+    breakpoints: {
+      sm: 640,   // Small screens
+      md: 768,   // Medium screens
+      lg: 1024,  // Large screens
+      xl: 1280,  // Extra large screens
     },
   },
   
