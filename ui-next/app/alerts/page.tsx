@@ -16,7 +16,11 @@ import {
   MessageSquare,
   AlertCircle,
   X,
-  Search
+  Search,
+  Loader2,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -30,114 +34,176 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import { useAlertmanagerAlerts } from "@/lib/hooks/use-alertmanager-alerts"
+import { alertmanagerAPI } from "@/lib/alertmanager-api"
 
-// Mock alert data
-const alerts = [
-  {
-    id: "1",
-    name: "HighCPUUsage",
-    status: "firing",
-    severity: "critical",
-    service: "node-exporter",
-    summary: "CPU usage above 90% for 5 minutes",
-    description: "Server is experiencing high CPU load which may impact performance",
-    value: "95%",
-    startedAt: "2023-07-01T11:45:30Z",
-    lastUpdatedAt: "2023-07-01T12:30:45Z",
-    labels: ["production", "high-priority"],
-    annotations: {
-      runbook: "https://runbooks.example.com/high-cpu",
-      dashboard: "https://grafana.example.com/d/node-exporter"
-    }
-  },
-  {
-    id: "2",
-    name: "LowDiskSpace",
-    status: "firing",
-    severity: "warning",
-    service: "node-exporter",
-    summary: "Disk usage above 85% on /data",
-    description: "Free disk space is running low on the /data volume",
-    value: "87%",
-    startedAt: "2023-07-01T10:15:00Z",
-    lastUpdatedAt: "2023-07-01T12:30:45Z",
-    labels: ["production", "medium-priority"],
-    annotations: {
-      runbook: "https://runbooks.example.com/low-disk",
-      dashboard: "https://grafana.example.com/d/disk-usage"
-    }
-  },
-  {
-    id: "3",
-    name: "PrometheusTargetDown",
-    status: "firing",
-    severity: "critical",
-    service: "prometheus",
-    summary: "Prometheus target is down",
-    description: "Prometheus cannot scrape metrics from node-exporter",
-    value: "Down for 10m",
-    startedAt: "2023-07-01T12:20:15Z",
-    lastUpdatedAt: "2023-07-01T12:30:45Z",
-    labels: ["production", "high-priority"],
-    annotations: {
-      runbook: "https://runbooks.example.com/prometheus-targets",
-      dashboard: "https://grafana.example.com/d/prometheus"
-    }
-  },
-  {
-    id: "4",
-    name: "APIHighLatency",
-    status: "firing",
-    severity: "warning",
-    service: "api-service",
-    summary: "API response time above 500ms",
-    description: "The API service is experiencing high latency",
-    value: "723ms",
-    startedAt: "2023-07-01T12:10:00Z",
-    lastUpdatedAt: "2023-07-01T12:30:45Z",
-    labels: ["production", "medium-priority"],
-    annotations: {
-      runbook: "https://runbooks.example.com/api-latency",
-      dashboard: "https://grafana.example.com/d/api-performance"
-    }
-  },
-  {
-    id: "5",
-    name: "DatabaseConnections",
-    status: "resolved",
-    severity: "warning",
-    service: "postgres",
-    summary: "High number of database connections",
-    description: "The number of active connections to the database is high",
-    value: "120/150",
-    startedAt: "2023-07-01T09:30:00Z",
-    lastUpdatedAt: "2023-07-01T11:45:20Z",
-    resolvedAt: "2023-07-01T11:45:20Z",
-    labels: ["production", "medium-priority"],
-    annotations: {
-      runbook: "https://runbooks.example.com/db-connections",
-      dashboard: "https://grafana.example.com/d/database"
-    }
-  },
-  {
-    id: "6",
-    name: "ServiceRestart",
-    status: "resolved",
-    severity: "info",
-    service: "web-server",
-    summary: "Service restarted",
-    description: "The web server service was restarted",
-    value: "Restart completed",
-    startedAt: "2023-07-01T10:05:15Z",
-    lastUpdatedAt: "2023-07-01T10:10:30Z",
-    resolvedAt: "2023-07-01T10:10:30Z",
-    labels: ["production", "low-priority"],
-    annotations: {
-      runbook: "https://runbooks.example.com/service-restart",
-      dashboard: "https://grafana.example.com/d/services"
-    }
-  }
-]
+// Alert component for expandable details
+interface AlertCardProps {
+  alert: any;
+  isExpanded: boolean;
+  onToggle: () => void;
+}
+
+const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) => {
+  const alertName = alertmanagerAPI.extractAlertName(alert.labels);
+  const severity = alertmanagerAPI.extractSeverity(alert.labels);
+  const serviceName = alertmanagerAPI.extractServiceName(alert.labels);
+  const summary = alertmanagerAPI.getAlertSummary(alert.annotations);
+  const description = alertmanagerAPI.getAlertDescription(alert.annotations);
+  const value = alertmanagerAPI.getAlertValue(alert);
+  const isFiring = alertmanagerAPI.isAlertFiring(alert);
+  const isSuppressed = alertmanagerAPI.isAlertSuppressed(alert);
+
+  return (
+    <Card className={`overflow-hidden border-l-4 ${
+      severity === "critical" ? "border-l-red-500" :
+      severity === "warning" ? "border-l-yellow-500" :
+      "border-l-blue-500"
+    }`}>
+      <CardHeader className="p-4 pb-2">
+        <div className="flex justify-between">
+          <div className="flex items-center gap-2">
+            {getSeverityIcon(severity)}
+            <CardTitle className="text-lg">{alertName}</CardTitle>
+          </div>
+          <div className="flex gap-2">
+            {getStatusBadge(isFiring ? 'firing' : isSuppressed ? 'suppressed' : 'resolved')}
+            {getSeverityBadge(severity)}
+          </div>
+        </div>
+        <CardDescription className="text-sm">
+          {summary}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 pt-0 pb-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-x-4 text-sm">
+          <div>
+            <p className="text-muted-foreground">Service</p>
+            <p className="font-medium">{serviceName}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Value</p>
+            <p className="font-medium">{value}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Duration</p>
+            <p className="font-medium">
+              {alertmanagerAPI.calculateDuration(alert.startsAt, alert.endsAt)}
+            </p>
+          </div>
+          <div className="md:col-span-3">
+            <p className="text-muted-foreground">Description</p>
+            <p>{description}</p>
+          </div>
+          {Object.keys(alert.labels).length > 0 && (
+            <div className="md:col-span-3">
+              <p className="text-muted-foreground mb-1">Labels</p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(alert.labels).map(([key, value]) => (
+                  <Badge key={key} variant="secondary">
+                    {key}={value}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Expandable details */}
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 pt-4 border-t"
+          >
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Annotations</p>
+                <div className="space-y-1">
+                  {Object.entries(alert.annotations).map(([key, value]) => (
+                    <div key={key} className="text-sm">
+                      <span className="font-medium">{key}:</span> {value}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Timestamps</p>
+                <div className="space-y-1 text-sm">
+                  <div>
+                    <span className="font-medium">Started:</span> {alertmanagerAPI.formatTimestamp(alert.startsAt)}
+                  </div>
+                  <div>
+                    <span className="font-medium">Updated:</span> {alertmanagerAPI.formatTimestamp(alert.updatedAt)}
+                  </div>
+                  {alert.endsAt && (
+                    <div>
+                      <span className="font-medium">Ends:</span> {alertmanagerAPI.formatTimestamp(alert.endsAt)}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {alert.generatorURL && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Generator URL</p>
+                  <a 
+                    href={alert.generatorURL} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    View in Prometheus
+                  </a>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </CardContent>
+      <CardFooter className="p-4 flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          <Clock className="h-3 w-3 inline mr-1" />
+          {isFiring
+            ? `Started at ${alertmanagerAPI.formatTimestamp(alert.startsAt)}`
+            : `Resolved at ${alertmanagerAPI.formatTimestamp(alert.endsAt || alert.updatedAt)}`
+          }
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 gap-1"
+            onClick={onToggle}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronDown className="h-3 w-3" />
+                Less
+              </>
+            ) : (
+              <>
+                <ChevronRight className="h-3 w-3" />
+                Details
+              </>
+            )}
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 gap-1">
+            <MessageSquare className="h-3 w-3" />
+            Comment
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 gap-1">
+            <VolumeX className="h-3 w-3" />
+            Silence
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+};
 
 const getSeverityBadge = (severity: string) => {
   switch (severity) {
@@ -234,45 +300,48 @@ const formatDuration = (startTime: string, endTime?: string) => {
 }
 
 export default function AlertsPage() {
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const [severity, setSeverity] = React.useState("all")
-  const [status, setStatus] = React.useState("all")
-  const [service, setService] = React.useState("all")
+  const {
+    alerts,
+    loading,
+    error,
+    services,
+    severities,
+    refresh,
+    setFilters,
+    filters,
+    filteredAlerts,
+    stats,
+  } = useAlertmanagerAlerts()
 
-  // Filter alerts based on search and filters
-  const filteredAlerts = alerts.filter((alert) => {
-    // Search query
-    if (
-      searchQuery &&
-      !alert.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !alert.summary.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !alert.description.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false
-    }
+  const [expandedAlerts, setExpandedAlerts] = React.useState<Set<string>>(new Set())
 
-    // Severity filter
-    if (severity !== "all" && alert.severity !== severity) {
-      return false
-    }
+  const handleSearchChange = (value: string) => {
+    setFilters({ searchQuery: value })
+  }
 
-    // Status filter
-    if (status !== "all" && alert.status !== status) {
-      return false
-    }
+  const handleSeverityChange = (value: string) => {
+    setFilters({ severity: value })
+  }
 
-    // Service filter
-    if (service !== "all" && alert.service !== service) {
-      return false
-    }
+  const handleStatusChange = (value: string) => {
+    setFilters({ status: value })
+  }
 
-    return true
-  })
+  const handleServiceChange = (value: string) => {
+    setFilters({ service: value })
+  }
 
-  // Count alerts by status
-  const firingCount = alerts.filter(a => a.status === "firing").length
-  const resolvedCount = alerts.filter(a => a.status === "resolved").length
-  const suppressedCount = alerts.filter(a => a.status === "suppressed").length
+  const toggleAlertExpansion = (alertId: string) => {
+    setExpandedAlerts(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(alertId)) {
+        newSet.delete(alertId)
+      } else {
+        newSet.add(alertId)
+      }
+      return newSet
+    })
+  }
 
   return (
     <div>
@@ -290,8 +359,18 @@ export default function AlertsPage() {
         </motion.div>
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="gap-1">
-            <RefreshCw className="h-4 w-4" />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1" 
+            onClick={refresh}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
             Refresh
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
@@ -299,7 +378,7 @@ export default function AlertsPage() {
             History
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
-                            <VolumeX className="h-4 w-4" />
+            <VolumeX className="h-4 w-4" />
             Silences
           </Button>
         </div>
@@ -317,7 +396,7 @@ export default function AlertsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-red-800 dark:text-red-300">Firing</p>
-                  <p className="text-2xl font-bold text-red-900 dark:text-red-200">{firingCount}</p>
+                  <p className="text-2xl font-bold text-red-900 dark:text-red-200">{stats.firing}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-500 dark:text-red-400" />
               </div>
@@ -335,7 +414,7 @@ export default function AlertsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-green-800 dark:text-green-300">Resolved</p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-200">{resolvedCount}</p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-200">{stats.total - stats.firing - stats.suppressed}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-500 dark:text-green-400" />
               </div>
@@ -353,7 +432,7 @@ export default function AlertsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-300">Suppressed</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-200">{suppressedCount}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-200">{stats.suppressed}</p>
                 </div>
                 <VolumeX className="h-8 w-8 text-gray-500 dark:text-gray-400" />
               </div>
@@ -372,54 +451,62 @@ export default function AlertsPage() {
                 <Input
                   placeholder="Search alerts..."
                   className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={filters.searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                 />
               </div>
-              <Button>Search</Button>
+              <Button onClick={refresh} disabled={loading}>
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Search"
+                )}
+              </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Severity</label>
-                <Select value={severity} onValueChange={setSeverity}>
+                <Select value={filters.severity} onValueChange={handleSeverityChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by severity" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Severities</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                    <SelectItem value="warning">Warning</SelectItem>
-                    <SelectItem value="info">Info</SelectItem>
+                    {severities.map((severity) => (
+                      <SelectItem key={severity} value={severity}>
+                        {severity.charAt(0).toUpperCase() + severity.slice(1)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Status</label>
-                <Select value={status} onValueChange={setStatus}>
+                <Select value={filters.status} onValueChange={handleStatusChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="firing">Firing</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="suppressed">Suppressed</SelectItem>
+                    <SelectItem value="unprocessed">Unprocessed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Service</label>
-                <Select value={service} onValueChange={setService}>
+                <Select value={filters.service} onValueChange={handleServiceChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by service" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Services</SelectItem>
-                    <SelectItem value="node-exporter">Node Exporter</SelectItem>
-                    <SelectItem value="prometheus">Prometheus</SelectItem>
-                    <SelectItem value="api-service">API Service</SelectItem>
-                    <SelectItem value="postgres">Postgres</SelectItem>
-                    <SelectItem value="web-server">Web Server</SelectItem>
+                    {services.map((service) => (
+                      <SelectItem key={service} value={service}>
+                        {service}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -445,98 +532,32 @@ export default function AlertsPage() {
             </div>
           </div>
           <CardDescription>
-            Showing {filteredAlerts.length} alerts
+            {error ? (
+              <span className="text-red-500">Error: {error}</span>
+            ) : loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading alerts...
+              </span>
+            ) : (
+              `Showing ${filteredAlerts.length} alerts`
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {filteredAlerts.map((alert) => (
               <motion.div
-                key={alert.id}
+                key={alert.fingerprint}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className={`overflow-hidden border-l-4 ${
-                  alert.severity === "critical" ? "border-l-red-500" :
-                  alert.severity === "warning" ? "border-l-yellow-500" :
-                  "border-l-blue-500"
-                }`}>
-                  <CardHeader className="p-4 pb-2">
-                    <div className="flex justify-between">
-                      <div className="flex items-center gap-2">
-                        {getSeverityIcon(alert.severity)}
-                        <CardTitle className="text-lg">{alert.name}</CardTitle>
-                      </div>
-                      <div className="flex gap-2">
-                        {getStatusBadge(alert.status)}
-                        {getSeverityBadge(alert.severity)}
-                      </div>
-                    </div>
-                    <CardDescription className="text-sm">
-                      {alert.summary}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0 pb-2">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-x-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Service</p>
-                        <p className="font-medium">{alert.service}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Value</p>
-                        <p className="font-medium">{alert.value}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Duration</p>
-                        <p className="font-medium">
-                          {formatDuration(alert.startedAt, alert.resolvedAt)}
-                        </p>
-                      </div>
-                      <div className="md:col-span-3">
-                        <p className="text-muted-foreground">Description</p>
-                        <p>{alert.description}</p>
-                      </div>
-                      {alert.labels.length > 0 && (
-                        <div className="md:col-span-3">
-                          <p className="text-muted-foreground mb-1">Labels</p>
-                          <div className="flex flex-wrap gap-2">
-                            {alert.labels.map((label) => (
-                              <Badge key={label} variant="secondary">
-                                {label}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="p-4 flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3 inline mr-1" />
-                      {alert.status === "resolved"
-                        ? `Resolved at ${formatTimestamp(alert.resolvedAt!)}`
-                        : `Started at ${formatTimestamp(alert.startedAt)}`
-                      }
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="h-8 gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        Comment
-                      </Button>
-                      <Button variant="outline" size="sm" className="h-8 gap-1">
-                        <VolumeX className="h-3 w-3" />
-                        Silence
-                      </Button>
-                      {alert.status === "firing" && (
-                        <Button variant="outline" size="sm" className="h-8 gap-1">
-                          <X className="h-3 w-3" />
-                          Resolve
-                        </Button>
-                      )}
-                    </div>
-                  </CardFooter>
-                </Card>
+                <AlertCard
+                  alert={alert}
+                  isExpanded={expandedAlerts.has(alert.fingerprint)}
+                  onToggle={() => toggleAlertExpansion(alert.fingerprint)}
+                />
               </motion.div>
             ))}
           </div>

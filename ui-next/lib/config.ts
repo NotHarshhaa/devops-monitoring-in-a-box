@@ -20,6 +20,15 @@ export const config = {
     maxEntries: 1000,
   },
   
+  // Alertmanager API Configuration
+  alertmanager: {
+    baseURL: process.env.NEXT_PUBLIC_ALERTMANAGER_URL || 'http://localhost:9093',
+    // Auto-refresh interval in milliseconds
+    refreshInterval: 5000,
+    // Maximum number of alerts to fetch
+    maxAlerts: 1000,
+  },
+  
   // UI Configuration
   ui: {
     // Chart heights
