@@ -252,6 +252,26 @@ docker-compose logs grafana
 * Low resource footprint
 * Industry standard for system monitoring
 
+## 📚 Documentation
+
+**📖 [Complete Documentation](docs/README.md)** - Comprehensive guides and setup instructions
+
+### Key Documentation Links:
+- **[Setup Guide](docs/SETUP.md)** - Detailed setup instructions
+- **[Prometheus Integration](docs/PROMETHEUS_INTEGRATION.md)** - Metrics collection and configuration
+- **[Grafana Dashboards](docs/PROMETHEUS_INTEGRATION.md#grafana-dashboards)** - Dashboard setup and customization
+- **[Loki Logs](docs/LOKI_INTEGRATION.md)** - Log aggregation and search
+- **[AlertManager](docs/ALERTMANAGER_INTEGRATION.md)** - Alert management and notifications
+- **[Authentication & Multi-Tenancy](docs/AUTHENTICATION_MULTI_TENANCY_GUIDE.md)** - User management and role-based access
+- **[UI Application](docs/UI_README.md)** - Next.js web interface documentation
+- **[Configuration System](docs/CONFIG_SYSTEM_GUIDE.md)** - Dynamic configuration management
+- **[Service Health](docs/SERVICE_HEALTH_GUIDE.md)** - Health monitoring and status checks
+- **[UX Improvements](docs/UX_IMPROVEMENTS_GUIDE.md)** - User interface enhancements
+
+### 🎯 Quick Access
+- **Main Documentation Hub**: [docs/README.md](docs/README.md)
+- **All Documentation Files**: [docs/](docs/) folder
+
 ## 🔒 Security Notes
 
 * Default credentials are for development only
