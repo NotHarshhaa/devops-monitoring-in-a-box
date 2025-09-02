@@ -2,21 +2,35 @@ auth_enabled: false
 
 server:
   http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: info
+  log_format: json
 
-ingester:
-  lifecycler:
-    address: 127.0.0.1
-    ring:
-      kvstore:
-        store: inmemory
-      replication_factor: 1
-    final_sleep: 0s
-  chunk_idle_period: 5m
-  chunk_retain_period: 30s
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+  cache_results: true
+  max_retries: 5
+  split_queries_by_interval: 15m
+  align_queries_with_step: true
 
 schema_config:
   configs:
-    - from: 2020-05-15
+    - from: 2020-10-24
       store: boltdb-shipper
       object_store: filesystem
       schema: v11
@@ -25,24 +39,86 @@ schema_config:
         period: 24h
 
 storage_config:
-  boltdb:
-    directory: /tmp/loki/index
-
+  boltdb_shipper:
+    active_index_directory: /loki/boltdb-shipper-active
+    cache_location: /loki/boltdb-shipper-cache
+    cache_ttl: 24h
+    shared_store: filesystem
   filesystem:
-    directory: /tmp/loki/chunks
+    directory: /loki/chunks
 
 compactor:
-  working_directory: /tmp/loki/boltdb-shipper-compactor
+  working_directory: /loki/boltdb-shipper-compactor
   shared_store: filesystem
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
 
 limits_config:
   enforce_metric_name: false
   reject_old_samples: true
   reject_old_samples_max_age: 168h
+  max_cache_freshness_per_query: 10m
+  split_queries_by_interval: 15m
+  max_query_parallelism: 32
+  max_query_series: 100000
+  max_query_lookback: 30d
+  max_query_length: 721h
+  max_query_parallelism: 32
+  max_streams_per_user: 0
+  max_line_size: 256000
+  max_entries_limit_per_query: 5000
+  max_global_streams_per_user: 0
+  max_chunks_per_query: 2000000
+  max_query_series: 100000
+  max_query_parallelism: 32
+  max_streams_matchers_per_query: 1000
+  max_concurrent_tail_requests: 10
+  max_cache_freshness_per_query: 10m
+  max_query_parallelism: 32
+  max_streams_per_user: 0
+  max_line_size: 256000
+  max_entries_limit_per_query: 5000
+  max_global_streams_per_user: 0
+  max_chunks_per_query: 2000000
+  max_query_series: 100000
+  max_query_parallelism: 32
+  max_streams_matchers_per_query: 1000
+  max_concurrent_tail_requests: 10
 
 chunk_store_config:
   max_look_back_period: 0s
+  chunk_cache_config:
+    enable_fifocache: true
+    fifocache:
+      max_size_bytes: 1GB
+      validity: 24h
 
-table_manager:
-  retention_deletes_enabled: false
-  retention_period: 0s
+query_scheduler:
+  max_outstanding_requests_per_tenant: 2048
+
+frontend:
+  max_outstanding_per_tenant: 2048
+  compress_responses: true
+  downstream_url: http://loki:3100
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules-temp
+  alertmanager_url: http://alertmanager:9093
+  ring:
+    kvstore:
+      store: inmemory
+  enable_api: true
+  enable_alertmanager_v2: true
+  external_url: http://loki:3100
+  external_labels:
+    cluster: devops-monitoring
+    replica: loki-1
+
+analytics:
+  reporting_enabled: false

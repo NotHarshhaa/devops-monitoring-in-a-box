@@ -1,12 +1,23 @@
 server:
   http_listen_port: 9080
   grpc_listen_port: 0
+  log_level: info
+  log_format: json
 
 positions:
   filename: /tmp/positions.yaml
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
+    timeout: 10s
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+    batchwait: 1s
+    batchsize: 1048576
+    max_retries: 10
+    max_backoff: 5m
 
 scrape_configs:
   # System logs
@@ -16,7 +27,23 @@ scrape_configs:
           - localhost
         labels:
           job: varlogs
+          environment: production
+          service: system
           __path__: /var/log/*log
+    pipeline_stages:
+      - match:
+          selector: '{job="varlogs"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\S+\s+\S+)\s+(?P<hostname>\S+)\s+(?P<service>\S+):\s+(?P<message>.*)'
+            - timestamp:
+                source: timestamp
+                format: 'Jan 02 15:04:05'
+            - labels:
+                hostname:
+                service:
+            - output:
+                source: message
 
   # Docker container logs
   - job_name: containers
@@ -25,16 +52,61 @@ scrape_configs:
           - localhost
         labels:
           job: containerlogs
+          environment: production
+          service: containers
           __path__: /var/lib/docker/containers/*/*-json.log
+    pipeline_stages:
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            attrs:
+      - json:
+          expressions:
+            tag:
+          source: attrs
+      - regex:
+          expression: (?P<container_name>(?:[^|]*))\|
+          source: tag
+      - timestamp:
+          format: RFC3339Nano
+          source: time
+      - labels:
+          stream:
+          container_name:
+      - output:
+          source: output
 
-  # Application logs (if any)
+  # Application logs
   - job_name: applications
     static_configs:
       - targets:
           - localhost
         labels:
           job: applogs
+          environment: production
+          service: applications
           __path__: /var/log/app/*.log
+    pipeline_stages:
+      - match:
+          selector: '{job="applogs"}'
+          stages:
+            - json:
+                expressions:
+                  timestamp: timestamp
+                  level: level
+                  message: message
+                  service: service
+                  trace_id: trace_id
+            - timestamp:
+                source: timestamp
+                format: RFC3339
+            - labels:
+                level:
+                service:
+                trace_id:
+            - output:
+                source: message
 
   # Syslog
   - job_name: syslog
@@ -43,7 +115,24 @@ scrape_configs:
           - localhost
         labels:
           job: syslog
+          environment: production
+          service: system
           __path__: /var/log/syslog
+    pipeline_stages:
+      - match:
+          selector: '{job="syslog"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\S+\s+\d+\s+\S+)\s+(?P<hostname>\S+)\s+(?P<service>\S+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)'
+            - timestamp:
+                source: timestamp
+                format: 'Jan 02 15:04:05'
+            - labels:
+                hostname:
+                service:
+                pid:
+            - output:
+                source: message
 
   # Auth logs
   - job_name: auth
@@ -52,4 +141,116 @@ scrape_configs:
           - localhost
         labels:
           job: auth
+          environment: production
+          service: auth
           __path__: /var/log/auth.log
+    pipeline_stages:
+      - match:
+          selector: '{job="auth"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\S+\s+\d+\s+\S+)\s+(?P<hostname>\S+)\s+(?P<service>\S+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)'
+            - timestamp:
+                source: timestamp
+                format: 'Jan 02 15:04:05'
+            - labels:
+                hostname:
+                service:
+                pid:
+            - output:
+                source: message
+
+  # Nginx access logs
+  - job_name: nginx-access
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx-access
+          environment: production
+          service: nginx
+          __path__: /var/log/nginx/access.log
+    pipeline_stages:
+      - match:
+          selector: '{job="nginx-access"}'
+          stages:
+            - regex:
+                expression: '^(?P<remote_addr>\S+)\s+-\s+(?P<remote_user>\S+)\s+\[(?P<timestamp>[^\]]+)\]\s+"(?P<method>\S+)\s+(?P<path>\S+)\s+(?P<protocol>\S+)"\s+(?P<status>\d+)\s+(?P<body_bytes_sent>\d+)\s+"(?P<http_referer>[^"]*)"\s+"(?P<http_user_agent>[^"]*)"'
+            - timestamp:
+                source: timestamp
+                format: '02/Jan/2006:15:04:05 -0700'
+            - labels:
+                method:
+                status:
+                remote_addr:
+            - output:
+                source: path
+
+  # Nginx error logs
+  - job_name: nginx-error
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx-error
+          environment: production
+          service: nginx
+          __path__: /var/log/nginx/error.log
+    pipeline_stages:
+      - match:
+          selector: '{job="nginx-error"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\d{4}/\d{2}/\d{2}\s+\d{2}:\d{2}:\d{2})\s+\[(?P<level>\w+)\]\s+(?P<pid>\d+)#(?P<tid>\d+):\s+(?P<message>.*)'
+            - timestamp:
+                source: timestamp
+                format: '2006/01/02 15:04:05'
+            - labels:
+                level:
+                pid:
+                tid:
+            - output:
+                source: message
+
+  # Kubernetes logs (if running in k8s)
+  - job_name: kubernetes
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: ['__meta_kubernetes_pod_controller_name']
+        regex: '([0-9a-z-.]+?)(-[0-9a-f]{8,10})?'
+        action: replace
+        target_label: __tmp_controller_name
+      - source_labels: ['__meta_kubernetes_pod_label_app_kubernetes_io_name', '__meta_kubernetes_pod_label_app', '__tmp_controller_name', '__meta_kubernetes_pod_name']
+        regex: '^;*([^;]+)(;.*)?$'
+        action: replace
+        target_label: app
+      - source_labels: ['__meta_kubernetes_pod_label_app_kubernetes_io_component', '__meta_kubernetes_pod_label_component']
+        regex: '^;*([^;]+)(;.*)?$'
+        action: replace
+        target_label: component
+      - source_labels: ['__meta_kubernetes_pod_node_name']
+        target_label: node_name
+      - source_labels: ['__meta_kubernetes_namespace']
+        target_label: namespace
+      - source_labels: ['__meta_kubernetes_pod_name']
+        target_label: pod
+      - source_labels: ['__meta_kubernetes_pod_container_name']
+        target_label: container
+      - replacement: '/var/log/pods/*$1/*.log'
+        separator: '/'
+        source_labels: ['__meta_kubernetes_pod_uid', '__meta_kubernetes_pod_container_name']
+        target_label: __path__
+    pipeline_stages:
+      - match:
+          selector: '{job="kubernetes"}'
+          stages:
+            - regex:
+                expression: '^(?P<timestamp>\S+)\s+(?P<stream>stdout|stderr)\s+(?P<flags>\S+)\s+(?P<message>.*)'
+            - timestamp:
+                source: timestamp
+                format: RFC3339Nano
+            - labels:
+                stream:
+            - output:
+                source: message

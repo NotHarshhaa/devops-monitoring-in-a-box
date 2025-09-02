@@ -7,9 +7,25 @@ groups:
         for: 5m
         labels:
           severity: warning
+          service: system
+          component: cpu
         annotations:
           summary: "High CPU usage on {{ $labels.instance }}"
-          description: "CPU usage is above 80% for more than 5 minutes"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-cpu-usage"
+
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+          component: cpu
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 95% for more than 2 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/critical-cpu-usage"
 
       # High memory usage
       - alert: HighMemoryUsage
@@ -17,9 +33,25 @@ groups:
         for: 5m
         labels:
           severity: warning
+          service: system
+          component: memory
         annotations:
           summary: "High memory usage on {{ $labels.instance }}"
-          description: "Memory usage is above 85% for more than 5 minutes"
+          description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-memory-usage"
+
+      # Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+          component: memory
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 95% for more than 2 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/critical-memory-usage"
 
       # High disk usage
       - alert: HighDiskUsage
@@ -27,9 +59,25 @@ groups:
         for: 5m
         labels:
           severity: warning
+          service: system
+          component: disk
         annotations:
           summary: "High disk usage on {{ $labels.instance }}"
-          description: "Disk usage is above 85% for more than 5 minutes"
+          description: "Disk usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-disk-usage"
+
+      # Critical disk usage
+      - alert: CriticalDiskUsage
+        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+          component: disk
+        annotations:
+          summary: "Critical disk usage on {{ $labels.instance }}"
+          description: "Disk usage is above 95% for more than 2 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/critical-disk-usage"
 
       # Node down
       - alert: NodeDown
@@ -37,9 +85,38 @@ groups:
         for: 1m
         labels:
           severity: critical
+          service: system
+          component: node
         annotations:
           summary: "Node {{ $labels.instance }} is down"
           description: "Node {{ $labels.instance }} has been down for more than 1 minute"
+          runbook_url: "https://docs.example.com/runbooks/node-down"
+
+      # High load average
+      - alert: HighLoadAverage
+        expr: node_load1 > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          component: load
+        annotations:
+          summary: "High load average on {{ $labels.instance }}"
+          description: "Load average is above 2 for more than 5 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-load-average"
+
+      # Network interface down
+      - alert: NetworkInterfaceDown
+        expr: node_network_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+          component: network
+        annotations:
+          summary: "Network interface down on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is down on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/network-interface-down"
 
   - name: prometheus_alerts
     rules:
@@ -49,9 +126,12 @@ groups:
         for: 1m
         labels:
           severity: critical
+          service: prometheus
+          component: server
         annotations:
           summary: "Prometheus is down"
           description: "Prometheus has been down for more than 1 minute"
+          runbook_url: "https://docs.example.com/runbooks/prometheus-down"
 
       # High scrape duration
       - alert: HighScrapeDuration
@@ -59,9 +139,38 @@ groups:
         for: 5m
         labels:
           severity: warning
+          service: prometheus
+          component: scraping
         annotations:
           summary: "High scrape duration on {{ $labels.instance }}"
-          description: "Scrape duration is above 10 seconds for more than 5 minutes"
+          description: "Scrape duration is above 10 seconds for more than 5 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-scrape-duration"
+
+      # Prometheus configuration reload failed
+      - alert: PrometheusConfigReloadFailed
+        expr: prometheus_config_last_reload_successful == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: prometheus
+          component: config
+        annotations:
+          summary: "Prometheus configuration reload failed"
+          description: "Prometheus configuration reload has failed"
+          runbook_url: "https://docs.example.com/runbooks/prometheus-config-reload-failed"
+
+      # Prometheus storage corruption
+      - alert: PrometheusStorageCorruption
+        expr: prometheus_tsdb_head_series > 1000000
+        for: 5m
+        labels:
+          severity: warning
+          service: prometheus
+          component: storage
+        annotations:
+          summary: "Prometheus storage corruption detected"
+          description: "Prometheus has more than 1M series, possible storage corruption"
+          runbook_url: "https://docs.example.com/runbooks/prometheus-storage-corruption"
 
   - name: container_alerts
     rules:
@@ -71,9 +180,12 @@ groups:
         for: 5m
         labels:
           severity: warning
+          service: containers
+          component: restart
         annotations:
           summary: "Container restarting frequently on {{ $labels.instance }}"
-          description: "Container {{ $labels.name }} has restarted in the last 15 minutes"
+          description: "Container {{ $labels.name }} has restarted in the last 15 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/container-restarting"
 
       # High container memory usage
       - alert: HighContainerMemoryUsage
@@ -81,6 +193,197 @@ groups:
         for: 5m
         labels:
           severity: warning
+          service: containers
+          component: memory
         annotations:
           summary: "High container memory usage on {{ $labels.instance }}"
-          description: "Container {{ $labels.name }} memory usage is above 80%"
+          description: "Container {{ $labels.name }} memory usage is above 80% on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-container-memory-usage"
+
+      # Critical container memory usage
+      - alert: CriticalContainerMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: containers
+          component: memory
+        annotations:
+          summary: "Critical container memory usage on {{ $labels.instance }}"
+          description: "Container {{ $labels.name }} memory usage is above 95% on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/critical-container-memory-usage"
+
+      # High container CPU usage
+      - alert: HighContainerCPUUsage
+        expr: (rate(container_cpu_usage_seconds_total[5m]) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: containers
+          component: cpu
+        annotations:
+          summary: "High container CPU usage on {{ $labels.instance }}"
+          description: "Container {{ $labels.name }} CPU usage is above 80% on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-container-cpu-usage"
+
+      # Container OOMKilled
+      - alert: ContainerOOMKilled
+        expr: increase(container_oom_events_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: containers
+          component: oom
+        annotations:
+          summary: "Container OOMKilled on {{ $labels.instance }}"
+          description: "Container {{ $labels.name }} was OOMKilled on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/container-oomkilled"
+
+  - name: application_alerts
+    rules:
+      # High HTTP error rate
+      - alert: HighHTTPErrorRate
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: application
+          component: http
+        annotations:
+          summary: "High HTTP error rate on {{ $labels.instance }}"
+          description: "HTTP error rate is above 5% for more than 5 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-http-error-rate"
+
+      # Critical HTTP error rate
+      - alert: CriticalHTTPErrorRate
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 10
+        for: 2m
+        labels:
+          severity: critical
+          service: application
+          component: http
+        annotations:
+          summary: "Critical HTTP error rate on {{ $labels.instance }}"
+          description: "HTTP error rate is above 10% for more than 2 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/critical-http-error-rate"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: application
+          component: performance
+        annotations:
+          summary: "High response time on {{ $labels.instance }}"
+          description: "95th percentile response time is above 1 second for more than 5 minutes on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-response-time"
+
+      # Application down
+      - alert: ApplicationDown
+        expr: up{job=~"app.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: application
+          component: availability
+        annotations:
+          summary: "Application down on {{ $labels.instance }}"
+          description: "Application {{ $labels.job }} is down on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/application-down"
+
+  - name: infrastructure_alerts
+    rules:
+      # Grafana down
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: grafana
+          component: server
+        annotations:
+          summary: "Grafana is down"
+          description: "Grafana has been down for more than 1 minute"
+          runbook_url: "https://docs.example.com/runbooks/grafana-down"
+
+      # Loki down
+      - alert: LokiDown
+        expr: up{job="loki"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: loki
+          component: server
+        annotations:
+          summary: "Loki is down"
+          description: "Loki has been down for more than 1 minute"
+          runbook_url: "https://docs.example.com/runbooks/loki-down"
+
+      # Alertmanager down
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: alertmanager
+          component: server
+        annotations:
+          summary: "Alertmanager is down"
+          description: "Alertmanager has been down for more than 1 minute"
+          runbook_url: "https://docs.example.com/runbooks/alertmanager-down"
+
+      # Promtail down
+      - alert: PromtailDown
+        expr: up{job="promtail"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          service: promtail
+          component: agent
+        annotations:
+          summary: "Promtail is down"
+          description: "Promtail has been down for more than 1 minute"
+          runbook_url: "https://docs.example.com/runbooks/promtail-down"
+
+  - name: database_alerts
+    rules:
+      # Database down
+      - alert: DatabaseDown
+        expr: up{job=~"postgres|mysql|redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+          component: availability
+        annotations:
+          summary: "Database down on {{ $labels.instance }}"
+          description: "Database {{ $labels.job }} is down on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/database-down"
+
+      # High database connections
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+          component: connections
+        annotations:
+          summary: "High database connections on {{ $labels.instance }}"
+          description: "Database connections are above 80 on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-database-connections"
+
+      # Slow database queries
+      - alert: SlowDatabaseQueries
+        expr: rate(pg_stat_database_tup_returned[5m]) / rate(pg_stat_database_tup_fetched[5m]) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+          component: performance
+        annotations:
+          summary: "Slow database queries on {{ $labels.instance }}"
+          description: "Database query performance is degraded on {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/slow-database-queries"

@@ -1,6 +1,7 @@
 apiVersion: 1
 
 providers:
+  # Default dashboard provider
   - name: 'default'
     orgId: 1
     folder: ''
@@ -10,3 +11,52 @@ providers:
     allowUiUpdates: true
     options:
       path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true
+
+  # System monitoring dashboards
+  - name: 'system-monitoring'
+    orgId: 1
+    folder: 'System Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/system
+      foldersFromFilesStructure: true
+
+  # Application monitoring dashboards
+  - name: 'application-monitoring'
+    orgId: 1
+    folder: 'Application Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/application
+      foldersFromFilesStructure: true
+
+  # Infrastructure monitoring dashboards
+  - name: 'infrastructure-monitoring'
+    orgId: 1
+    folder: 'Infrastructure'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/infrastructure
+      foldersFromFilesStructure: true
+
+  # Alerting dashboards
+  - name: 'alerting'
+    orgId: 1
+    folder: 'Alerting'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/alerting
+      foldersFromFilesStructure: true

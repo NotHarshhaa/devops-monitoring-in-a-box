@@ -1,65 +1,376 @@
 global:
   resolve_timeout: 5m
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alertmanager@devops-monitoring.local'
+  smtp_auth_username: 'alertmanager@devops-monitoring.local'
+  smtp_auth_password: 'password'
+  smtp_require_tls: true
   slack_api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  opsgenie_api_url: 'https://api.opsgenie.com/v2/alerts'
+  victorops_api_url: 'https://alert.victorops.com/integrations/generic/20131114/alert'
+  webhook_url: 'http://webhook-receiver:5001/webhook'
 
 route:
-  group_by: ['alertname']
+  group_by: ['alertname', 'cluster', 'service']
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 1h
-  receiver: 'web.hook'
+  receiver: 'default'
   routes:
+    # Critical alerts - immediate notification
     - match:
         severity: critical
-      receiver: 'slack.critical'
+      receiver: 'critical'
+      group_wait: 5s
+      group_interval: 5s
       repeat_interval: 30m
+      continue: true
+
+    # Warning alerts - less frequent
     - match:
         severity: warning
-      receiver: 'slack.warning'
+      receiver: 'warning'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+      continue: true
+
+    # System alerts
+    - match:
+        service: system
+      receiver: 'system'
+      group_wait: 10s
+      group_interval: 1m
       repeat_interval: 1h
 
-receivers:
-  - name: 'web.hook'
-    webhook_configs:
-      - url: 'http://127.0.0.1:5001/'
+    # Application alerts
+    - match:
+        service: application
+      receiver: 'application'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
 
-  - name: 'slack.critical'
+    # Database alerts
+    - match:
+        service: database
+      receiver: 'database'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+
+    # Container alerts
+    - match:
+        service: containers
+      receiver: 'containers'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+
+    # Infrastructure alerts
+    - match:
+        service: prometheus
+      receiver: 'infrastructure'
+    - match:
+        service: grafana
+      receiver: 'infrastructure'
+    - match:
+        service: loki
+      receiver: 'infrastructure'
+    - match:
+        service: alertmanager
+      receiver: 'infrastructure'
+
+receivers:
+  # Default receiver
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://webhook-receiver:5001/webhook'
+        send_resolved: true
+        http_config:
+          basic_auth:
+            username: 'webhook'
+            password: 'password'
+
+  # Critical alerts receiver
+  - name: 'critical'
     slack_configs:
       - channel: '#alerts-critical'
-        title: '🚨 Critical Alert'
-        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
+        title: '🚨 CRITICAL ALERT'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          *Service:* {{ .Labels.service }}
+          *Component:* {{ .Labels.component }}
+          *Runbook:* {{ .Annotations.runbook_url }}
+          {{ end }}
         send_resolved: true
         actions:
           - type: button
             text: 'View in Grafana'
-            url: '{{ template "grafana_url" . }}'
+            url: 'http://grafana:3000/d/alerts'
+          - type: button
+            text: 'View in Prometheus'
+            url: 'http://prometheus:9090/alerts'
+        color: 'danger'
+    email_configs:
+      - to: 'admin@devops-monitoring.local'
+        subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Critical Alert</h2>
+          {{ range .Alerts }}
+          <p><strong>Alert:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Instance:</strong> {{ .Labels.instance }}</p>
+          <p><strong>Service:</strong> {{ .Labels.service }}</p>
+          <p><strong>Component:</strong> {{ .Labels.component }}</p>
+          <p><strong>Runbook:</strong> <a href="{{ .Annotations.runbook_url }}">{{ .Annotations.runbook_url }}</a></p>
+          <hr>
+          {{ end }}
+        send_resolved: true
+    pagerduty_configs:
+      - routing_key: 'YOUR_PAGERDUTY_ROUTING_KEY'
+        description: '{{ .GroupLabels.alertname }}'
+        details:
+          summary: '{{ .Annotations.summary }}'
+          description: '{{ .Annotations.description }}'
+          instance: '{{ .Labels.instance }}'
+          service: '{{ .Labels.service }}'
+          component: '{{ .Labels.component }}'
+          runbook_url: '{{ .Annotations.runbook_url }}'
 
-  - name: 'slack.warning'
+  # Warning alerts receiver
+  - name: 'warning'
     slack_configs:
       - channel: '#alerts-warning'
-        title: '⚠️ Warning Alert'
-        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
+        title: '⚠️ WARNING ALERT'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          *Service:* {{ .Labels.service }}
+          *Component:* {{ .Labels.component }}
+          *Runbook:* {{ .Annotations.runbook_url }}
+          {{ end }}
         send_resolved: true
         actions:
           - type: button
             text: 'View in Grafana'
-            url: '{{ template "grafana_url" . }}'
-
-  - name: 'email.admin'
+            url: 'http://grafana:3000/d/alerts'
+        color: 'warning'
     email_configs:
-      - to: 'admin@example.com'
-        from: 'alertmanager@example.com'
-        smarthost: 'localhost:25'
-        subject: '{{ template "email.subject" . }}'
-        html: '{{ template "email.html" . }}'
+      - to: 'team@devops-monitoring.local'
+        subject: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Warning Alert</h2>
+          {{ range .Alerts }}
+          <p><strong>Alert:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Instance:</strong> {{ .Labels.instance }}</p>
+          <p><strong>Service:</strong> {{ .Labels.service }}</p>
+          <p><strong>Component:</strong> {{ .Labels.component }}</p>
+          <p><strong>Runbook:</strong> <a href="{{ .Annotations.runbook_url }}">{{ .Annotations.runbook_url }}</a></p>
+          <hr>
+          {{ end }}
         send_resolved: true
 
+  # System alerts receiver
+  - name: 'system'
+    slack_configs:
+      - channel: '#system-alerts'
+        title: '🖥️ System Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
+        send_resolved: true
+        color: 'good'
+    webhook_configs:
+      - url: 'http://system-monitor:8080/alerts'
+        send_resolved: true
+
+  # Application alerts receiver
+  - name: 'application'
+    slack_configs:
+      - channel: '#app-alerts'
+        title: '📱 Application Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
+        send_resolved: true
+        color: 'good'
+    webhook_configs:
+      - url: 'http://app-monitor:8080/alerts'
+        send_resolved: true
+
+  # Database alerts receiver
+  - name: 'database'
+    slack_configs:
+      - channel: '#database-alerts'
+        title: '🗄️ Database Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
+        send_resolved: true
+        color: 'good'
+    webhook_configs:
+      - url: 'http://db-monitor:8080/alerts'
+        send_resolved: true
+
+  # Container alerts receiver
+  - name: 'containers'
+    slack_configs:
+      - channel: '#container-alerts'
+        title: '🐳 Container Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
+        send_resolved: true
+        color: 'good'
+    webhook_configs:
+      - url: 'http://container-monitor:8080/alerts'
+        send_resolved: true
+
+  # Infrastructure alerts receiver
+  - name: 'infrastructure'
+    slack_configs:
+      - channel: '#infrastructure-alerts'
+        title: '🏗️ Infrastructure Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
+        send_resolved: true
+        color: 'good'
+    webhook_configs:
+      - url: 'http://infra-monitor:8080/alerts'
+        send_resolved: true
+
+  # Email-only receiver for low-priority alerts
+  - name: 'email-only'
+    email_configs:
+      - to: 'monitoring@devops-monitoring.local'
+        subject: 'INFO: {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Information Alert</h2>
+          {{ range .Alerts }}
+          <p><strong>Alert:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Instance:</strong> {{ .Labels.instance }}</p>
+          <p><strong>Service:</strong> {{ .Labels.service }}</p>
+          <hr>
+          {{ end }}
+        send_resolved: true
+
+  # Discord receiver (alternative to Slack)
+  - name: 'discord'
+    webhook_configs:
+      - url: 'https://discord.com/api/webhooks/YOUR_DISCORD_WEBHOOK_URL'
+        send_resolved: true
+        http_config:
+          headers:
+            Content-Type: 'application/json'
+        max_alerts: 10
+
+  # Microsoft Teams receiver
+  - name: 'teams'
+    webhook_configs:
+      - url: 'https://outlook.office.com/webhook/YOUR_TEAMS_WEBHOOK_URL'
+        send_resolved: true
+        http_config:
+          headers:
+            Content-Type: 'application/json'
+
+  # OpsGenie receiver
+  - name: 'opsgenie'
+    opsgenie_configs:
+      - api_key: 'YOUR_OPSGENIE_API_KEY'
+        description: '{{ .GroupLabels.alertname }}'
+        details:
+          summary: '{{ .Annotations.summary }}'
+          description: '{{ .Annotations.description }}'
+          instance: '{{ .Labels.instance }}'
+          service: '{{ .Labels.service }}'
+          component: '{{ .Labels.component }}'
+        tags: ['{{ .Labels.service }}', '{{ .Labels.component }}']
+        priority: 'P{{ if eq .Labels.severity "critical" }}1{{ else if eq .Labels.severity "warning" }}2{{ else }}3{{ end }}'
+
+  # VictorOps receiver
+  - name: 'victorops'
+    victorops_configs:
+      - api_key: 'YOUR_VICTOROPS_API_KEY'
+        routing_key: 'YOUR_VICTOROPS_ROUTING_KEY'
+        entity_display_name: '{{ .GroupLabels.alertname }}'
+        state_message: '{{ .Annotations.summary }}'
+        monitoring_tool: 'Prometheus'
+        entity_id: '{{ .Labels.instance }}'
+        message_type: '{{ if eq .Status "firing" }}CRITICAL{{ else }}RECOVERY{{ end }}'
+
 templates:
-  - '/etc/alertmanager/template/*.tmpl'
+  - '/etc/alertmanager/templates/*.tmpl'
 
 inhibit_rules:
+  # Inhibit warning alerts when critical alerts are firing
   - source_match:
       severity: 'critical'
     target_match:
       severity: 'warning'
-    equal: ['alertname', 'dev', 'instance']
+    equal: ['alertname', 'instance', 'service']
+
+  # Inhibit container alerts when node is down
+  - source_match:
+      alertname: 'NodeDown'
+    target_match:
+      service: 'containers'
+    equal: ['instance']
+
+  # Inhibit application alerts when infrastructure is down
+  - source_match:
+      service: 'prometheus'
+      severity: 'critical'
+    target_match:
+      service: 'application'
+    equal: ['instance']
+
+  # Inhibit database alerts when node is down
+  - source_match:
+      alertname: 'NodeDown'
+    target_match:
+      service: 'database'
+    equal: ['instance']
+
+  # Inhibit high-level alerts when critical infrastructure is down
+  - source_match:
+      alertname: 'PrometheusDown'
+    target_match_re:
+      alertname: 'High.*|Critical.*'
+    equal: ['instance']
+
+# Time intervals for different alert types
+time_intervals:
+  - name: 'business_hours'
+    time_intervals:
+      - times:
+          - start_time: '09:00'
+            end_time: '17:00'
+        weekdays: ['monday:friday']
+        months: ['january:december']
+        years: ['2024:2030']
+
+  - name: 'maintenance_window'
+    time_intervals:
+      - times:
+          - start_time: '02:00'
+            end_time: '04:00'
+        weekdays: ['sunday']
+        months: ['january:december']
+        years: ['2024:2030']
+
+  - name: 'weekend'
+    time_intervals:
+      - weekdays: ['saturday', 'sunday']
+        months: ['january:december']
+        years: ['2024:2030']
+
+# Mute time intervals
+mute_time_intervals:
+  - name: 'maintenance'
+    time_intervals:
+      - times:
+          - start_time: '02:00'
+            end_time: '04:00'
+        weekdays: ['sunday']
+        months: ['january:december']
+        years: ['2024:2030']

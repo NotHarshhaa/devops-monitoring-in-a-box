@@ -1,6 +1,7 @@
 apiVersion: 1
 
 datasources:
+  # Prometheus - Primary metrics datasource
   - name: Prometheus
     type: prometheus
     access: proxy
@@ -11,7 +12,16 @@ datasources:
       timeInterval: "15s"
       queryTimeout: "60s"
       httpMethod: "POST"
+      manageAlerts: true
+      alertmanagerUid: "alertmanager"
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: "jaeger"
+    secureJsonData:
+      httpHeaderValue1: "Bearer ${PROMETHEUS_TOKEN}"
+    version: 1
 
+  # Loki - Log aggregation datasource
   - name: Loki
     type: loki
     access: proxy
@@ -19,3 +29,48 @@ datasources:
     editable: true
     jsonData:
       maxLines: 1000
+      derivedFields:
+        - datasourceUid: "prometheus"
+          matcherRegex: "trace_id=(\\w+)"
+          name: "TraceID"
+          url: "$${__value.raw}"
+    version: 1
+
+  # Alertmanager - Alert management datasource
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://alertmanager:9093
+    editable: true
+    jsonData:
+      implementation: "prometheus"
+    version: 1
+
+  # Jaeger - Distributed tracing (optional)
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    editable: true
+    jsonData:
+      tracesToLogs:
+        datasourceUid: "loki"
+        tags: ["job", "instance", "pod", "namespace"]
+        mappedTags:
+          - key: "service.name"
+            value: "service"
+        mapTagNamesEnabled: false
+        spanStartTimeShift: "-1h"
+        spanEndTimeShift: "1h"
+        filterByTraceID: false
+        filterBySpanID: false
+    version: 1
+
+  # TestData - For testing and demos
+  - name: TestData
+    type: testdata
+    access: proxy
+    editable: true
+    jsonData:
+      scenario: "random_walk"
+    version: 1
