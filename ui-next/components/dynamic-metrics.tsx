@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Loader2, AlertCircle, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ClientOnly } from "./client-only";
 
 interface DynamicMetricsProps {
   className?: string;
@@ -31,41 +32,73 @@ export function DynamicMetrics({
   } = useMetricsConfig();
 
   if (isLoading) {
-    return (
+      return (
+    <ClientOnly fallback={
       <div className={cn("space-y-6", className)}>
         <div className="flex items-center justify-center h-32">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
-    );
+    }>
+      <div className={cn("space-y-6", className)}>
+        <div className="flex items-center justify-center h-32">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    </ClientOnly>
+  );
   }
 
   if (error) {
     return (
-      <div className={cn("space-y-6", className)}>
-        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-          <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-6">
-            <AlertCircle className="h-6 w-6" />
-            <span>Failed to load metrics configuration: {error}</span>
-          </CardContent>
-        </Card>
-      </div>
+      <ClientOnly fallback={
+        <div className={cn("space-y-6", className)}>
+          <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
+            <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-6">
+              <AlertCircle className="h-6 w-6" />
+              <span>Failed to load metrics configuration</span>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+        <div className={cn("space-y-6", className)}>
+          <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
+            <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-6">
+              <AlertCircle className="h-6 w-6" />
+              <span>Failed to load metrics configuration: {error}</span>
+            </CardContent>
+          </Card>
+        </div>
+      </ClientOnly>
     );
   }
 
   if (!metricsConfig || metricsConfig.length === 0) {
     return (
-      <div className={cn("space-y-6", className)}>
-        <Card>
-          <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
-            <div className="text-center">
-              <Settings className="h-8 w-8 mx-auto mb-2" />
-              <p>No metrics configured</p>
-              <p className="text-sm">Add metrics in the configuration to see them here</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <ClientOnly fallback={
+        <div className={cn("space-y-6", className)}>
+          <Card>
+            <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
+              <div className="text-center">
+                <Settings className="h-8 w-8 mx-auto mb-2" />
+                <p>Loading metrics configuration...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+        <div className={cn("space-y-6", className)}>
+          <Card>
+            <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
+              <div className="text-center">
+                <Settings className="h-8 w-8 mx-auto mb-2" />
+                <p>No metrics configured</p>
+                <p className="text-sm">Add metrics in the configuration to see them here</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </ClientOnly>
     );
   }
 
@@ -171,38 +204,54 @@ export function DynamicMetrics({
 
   if (groupBy && Object.keys(metricsByGroup).length > 0) {
     return (
-      <motion.div 
-        className={cn("space-y-8", className)}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {Object.entries(metricsByGroup).map(([groupName, metrics]) => 
-          renderGroup(groupName, metrics)
-        )}
-      </motion.div>
+      <ClientOnly fallback={
+        <div className={cn("space-y-8", className)}>
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        </div>
+      }>
+        <motion.div 
+          className={cn("space-y-8", className)}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {Object.entries(metricsByGroup).map(([groupName, metrics]) => 
+            renderGroup(groupName, metrics)
+          )}
+        </motion.div>
+      </ClientOnly>
     );
   }
 
   return (
-    <motion.div 
-      className={cn("space-y-6", className)}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {showCards && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {metricsConfig.map((metric, index) => renderMetricCard(metric, index))}
+    <ClientOnly fallback={
+      <div className={cn("space-y-6", className)}>
+        <div className="flex items-center justify-center h-32">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      )}
-      
-      {showCharts && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-          {metricsConfig.map((metric, index) => renderMetricChart(metric, index))}
-        </div>
-      )}
-    </motion.div>
+      </div>
+    }>
+      <motion.div 
+        className={cn("space-y-6", className)}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {showCards && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {metricsConfig.map((metric, index) => renderMetricCard(metric, index))}
+          </div>
+        )}
+        
+        {showCharts && (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+            {metricsConfig.map((metric, index) => renderMetricChart(metric, index))}
+          </div>
+        )}
+      </motion.div>
+    </ClientOnly>
   );
 }
 
@@ -258,22 +307,39 @@ export function MetricsConfigSummary() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center h-20">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <ClientOnly fallback={
+        <Card>
+          <CardContent className="flex items-center justify-center h-20">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      }>
+        <Card>
+          <CardContent className="flex items-center justify-center h-20">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </ClientOnly>
     );
   }
 
   if (error) {
     return (
-      <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-        <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-4">
-          <AlertCircle className="h-5 w-5" />
-          <span className="text-sm">Configuration error: {error}</span>
-        </CardContent>
-      </Card>
+      <ClientOnly fallback={
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
+          <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-4">
+            <AlertCircle className="h-5 w-5" />
+            <span className="text-sm">Configuration error</span>
+          </CardContent>
+        </Card>
+      }>
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
+          <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-4">
+            <AlertCircle className="h-5 w-5" />
+            <span className="text-sm">Configuration error: {error}</span>
+          </CardContent>
+        </Card>
+      </ClientOnly>
     );
   }
 
@@ -282,51 +348,70 @@ export function MetricsConfigSummary() {
   const groups = Object.keys(metricsByGroup);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          Metrics Configuration
-        </CardTitle>
-        <CardDescription>
-          Current metrics configuration summary
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{totalMetrics}</div>
-            <div className="text-sm text-muted-foreground">Total Metrics</div>
+    <ClientOnly fallback={
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Metrics Configuration
+          </CardTitle>
+          <CardDescription>
+            Loading configuration summary...
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-20">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{enabledMetrics}</div>
-            <div className="text-sm text-muted-foreground">Enabled</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{groups.length}</div>
-            <div className="text-sm text-muted-foreground">Groups</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {metricsConfig.filter(m => m.chart).length}
+        </CardContent>
+      </Card>
+    }>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Metrics Configuration
+          </CardTitle>
+          <CardDescription>
+            Current metrics configuration summary
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold">{totalMetrics}</div>
+              <div className="text-sm text-muted-foreground">Total Metrics</div>
             </div>
-            <div className="text-sm text-muted-foreground">With Charts</div>
-          </div>
-        </div>
-        
-        {groups.length > 0 && (
-          <div className="mt-4">
-            <div className="text-sm font-medium mb-2">Groups:</div>
-            <div className="flex flex-wrap gap-2">
-              {groups.map(group => (
-                <Badge key={group} variant="outline">
-                  {group} ({metricsByGroup[group].length})
-                </Badge>
-              ))}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{enabledMetrics}</div>
+              <div className="text-sm text-muted-foreground">Enabled</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{groups.length}</div>
+              <div className="text-sm text-muted-foreground">Groups</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {metricsConfig.filter(m => m.chart).length}
+              </div>
+              <div className="text-sm text-muted-foreground">With Charts</div>
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          
+          {groups.length > 0 && (
+            <div className="mt-4">
+              <div className="text-sm font-medium mb-2">Groups:</div>
+              <div className="flex flex-wrap gap-2">
+                {groups.map(group => (
+                  <Badge key={group} variant="outline">
+                    {group} ({metricsByGroup[group].length})
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </ClientOnly>
   );
 }

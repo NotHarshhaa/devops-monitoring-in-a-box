@@ -5,22 +5,50 @@ import { MonitoringConfig, ConfigValidationResult, ConfigUpdate } from '../confi
 import { configManager } from '../config/manager';
 
 export function useConfig() {
-  const [config, setConfig] = useState<MonitoringConfig>(configManager.getConfig());
+  const [config, setConfig] = useState<MonitoringConfig>(() => {
+    // Only access configManager on client side
+    if (typeof window !== 'undefined') {
+      return configManager.getConfig();
+    }
+    // Return default config for SSR
+    return {
+      dashboard: { refresh_interval: '15s' },
+      metrics: [],
+      logs: { default_query: '{job="varlogs"}', limit: 100 },
+      alerts: { severity_levels: ['critical', 'warning'] },
+      version: '1.0.0',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   // Subscribe to configuration changes
   useEffect(() => {
-    const unsubscribe = configManager.addListener((newConfig) => {
-      setConfig(newConfig);
-      setError(null);
-    });
+    setIsClient(true);
+    
+    if (typeof window !== 'undefined') {
+      const unsubscribe = configManager.addListener((newConfig) => {
+        setConfig(newConfig);
+        setError(null);
+      });
 
-    return unsubscribe;
+      return unsubscribe;
+    }
   }, []);
 
   // Update configuration
   const updateConfig = useCallback(async (update: ConfigUpdate): Promise<ConfigValidationResult> => {
+    if (!isClient) {
+      return {
+        valid: false,
+        errors: ['Configuration updates are only available on the client side'],
+        warnings: [],
+      };
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -43,10 +71,18 @@ export function useConfig() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isClient]);
 
   // Load configuration from JSON
   const loadFromJson = useCallback(async (jsonString: string): Promise<ConfigValidationResult> => {
+    if (!isClient) {
+      return {
+        valid: false,
+        errors: ['Configuration loading is only available on the client side'],
+        warnings: [],
+      };
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -69,10 +105,18 @@ export function useConfig() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isClient]);
 
   // Load configuration from object
   const loadFromObject = useCallback(async (configObject: any): Promise<ConfigValidationResult> => {
+    if (!isClient) {
+      return {
+        valid: false,
+        errors: ['Configuration loading is only available on the client side'],
+        warnings: [],
+      };
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -95,69 +139,122 @@ export function useConfig() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isClient]);
 
   // Export configuration
   const exportConfig = useCallback(() => {
+    if (!isClient) {
+      return JSON.stringify({
+        dashboard: { refresh_interval: '15s' },
+        metrics: [],
+        logs: { default_query: '{job="varlogs"}', limit: 100 },
+        alerts: { severity_levels: ['critical', 'warning'] },
+        version: '1.0.0',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, null, 2);
+    }
     return configManager.exportToJson();
-  }, []);
+  }, [isClient]);
 
   // Reset to default
   const resetToDefault = useCallback(() => {
-    configManager.resetToDefault();
-  }, []);
+    if (isClient) {
+      configManager.resetToDefault();
+    }
+  }, [isClient]);
 
   // Get specific configuration sections
   const getDashboardConfig = useCallback(() => {
+    if (!isClient) {
+      return { refresh_interval: '15s' };
+    }
     return configManager.getDashboardConfig();
-  }, []);
+  }, [isClient]);
 
   const getMetricsConfig = useCallback(() => {
+    if (!isClient) {
+      return [];
+    }
     return configManager.getMetricsConfig();
-  }, []);
+  }, [isClient]);
 
   const getLogsConfig = useCallback(() => {
+    if (!isClient) {
+      return { default_query: '{job="varlogs"}', limit: 100 };
+    }
     return configManager.getLogsConfig();
-  }, []);
+  }, [isClient]);
 
   const getAlertsConfig = useCallback(() => {
+    if (!isClient) {
+      return { severity_levels: ['critical', 'warning'] };
+    }
     return configManager.getAlertsConfig();
-  }, []);
+  }, [isClient]);
 
   const getServicesConfig = useCallback(() => {
+    if (!isClient) {
+      return {};
+    }
     return configManager.getServicesConfig();
-  }, []);
+  }, [isClient]);
 
   // Get refresh interval
   const getRefreshInterval = useCallback(() => {
+    if (!isClient) {
+      return 15000; // 15 seconds
+    }
     return configManager.getRefreshInterval();
-  }, []);
+  }, [isClient]);
 
   // Get metrics by group
   const getMetricsByGroup = useCallback(() => {
+    if (!isClient) {
+      return {};
+    }
     return configManager.getMetricsByGroup();
-  }, []);
+  }, [isClient]);
 
   // Get enabled services
   const getEnabledServices = useCallback(() => {
+    if (!isClient) {
+      return [];
+    }
     return configManager.getEnabledServices();
-  }, []);
+  }, [isClient]);
 
   // Get configuration summary
   const getConfigSummary = useCallback(() => {
+    if (!isClient) {
+      return {
+        version: '1.0.0',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        dashboard: { title: 'DevOps Monitor', refresh_interval: '15s' },
+        metrics: { total: 0, enabled: 0, groups: 0 },
+        services: { total: 0, enabled: 0 },
+        logs: { default_query: '{job="varlogs"}', limit: 100 },
+        alerts: { severity_levels: 2 },
+      };
+    }
     return configManager.getConfigSummary();
-  }, []);
+  }, [isClient]);
 
   // Validate current configuration
   const validateConfig = useCallback(() => {
+    if (!isClient) {
+      return { valid: true, errors: [], warnings: [] };
+    }
     return configManager.validateCurrentConfig();
-  }, []);
+  }, [isClient]);
 
   return {
     // State
     config,
     isLoading,
     error,
+    isClient,
     
     // Actions
     updateConfig,

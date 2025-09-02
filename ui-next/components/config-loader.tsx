@@ -20,6 +20,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ClientOnly } from "./client-only";
 
 interface ConfigLoaderProps {
   className?: string;
@@ -130,9 +131,18 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
   const configSummary = getConfigSummary();
 
   return (
-    <div className={cn("space-y-6", className)}>
-      {/* Configuration Summary */}
-      <Card>
+    <ClientOnly fallback={
+      <div className={cn("space-y-6", className)}>
+        <Card>
+          <CardContent className="flex items-center justify-center h-32">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <div className={cn("space-y-6", className)}>
+        {/* Configuration Summary */}
+        <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -383,6 +393,7 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
           </Card>
         </motion.div>
       )}
-    </div>
+      </div>
+    </ClientOnly>
   );
 }
