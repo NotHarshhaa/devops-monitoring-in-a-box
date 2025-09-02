@@ -9,6 +9,17 @@ export const config = {
     refreshInterval: 5000,
   },
   
+  // Loki API Configuration
+  loki: {
+    baseURL: process.env.NEXT_PUBLIC_LOKI_URL || 'http://localhost:3100',
+    // Default time range for logs (in hours)
+    defaultTimeRange: 1,
+    // Auto-refresh interval in milliseconds
+    refreshInterval: 10000,
+    // Maximum number of log entries to fetch
+    maxEntries: 1000,
+  },
+  
   // UI Configuration
   ui: {
     // Chart heights
