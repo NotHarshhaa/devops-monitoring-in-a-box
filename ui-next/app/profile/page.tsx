@@ -90,8 +90,18 @@ export default function ProfilePage() {
   }
 
   if (!session?.user) {
-    router.push("/auth/signin")
-    return null
+    // Use useEffect to handle client-side navigation
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+          <p className="text-muted-foreground mb-4">Please sign in to access your profile.</p>
+          <Button onClick={() => router.push("/auth/signin")}>
+            Sign In
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
