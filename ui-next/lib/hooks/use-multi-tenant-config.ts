@@ -7,7 +7,7 @@ import { multiTenantConfigManager } from '../config/multi-tenant-manager';
 
 export function useMultiTenantConfig() {
   const { data: session } = useSession();
-  const userId = session?.user?.id || 'anonymous';
+  const userId = (session?.user as any)?.id || 'anonymous';
   
   const [config, setConfig] = useState<MonitoringConfig>(() => {
     // Only access configManager on client side
@@ -310,20 +310,20 @@ export function useMultiTenantMetricsConfig() {
 
   const addMetric = useCallback((metric: any) => {
     const currentMetrics = getMetricsConfig();
-    return updateConfig({ metrics: [...currentMetrics, metric] });
+    return updateConfig({ type: 'metrics', data: { metrics: [...currentMetrics, metric] } });
   }, [getMetricsConfig, updateConfig]);
 
   const updateMetric = useCallback((index: number, updatedMetric: any) => {
     const currentMetrics = getMetricsConfig();
     const newMetrics = [...currentMetrics];
     newMetrics[index] = updatedMetric;
-    return updateConfig({ metrics: newMetrics });
+    return updateConfig({ type: 'metrics', data: { metrics: newMetrics } });
   }, [getMetricsConfig, updateConfig]);
 
   const deleteMetric = useCallback((index: number) => {
     const currentMetrics = getMetricsConfig();
     const newMetrics = currentMetrics.filter((_, i) => i !== index);
-    return updateConfig({ metrics: newMetrics });
+    return updateConfig({ type: 'metrics', data: { metrics: newMetrics } });
   }, [getMetricsConfig, updateConfig]);
 
   return { 

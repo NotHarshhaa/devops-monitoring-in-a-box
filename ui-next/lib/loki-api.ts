@@ -144,7 +144,7 @@ export class LokiAPI {
       ]);
       
       // Combine and deduplicate
-      const allValues = [...new Set([...namespaceValues, ...containerValues])];
+      const allValues = Array.from(new Set([...namespaceValues, ...containerValues]));
       return allValues;
     } catch (error) {
       console.warn('Failed to fetch namespaces:', error);

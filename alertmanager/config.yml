@@ -86,12 +86,8 @@ receivers:
   # Default receiver
   - name: 'default'
     webhook_configs:
-      - url: 'http://notification-service:5001/webhook'
+      - url: 'http://devops-monitor-ui:3000/api/notifications/webhook'
         send_resolved: true
-        http_config:
-          basic_auth:
-            username: 'webhook'
-            password: 'password'
 
   # Critical alerts receiver
   - name: 'critical'
@@ -187,7 +183,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://notification-service:5001/webhook'
+      - url: 'http://devops-monitor-ui:3000/api/notifications/webhook'
         send_resolved: true
 
   # Application alerts receiver
@@ -199,7 +195,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://notification-service:5001/webhook'
+      - url: 'http://devops-monitor-ui:3000/api/notifications/webhook'
         send_resolved: true
 
   # Database alerts receiver
@@ -211,7 +207,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://notification-service:5001/webhook'
+      - url: 'http://devops-monitor-ui:3000/api/notifications/webhook'
         send_resolved: true
 
   # Container alerts receiver
@@ -223,7 +219,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://notification-service:5001/webhook'
+      - url: 'http://devops-monitor-ui:3000/api/notifications/webhook'
         send_resolved: true
 
   # Infrastructure alerts receiver
@@ -235,7 +231,7 @@ receivers:
         send_resolved: true
         color: 'good'
     webhook_configs:
-      - url: 'http://notification-service:5001/webhook'
+      - url: 'http://devops-monitor-ui:3000/api/notifications/webhook'
         send_resolved: true
 
   # Email-only receiver for low-priority alerts

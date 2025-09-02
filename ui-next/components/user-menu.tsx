@@ -104,12 +104,12 @@ export function UserMenu() {
                     {session.user.email}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    {getRoleIcon(session.user.role)}
+                    {getRoleIcon((session.user as any).role)}
                     <Badge 
                       variant="secondary" 
-                      className={`text-xs ${getRoleColor(session.user.role)}`}
+                      className={`text-xs ${getRoleColor((session.user as any).role)}`}
                     >
-                      {session.user.role}
+                      {(session.user as any).role}
                     </Badge>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ export function UserMenu() {
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
-              {session.user.role === "ADMIN" && (
+              {(session.user as any).role === "ADMIN" && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push("/admin")}>

@@ -101,7 +101,7 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(alert.labels).map(([key, value]) => (
                   <Badge key={key} variant="secondary">
-                    {key}={value}
+                    {key}={String(value)}
                   </Badge>
                 ))}
               </div>
@@ -123,7 +123,7 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
                 <div className="space-y-1">
                   {Object.entries(alert.annotations).map(([key, value]) => (
                     <div key={key} className="text-sm">
-                      <span className="font-medium">{key}:</span> {value}
+                      <span className="font-medium">{key}:</span> {String(value)}
                     </div>
                   ))}
                 </div>

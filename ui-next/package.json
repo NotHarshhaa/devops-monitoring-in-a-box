@@ -30,6 +30,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.6.5",
     "bcryptjs": "^3.0.2",
+    "nodemailer": "^6.9.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
     "framer-motion": "^10.18.0",
@@ -47,6 +48,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.8",
+    "@types/nodemailer": "^6.4.14",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.16",

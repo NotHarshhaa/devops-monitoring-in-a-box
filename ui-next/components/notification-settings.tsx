@@ -90,13 +90,13 @@ export function NotificationSettings({ config, onConfigChange }: NotificationSet
     onConfigChange?.(newConfig)
   }
 
-  const handleChannelChange = (channel: keyof NotificationsConfig['channels'], updates: Partial<NotificationChannelConfig>) => {
+  const handleChannelChange = (channel: keyof NonNullable<NotificationsConfig['channels']>, updates: Partial<NotificationChannelConfig>) => {
     const newConfig = {
       ...notificationsConfig,
       channels: {
         ...notificationsConfig.channels,
         [channel]: {
-          ...notificationsConfig.channels?.[channel],
+          ...(notificationsConfig.channels?.[channel] || {}),
           ...updates,
         },
       },
@@ -143,7 +143,7 @@ export function NotificationSettings({ config, onConfigChange }: NotificationSet
   const testNotification = async (channel: string) => {
     setIsLoading(true)
     try {
-      const response = await fetch(`http://localhost:5001/test/${channel}`, {
+      const response = await fetch(`/api/notifications/test/${channel}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export function NotificationSettings({ config, onConfigChange }: NotificationSet
   const saveConfiguration = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('http://localhost:5001/config', {
+      const response = await fetch('/api/notifications', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

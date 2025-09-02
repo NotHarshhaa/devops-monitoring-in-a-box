@@ -144,33 +144,13 @@ services:
       - grafana
       - loki
 
-  # Notification Service - Handles Slack, Teams, Discord, Email, and Webhook notifications
-  notification-service:
-    build:
-      context: ./notification-service
-      dockerfile: Dockerfile
-    container_name: notification-service
-    ports:
-      - "5001:5001"
-    volumes:
-      - ./config.yaml:/app/config.yaml:ro
-      - ./config.json:/app/config.json:ro
-      - notification_logs:/app/logs
-    environment:
-      - NODE_ENV=production
-      - PORT=5001
-    restart: unless-stopped
-    networks:
-      - monitoring
-    depends_on:
-      - alertmanager
+
 
 volumes:
   prometheus_data:
   grafana_data:
   loki_data:
   alertmanager_data:
-  notification_logs:
 
 networks:
   monitoring:

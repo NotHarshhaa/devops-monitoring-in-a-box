@@ -131,9 +131,9 @@ export default function ProfilePage() {
             <CardTitle className="text-xl">{session.user.name || "User"}</CardTitle>
             <CardDescription>{session.user.email}</CardDescription>
             <div className="flex justify-center mt-2">
-              <Badge className={getRoleColor(session.user.role || "VIEWER")}>
-                {getRoleIcon(session.user.role || "VIEWER")}
-                <span className="ml-1">{session.user.role || "VIEWER"}</span>
+              <Badge className={getRoleColor((session.user as any).role || "VIEWER")}>
+                {getRoleIcon((session.user as any).role || "VIEWER")}
+                <span className="ml-1">{(session.user as any).role || "VIEWER"}</span>
               </Badge>
             </div>
           </CardHeader>

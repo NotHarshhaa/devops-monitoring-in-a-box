@@ -138,7 +138,7 @@ export class MultiTenantConfigManager {
    */
   getRefreshInterval(userId: string): number {
     const dashboardConfig = this.getDashboardConfig(userId);
-    return ConfigParser.parseTimeInterval(dashboardConfig?.refresh_interval) || 15000;
+    return ConfigParser.parseRefreshInterval(dashboardConfig?.refresh_interval || '15s');
   }
 
   /**
@@ -161,7 +161,15 @@ export class MultiTenantConfigManager {
    */
   getEnabledServices(userId: string): any[] {
     const servicesConfig = this.getServicesConfig(userId);
-    return servicesConfig?.health_checks?.filter(service => service.enabled !== false) || [];
+    if (!servicesConfig) return [];
+    
+    const services = [];
+    if (servicesConfig.prometheus?.enabled) services.push({ name: 'prometheus', ...servicesConfig.prometheus });
+    if (servicesConfig.grafana?.enabled) services.push({ name: 'grafana', ...servicesConfig.grafana });
+    if (servicesConfig.loki?.enabled) services.push({ name: 'loki', ...servicesConfig.loki });
+    if (servicesConfig.alertmanager?.enabled) services.push({ name: 'alertmanager', ...servicesConfig.alertmanager });
+    
+    return services;
   }
 
   /**
@@ -236,24 +244,28 @@ export class MultiTenantConfigManager {
   private applyUpdate(config: MonitoringConfig, update: ConfigUpdate): MonitoringConfig {
     const newConfig = { ...config };
 
-    if (update.dashboard) {
-      newConfig.dashboard = { ...config.dashboard, ...update.dashboard };
+    if (update.data.dashboard) {
+      newConfig.dashboard = { ...config.dashboard, ...update.data.dashboard };
     }
 
-    if (update.metrics) {
-      newConfig.metrics = update.metrics;
+    if (update.data.metrics) {
+      newConfig.metrics = update.data.metrics;
     }
 
-    if (update.logs) {
-      newConfig.logs = { ...config.logs, ...update.logs };
+    if (update.data.logs) {
+      newConfig.logs = { ...config.logs, ...update.data.logs };
     }
 
-    if (update.alerts) {
-      newConfig.alerts = { ...config.alerts, ...update.alerts };
+    if (update.data.alerts) {
+      newConfig.alerts = { ...config.alerts, ...update.data.alerts };
     }
 
-    if (update.services) {
-      newConfig.services = { ...config.services, ...update.services };
+    if (update.data.services) {
+      newConfig.services = { ...config.services, ...update.data.services };
+    }
+
+    if (update.data.notifications) {
+      newConfig.notifications = { ...config.notifications, ...update.data.notifications };
     }
 
     newConfig.updated_at = new Date().toISOString();

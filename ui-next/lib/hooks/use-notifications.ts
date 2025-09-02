@@ -22,7 +22,7 @@ export function useNotifications() {
   const notificationService: NotificationService = {
     sendNotification: async (channel: string, message: any, severity = 'info', metadata = {}) => {
       try {
-        const response = await fetch('http://localhost:5001/notify', {
+        const response = await fetch('/api/notifications/send', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export function useNotifications() {
 
     testNotification: async (channel: string) => {
       try {
-        const response = await fetch(`http://localhost:5001/test/${channel}`, {
+        const response = await fetch(`/api/notifications/test/${channel}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export function useNotifications() {
 
     getConfiguration: async () => {
       try {
-        const response = await fetch('http://localhost:5001/config')
+        const response = await fetch('/api/notifications')
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
@@ -92,7 +92,7 @@ export function useNotifications() {
 
     updateConfiguration: async (newConfig: NotificationsConfig) => {
       try {
-        const response = await fetch('http://localhost:5001/config', {
+        const response = await fetch('/api/notifications', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

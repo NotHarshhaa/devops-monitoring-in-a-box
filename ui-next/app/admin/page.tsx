@@ -70,7 +70,7 @@ export default function AdminPage() {
 
   // Redirect if not admin
   useEffect(() => {
-    if (session?.user?.role !== "ADMIN") {
+    if (session?.user && (session.user as any).role !== "ADMIN") {
       router.push("/dashboard")
     }
   }, [session, router])
@@ -107,7 +107,7 @@ export default function AdminPage() {
       : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
   }
 
-  if (session?.user?.role !== "ADMIN") {
+  if (session?.user && (session.user as any).role !== "ADMIN") {
     return (
       <div className="flex items-center justify-center h-64">
         <Card className="w-96">
