@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -29,6 +29,7 @@
     "@tanstack/react-query": "^5.17.19",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/pg": "^8.10.9",
     "axios": "^1.6.5",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
@@ -40,6 +41,7 @@
     "next-auth": "^4.24.11",
     "next-themes": "^0.2.1",
     "nodemailer": "^6.9.7",
+    "pg": "^8.11.3",
     "prisma": "^6.15.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

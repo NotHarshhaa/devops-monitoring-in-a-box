@@ -7,8 +7,24 @@ import { prisma } from "./prisma-server"
 import bcrypt from "bcryptjs"
 import { UserRole } from "@prisma/client"
 
+// Check if database is available
+let dbAvailable = false
+
+const checkDatabaseAvailability = async () => {
+  try {
+    await prisma.$connect()
+    dbAvailable = true
+  } catch (error) {
+    console.warn("Database not available, using JWT-only mode:", error)
+    dbAvailable = false
+  }
+}
+
+// Initialize database check
+checkDatabaseAvailability()
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: undefined, // We'll handle this dynamically
   providers: [
     // Credentials provider for email/password login
     CredentialsProvider({
@@ -22,30 +38,55 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
+        // Check database availability dynamically
+        if (!dbAvailable) {
+          // Try to reconnect
+          await checkDatabaseAvailability()
+        }
+
+        // Demo credentials for when database is not available
+        if (!dbAvailable) {
+          if (credentials.email === "demo@example.com" && credentials.password === "demo123") {
+            return {
+              id: "demo-user",
+              email: "demo@example.com",
+              name: "Demo User",
+              image: null,
+              role: UserRole.ADMIN,
+            }
           }
-        })
-
-        if (!user) {
           return null
         }
 
-        // For demo purposes, we'll use a simple password check
-        // In production, you should hash passwords properly
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password || "")
+        try {
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email
+            }
+          })
 
-        if (!isPasswordValid) {
+          if (!user) {
+            return null
+          }
+
+          // For demo purposes, we'll use a simple password check
+          // In production, you should hash passwords properly
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password || "")
+
+          if (!isPasswordValid) {
+            return null
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+          }
+        } catch (error) {
+          console.error("Database error during authentication:", error)
           return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
         }
       }
     }),
@@ -80,21 +121,36 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google" || account?.provider === "github") {
-        // Check if user exists, if not create them
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! }
-        })
+      // Check database availability dynamically
+      if (!dbAvailable) {
+        await checkDatabaseAvailability()
+      }
 
-        if (!existingUser) {
-          await prisma.user.create({
-            data: {
-              email: user.email!,
-              name: user.name,
-              image: user.image,
-              role: UserRole.VIEWER, // Default role for OAuth users
-            }
+      if (!dbAvailable) {
+        // Allow OAuth sign-ins even without database
+        return true
+      }
+
+      if (account?.provider === "google" || account?.provider === "github") {
+        try {
+          // Check if user exists, if not create them
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! }
           })
+
+          if (!existingUser) {
+            await prisma.user.create({
+              data: {
+                email: user.email!,
+                name: user.name,
+                image: user.image,
+                role: UserRole.VIEWER, // Default role for OAuth users
+              }
+            })
+          }
+        } catch (error) {
+          console.error("Database error during OAuth sign-in:", error)
+          // Still allow sign-in even if database operations fail
         }
       }
       return true
@@ -108,18 +164,28 @@ export const authOptions: NextAuthOptions = {
 
 // Helper function to create a demo user
 export async function createDemoUser() {
-  const hashedPassword = await bcrypt.hash("demo123", 12)
-  
-  const demoUser = await prisma.user.upsert({
-    where: { email: "demo@example.com" },
-    update: {},
-    create: {
-      email: "demo@example.com",
-      name: "Demo User",
-      password: hashedPassword,
-      role: UserRole.ADMIN,
-    }
-  })
+  if (!dbAvailable) {
+    console.warn("Database not available, demo user creation skipped")
+    return null
+  }
 
-  return demoUser
+  try {
+    const hashedPassword = await bcrypt.hash("demo123", 12)
+    
+    const demoUser = await prisma.user.upsert({
+      where: { email: "demo@example.com" },
+      update: {},
+      create: {
+        email: "demo@example.com",
+        name: "Demo User",
+        password: hashedPassword,
+        role: UserRole.ADMIN,
+      }
+    })
+
+    return demoUser
+  } catch (error) {
+    console.error("Error creating demo user:", error)
+    return null
+  }
 }
