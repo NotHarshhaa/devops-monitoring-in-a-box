@@ -26,9 +26,9 @@ import {
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
+
 import { DynamicMetrics, MetricsConfigSummary } from "@/components/dynamic-metrics"
-import { useDashboardConfig } from "@/lib/hooks/use-config"
+import { useMultiTenantDashboardConfig } from "@/lib/hooks/use-multi-tenant-config"
 
 // Mock data - in real app, this would come from React Query API calls
 const systemMetrics = {
@@ -128,7 +128,7 @@ function getSeverityColor(severity: string) {
 }
 
 export default function DashboardPage() {
-  const { dashboardConfig, isLoading, error } = useDashboardConfig();
+  const { dashboardConfig, isLoading, error } = useMultiTenantDashboardConfig();
 
   return (
     <div className="space-y-6">
@@ -147,14 +147,6 @@ export default function DashboardPage() {
             {dashboardConfig?.description || 'Monitor your system health and performance'}
           </p>
         </motion.div>
-        <div className="flex-shrink-0 lg:block hidden">
-          <ThemeToggle />
-        </div>
-      </div>
-
-      {/* Fixed Theme Toggle for Mobile */}
-      <div className="theme-toggle-mobile lg:hidden">
-        <ThemeToggle />
       </div>
 
       {/* Dynamic Metrics */}

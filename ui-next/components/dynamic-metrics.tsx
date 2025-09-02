@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { useMetricsConfig } from "@/lib/hooks/use-config";
+import { useMultiTenantMetricsConfig } from "@/lib/hooks/use-multi-tenant-config";
 import { MetricsCard } from "./metrics-card";
 import { MetricsChart } from "./metrics-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,11 +25,11 @@ export function DynamicMetrics({
   groupBy = true 
 }: DynamicMetricsProps) {
   const { 
-    metricsConfig, 
+    metrics, 
     metricsByGroup, 
     isLoading, 
     error 
-  } = useMetricsConfig();
+  } = useMultiTenantMetricsConfig();
 
   if (isLoading) {
       return (
@@ -73,7 +73,7 @@ export function DynamicMetrics({
     );
   }
 
-  if (!metricsConfig || metricsConfig.length === 0) {
+  if (!metrics || metrics.length === 0) {
     return (
       <ClientOnly fallback={
         <div className={cn("space-y-6", className)}>
@@ -241,13 +241,13 @@ export function DynamicMetrics({
       >
         {showCards && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {metricsConfig.map((metric, index) => renderMetricCard(metric, index))}
+            {metrics.map((metric, index) => renderMetricCard(metric, index))}
           </div>
         )}
         
         {showCharts && (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-            {metricsConfig.map((metric, index) => renderMetricChart(metric, index))}
+            {metrics.map((metric, index) => renderMetricChart(metric, index))}
           </div>
         )}
       </motion.div>
@@ -303,7 +303,7 @@ function getBaseValueForMetric(metricName: string): number {
 
 // Component for displaying configuration summary
 export function MetricsConfigSummary() {
-  const { metricsConfig, metricsByGroup, isLoading, error } = useMetricsConfig();
+  const { metrics, metricsByGroup, isLoading, error } = useMultiTenantMetricsConfig();
 
   if (isLoading) {
     return (
@@ -343,8 +343,8 @@ export function MetricsConfigSummary() {
     );
   }
 
-  const totalMetrics = metricsConfig.length;
-  const enabledMetrics = metricsConfig.filter(m => m.enabled !== false).length;
+  const totalMetrics = metrics.length;
+  const enabledMetrics = metrics.filter(m => m.enabled !== false).length;
   const groups = Object.keys(metricsByGroup);
 
   return (
@@ -391,9 +391,9 @@ export function MetricsConfigSummary() {
               <div className="text-sm text-muted-foreground">Groups</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {metricsConfig.filter(m => m.chart).length}
-              </div>
+                          <div className="text-2xl font-bold text-purple-600">
+              {metrics.filter(m => m.chart).length}
+            </div>
               <div className="text-sm text-muted-foreground">With Charts</div>
             </div>
           </div>

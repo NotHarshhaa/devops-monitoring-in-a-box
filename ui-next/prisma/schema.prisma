@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  password      String?   // For credentials authentication
+  role          UserRole  @default(VIEWER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  dashboards    Dashboard[]
+  configurations Configuration[]
+  teams         TeamMember[]
+  createdTeams  Team[]
+  
+  @@map("users")
+}
+
+// Account model for OAuth providers
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// Session model for NextAuth
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Verification token model
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Team model for multi-tenancy
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  
+  // Relations
+  members     TeamMember[]
+  dashboards  Dashboard[]
+  configurations Configuration[]
+  creator     User @relation(fields: [createdBy], references: [id])
+  
+  @@map("teams")
+}
+
+// Team membership model
+model TeamMember {
+  id       String      @id @default(cuid())
+  teamId   String
+  userId   String
+  role     TeamRole    @default(MEMBER)
+  joinedAt DateTime    @default(now())
+  
+  // Relations
+  team     Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+// Dashboard model for user-specific dashboards
+model Dashboard {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  config        Json     // Dashboard configuration JSON
+  isPublic      Boolean  @default(false)
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String?
+  teamId        String?
+  
+  // Relations
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team          Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  @@map("dashboards")
+}
+
+// Configuration model for user-specific configs
+model Configuration {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  config        Json     // Configuration JSON
+  type          ConfigType @default(MONITORING)
+  isPublic      Boolean  @default(false)
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String?
+  teamId        String?
+  
+  // Relations
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team          Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  @@map("configurations")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  VIEWER
+  EDITOR
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ConfigType {
+  MONITORING
+  ALERTING
+  LOGGING
+  DASHBOARD
+}

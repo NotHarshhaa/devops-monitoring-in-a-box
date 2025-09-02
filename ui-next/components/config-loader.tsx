@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { useConfig } from "@/lib/hooks/use-config";
+import { useMultiTenantConfig } from "@/lib/hooks/use-multi-tenant-config";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,7 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
     isLoading, 
     error,
     getConfigSummary 
-  } = useConfig();
+  } = useMultiTenantConfig();
   
   const [jsonInput, setJsonInput] = useState("");
   const [validationResult, setValidationResult] = useState<{

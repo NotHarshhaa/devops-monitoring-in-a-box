@@ -16,11 +16,14 @@ import {
   Activity,
   Database,
   Monitor,
-  Heart
+  Heart,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { UserMenu } from "@/components/user-menu"
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -54,12 +57,18 @@ const getStatusColor = (status: string) => {
 export function Sidebar() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isDesktop, setIsDesktop] = React.useState(false)
+  const [isCollapsed, setIsCollapsed] = React.useState(false)
   const pathname = usePathname()
 
   // Check if we're on desktop
   React.useEffect(() => {
     const checkScreenSize = () => {
-      setIsDesktop(window.innerWidth >= 1024)
+      const desktop = window.innerWidth >= 1024
+      setIsDesktop(desktop)
+      // Auto-expand sidebar when switching to mobile
+      if (!desktop) {
+        setIsCollapsed(false)
+      }
     }
     
     checkScreenSize()
@@ -121,7 +130,7 @@ export function Sidebar() {
       <motion.div
         id="sidebar"
         className={cn(
-          "w-[280px] bg-background/95 backdrop-blur-sm border-r border-border/50 overflow-hidden",
+          "bg-background/95 backdrop-blur-sm border-r border-border/50 overflow-hidden transition-all duration-300 ease-in-out",
           isDesktop 
             ? "relative z-auto" 
             : "fixed inset-y-0 left-0 z-40"
@@ -136,28 +145,66 @@ export function Sidebar() {
           damping: 30
         }}
         style={{ 
-          width: '280px'
+          width: isDesktop ? (isCollapsed ? 80 : 280) : 280,
+          minWidth: isDesktop ? (isCollapsed ? 80 : 280) : 280,
+          maxWidth: isDesktop ? (isCollapsed ? 80 : 280) : 280
         }}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border/50">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
-                <Activity className="h-6 w-6 text-primary-foreground" />
+          <div className={cn(
+            "flex items-center border-b border-border/50",
+            isCollapsed ? "justify-center p-4" : "justify-between p-6"
+          )}>
+            {isCollapsed ? (
+              <div className="flex items-center justify-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsCollapsed(false)}
+                  className="h-10 w-10 p-0"
+                  aria-label="Expand sidebar"
+                >
+                  <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
+                    <Activity className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                </Button>
               </div>
-              <div>
-                <h1 className="text-lg font-bold">DevOps Monitor</h1>
-                <p className="text-sm text-muted-foreground">Monitoring in a Box</p>
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <ThemeToggle />
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
+                    <Activity className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-bold">DevOps Monitor</h1>
+                    <p className="text-sm text-muted-foreground">Monitoring in a Box</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1">
+                  {isDesktop && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsCollapsed(!isCollapsed)}
+                      className="h-8 w-8"
+                      aria-label="Collapse sidebar"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <ThemeToggle />
+                  <UserMenu />
+                </div>
+              </>
+            )}
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className={cn(
+            "flex-1 space-y-1 overflow-y-auto",
+            isCollapsed ? "p-2" : "p-4"
+          )}>
             {navigation.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -168,12 +215,26 @@ export function Sidebar() {
                     "relative flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                     isActive
                       ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    isCollapsed && "justify-center"
                   )}
+                  title={isCollapsed ? item.name : undefined}
                 >
-                  <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  <span className="truncate">{item.name}</span>
-                  {isActive && (
+                  <item.icon className={cn("h-5 w-5 flex-shrink-0", !isCollapsed && "mr-3")} />
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="truncate overflow-hidden"
+                      >
+                        {item.name}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {isActive && !isCollapsed && (
                     <motion.div
                       className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
                       layoutId="activeNav"
@@ -192,43 +253,104 @@ export function Sidebar() {
           </nav>
 
           {/* Service Status */}
-          <div className="p-4 border-t border-border/50">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-              Service Status
-            </h3>
+          <div className={cn(
+            "border-t border-border/50",
+            isCollapsed ? "p-2" : "p-4"
+          )}>
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.h3
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3"
+                >
+                  Service Status
+                </motion.h3>
+              )}
+            </AnimatePresence>
             <div className="space-y-2">
               {serviceStatus.map((service) => (
-                <div key={service.name} className="flex items-center justify-between">
+                <div key={service.name} className={cn(
+                  "flex items-center",
+                  isCollapsed ? "justify-center" : "justify-between"
+                )}>
                   <div className="flex items-center space-x-2 min-w-0">
                     <service.icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm truncate">{service.name}</span>
-                  </div>
-                  <div className="flex items-center space-x-1 flex-shrink-0">
-                    <span className={cn(
-                      "relative flex h-2 w-2 rounded-full",
-                      service.status === 'healthy' ? "bg-green-500" : "bg-red-500"
-                    )}>
-                      {service.status === 'healthy' && (
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                    <AnimatePresence>
+                      {!isCollapsed && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-sm truncate overflow-hidden"
+                        >
+                          {service.name}
+                        </motion.span>
                       )}
-                    </span>
-                    <span className={cn(
-                      "text-xs",
-                      getStatusColor(service.status)
-                    )}>
-                      {service.status === 'healthy' ? 'Healthy' : 'Error'}
-                    </span>
+                    </AnimatePresence>
                   </div>
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.div
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center space-x-1 flex-shrink-0 overflow-hidden"
+                      >
+                        <span className={cn(
+                          "relative flex h-2 w-2 rounded-full",
+                          service.status === 'healthy' ? "bg-green-500" : "bg-red-500"
+                        )}>
+                          {service.status === 'healthy' && (
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                          )}
+                        </span>
+                        <span className={cn(
+                          "text-xs",
+                          getStatusColor(service.status)
+                        )}>
+                          {service.status === 'healthy' ? 'Healthy' : 'Error'}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-border/50 text-center">
-            <p className="text-xs text-muted-foreground flex items-center justify-center">
-              Built with <Heart className="h-3 w-3 mx-1 text-red-500" /> by Harshhaa
-            </p>
+          <div className={cn(
+            "border-t border-border/50 text-center",
+            isCollapsed ? "p-2" : "p-4"
+          )}>
+            <AnimatePresence>
+              {!isCollapsed ? (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-xs text-muted-foreground flex items-center justify-center"
+                >
+                  Built with <Heart className="h-3 w-3 mx-1 text-red-500" /> by Harshhaa
+                </motion.p>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex justify-center"
+                >
+                  <Heart className="h-4 w-4 text-red-500" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>
