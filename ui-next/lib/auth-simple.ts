@@ -11,7 +11,6 @@ enum UserRole {
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET || "devops-monitoring-demo-secret-key-2024",
   debug: process.env.NODE_ENV === "development",
-  trustHost: true, // Required for Vercel deployment
   providers: [
     // Credentials provider for email/password login
     CredentialsProvider({
