@@ -213,7 +213,7 @@ export class VersionMonitorService {
         isUpToDate,
         updateAvailable,
         lastChecked: new Date().toISOString(),
-        status: currentInfo ? 'healthy' : 'error',
+        status: currentInfo ? 'healthy' as const : 'error' as const,
         dockerImage: this.getDockerImage(component),
         downloadUrl: latestVersion ? this.getDownloadUrl(component, latestVersion) : ''
       }
