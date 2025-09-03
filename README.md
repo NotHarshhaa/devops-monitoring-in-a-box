@@ -93,48 +93,114 @@ Then open:
 
 ## 📂 Project Structure
 
-```bash
-devops-monitoring-in-a-box/
-├── README.md                # Repo overview + usage
-├── docker-compose.yml       # Runs all monitoring services
-├── docker-compose.dev.yml   # Development setup with UI hot reloading
-│
-├── prometheus/
-│   ├── prometheus.yml       # Scrape configs
-│   └── alert_rules.yml      # Pre-configured alert rules
-│
-├── grafana/
-│   ├── dashboards/          # Pre-built dashboards (JSON files)
-│   │   ├── dashboard.yml    # Dashboard provisioning
-│   │   └── node-exporter.json
-│   └── datasources/         # Pre-configured Prometheus datasource
-│
-├── loki/
-│   ├── config.yml           # Loki log aggregation config
-│   └── promtail-config.yml  # Log collection configuration
-│
-├── alertmanager/
-│   └── config.yml           # Alert rules + Slack/email webhook config
-│
-├── ui-next/                 # 🆕 Modern Next.js Dashboard
-│   ├── src/                 # React application source
-│   ├── public/              # Static assets
-│   ├── Dockerfile           # Production build
-│   ├── Dockerfile.dev       # Development build
-│   └── package.json         # Dependencies
-│
-└── exporters/
-    └── node-exporter/       # System metrics exporter
-```
+The Monitoring in a Box project is organized into several key directories, each serving a specific purpose in the monitoring ecosystem.
+
+### 🏗️ **Core Components**
+- **`prometheus/`** - Metrics collection and alerting configuration
+- **`grafana/`** - Dashboard and visualization setup
+- **`loki/`** - Log aggregation and collection
+- **`alertmanager/`** - Alert routing and notifications
+- **`ui-next/`** - Modern Next.js web interface
+- **`docs/`** - Comprehensive documentation
+- **`exporters/`** - System metrics exporters
+
+### 🎯 **Key Files**
+- **`env.example`** - Environment variables template
+- **`site-config.json`** - Site configuration (SEO, branding)
+- **`config.json`** - Monitoring configuration
+- **`docker-compose.yml`** - Production stack configuration
+- **`devops-monitor.sh`** - Management script
+
+### 📖 **Detailed Structure**
+For a complete breakdown of all directories, files, and their purposes, see our comprehensive **[Project Structure Guide](docs/PROJECT_STRUCTURE.md)**.
 
 ## 📊 Features
 
-* 📈 **Metrics**: Collect metrics from Node Exporter
-* 🖼️ **Dashboards**: Pre-configured Grafana dashboards
-* 📜 **Logs**: Loki + Promtail for log aggregation
-* 🚨 **Alerts**: Sample Alertmanager config (Slack/Email integration ready)
-* 🎨 **Modern UI**: React-based dashboard for unified monitoring experience
-* ⚡ **One command setup**: Just run `docker-compose up -d`
+### 🔧 Core Monitoring Stack
+* 📈 **Metrics Collection**: Prometheus with Node Exporter for system metrics
+* 🖼️ **Dashboards**: Pre-configured Grafana dashboards with beautiful visualizations
+* 📜 **Log Aggregation**: Loki + Promtail for centralized log management
+* 🚨 **Alert Management**: Alertmanager with multi-channel notifications
+* 📊 **Service Health**: Real-time service status monitoring
+
+### 🎨 Modern Web Interface
+* 🖥️ **Unified Dashboard**: Single-page application for all monitoring needs
+* 📱 **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+* 🌙 **Dark/Light Theme**: Automatic theme switching with user preference
+* ⚡ **Real-time Updates**: Live data refresh without page reloads
+* 🎯 **Intuitive Navigation**: Easy-to-use sidebar navigation
+
+### 🔐 Authentication & Security
+* 👤 **User Authentication**: Secure login system with session management
+* 🏢 **Multi-tenant Support**: Role-based access control (Admin, Editor, Viewer)
+* 🔒 **Secure API**: Protected endpoints with authentication middleware
+* 🛡️ **Input Validation**: Comprehensive data validation and sanitization
+
+### 📊 Advanced Monitoring Features
+* 📈 **Custom Metrics**: Define and monitor custom application metrics
+* 📊 **Dynamic Dashboards**: Create and customize monitoring dashboards
+* 🔍 **Log Search**: Advanced log filtering and search capabilities
+* 📊 **Metrics Visualization**: Interactive charts and graphs
+* ⏰ **Historical Data**: Time-series data analysis and trending
+
+### 🔔 Notification System
+* 📧 **Email Alerts**: SMTP-based email notifications
+* 💬 **Slack Integration**: Direct Slack channel notifications
+* 🎯 **Microsoft Teams**: Teams webhook integration
+* 🎮 **Discord Support**: Discord webhook notifications
+* 🔗 **Custom Webhooks**: Generic webhook support for any service
+
+### ⚙️ Configuration Management
+* 🎛️ **Dynamic Configuration**: JSON-based configuration system
+* 🔄 **Hot Reloading**: Configuration changes without restart
+* 📁 **Import/Export**: Share configurations between environments
+* ✅ **Validation**: Built-in configuration validation
+* 🎨 **Site Customization**: SEO, branding, and company information
+
+### 🔌 Plugin System
+* 🧩 **Extensible Architecture**: Plugin-based system for custom integrations
+* 📦 **Plugin Marketplace**: Browse and install community plugins
+* ⚙️ **Plugin Configuration**: Easy plugin setup and management
+* 🔧 **Custom Plugins**: Create your own monitoring plugins
+
+### 📚 Documentation & Support
+* 📖 **Comprehensive Docs**: Detailed documentation for all features
+* 🎯 **Quick Start Guide**: Get up and running in minutes
+* 🔧 **Configuration Examples**: Ready-to-use configuration templates
+* 💡 **Best Practices**: Industry-standard monitoring practices
+
+## ⚙️ Configuration
+
+Configure your Monitoring in a Box platform with comprehensive environment variables and configuration files.
+
+### 🔧 Quick Setup
+1. **Copy example configuration**:
+   ```bash
+   cp env.example .env
+   ```
+
+2. **Edit your settings**:
+   ```bash
+   nano .env
+   ```
+
+3. **Start the platform**:
+   ```bash
+   docker-compose up -d
+   ```
+
+### 📖 Complete Configuration Guide
+For detailed configuration options, environment variables, and deployment settings, see our comprehensive **[Configuration Guide](docs/CONFIGURATION_GUIDE.md)**.
+
+**Key Configuration Areas:**
+- 🌐 **Site Configuration**: SEO, branding, company information
+- 🔐 **Authentication & Security**: Database, sessions, JWT tokens
+- 📊 **Monitoring Services**: Prometheus, Grafana, Loki, Alertmanager
+- 🔔 **Notifications**: Email, Slack, Teams, Discord, webhooks
+- 🎨 **UI Settings**: Themes, dashboards, logs configuration
+- 🔌 **Plugin System**: Plugin management and marketplace
+- 🏢 **Multi-tenancy**: Tenant isolation and management
+- 🚀 **Deployment**: Docker, Kubernetes, production settings
 
 ## 🔧 Next Steps (for contributors)
 
@@ -262,6 +328,8 @@ docker-compose logs grafana
 
 ### Key Documentation Links:
 - **[Setup Guide](docs/SETUP.md)** - Detailed setup instructions
+- **[Configuration Guide](docs/CONFIGURATION_GUIDE.md)** - Complete configuration reference
+- **[Project Structure](docs/PROJECT_STRUCTURE.md)** - Complete project structure overview
 - **[Prometheus Integration](docs/PROMETHEUS_INTEGRATION.md)** - Metrics collection and configuration
 - **[Grafana Dashboards](docs/PROMETHEUS_INTEGRATION.md#grafana-dashboards)** - Dashboard setup and customization
 - **[Loki Logs](docs/LOKI_INTEGRATION.md)** - Log aggregation and search
@@ -271,6 +339,10 @@ docker-compose logs grafana
 - **[Configuration System](docs/CONFIG_SYSTEM_GUIDE.md)** - Dynamic configuration management
 - **[Service Health](docs/SERVICE_HEALTH_GUIDE.md)** - Health monitoring and status checks
 - **[UX Improvements](docs/UX_IMPROVEMENTS_GUIDE.md)** - User interface enhancements
+- **[Plugin System](docs/PLUGIN_SYSTEM_GUIDE.md)** - Plugin development and management
+- **[Dashboard Templates](docs/DASHBOARD_TEMPLATE_MANAGEMENT_GUIDE.md)** - Template creation and marketplace
+- **[Notifications Integration](docs/NOTIFICATIONS_INTEGRATION.md)** - Multi-channel notification setup
+- **[Production Setup](docs/PRODUCTION_SETUP.md)** - Production deployment guide
 
 ### 🎯 Quick Access
 - **Main Documentation Hub**: [docs/README.md](docs/README.md)
