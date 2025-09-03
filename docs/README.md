@@ -36,6 +36,16 @@ Welcome to the comprehensive documentation for the DevOps Monitoring in a Box pr
 - **[Configuration System Guide](CONFIG_SYSTEM_GUIDE.md)** - Dynamic configuration management
 - **[Configuration Enhancement Guide](CONFIGURATION_ENHANCEMENT_GUIDE.md)** - Advanced configuration features
 
+#### Dashboard Templates
+- **[Dashboard Template Management Guide](DASHBOARD_TEMPLATE_MANAGEMENT_GUIDE.md)** - Create, import, and manage monitoring dashboard templates
+- **[Template Marketplace](DASHBOARD_TEMPLATE_MANAGEMENT_GUIDE.md#template-marketplace)** - Browse and import pre-built templates
+- **[Custom Template Creation](DASHBOARD_TEMPLATE_MANAGEMENT_GUIDE.md#creating-custom-templates)** - Build custom templates from scratch
+
+#### Plugin System
+- **[Plugin System Guide](PLUGIN_SYSTEM_GUIDE.md)** - Extensible plugin system for new data sources
+- **[Available Plugins](PLUGIN_SYSTEM_GUIDE.md#available-plugins)** - AWS CloudWatch, Jenkins, GitHub Actions plugins
+- **[Plugin Development](PLUGIN_SYSTEM_GUIDE.md#plugin-development)** - Create custom plugins and integrations
+
 ### 🔍 Monitoring & Health
 
 #### Service Health Monitoring
@@ -123,6 +133,9 @@ The system supports multiple authentication methods:
 - ✅ **Role-based Access**: Granular permission system
 - ✅ **Export/Import**: Configuration backup and restore
 - ✅ **API Integration**: RESTful APIs for all components
+- ✅ **Plugin System**: Extensible architecture for new data sources
+- ✅ **Dashboard Templates**: Pre-built and custom monitoring templates
+- ✅ **Template Marketplace**: Community-driven template sharing
 
 ## 🛠️ Development
 
@@ -138,6 +151,18 @@ npm run dev
 2. Create Grafana dashboard
 3. Set up alerts in AlertManager
 4. Update UI configuration
+
+### Plugin Development
+1. Follow the [Plugin Development Guide](PLUGIN_SYSTEM_GUIDE.md#plugin-development)
+2. Implement the Plugin interface
+3. Register your plugin in the system
+4. Test and validate functionality
+
+### Template Creation
+1. Use the [Template Creation Guide](DASHBOARD_TEMPLATE_MANAGEMENT_GUIDE.md#creating-custom-templates)
+2. Design your dashboard layout
+3. Configure metrics and variables
+4. Share via marketplace or GitHub
 
 ## 📞 Support
 
