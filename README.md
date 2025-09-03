@@ -9,6 +9,9 @@
 This project provides a **ready-to-use monitoring stack** for DevOps engineers and beginners.
 With just **one command**, you get:
 
+> **🎯 Demo Preview Available**: Check out the live demo at [devops-monitoring-in-a-box.vercel.app](https://devops-monitoring-in-a-box.vercel.app)  
+> **Login**: demo@example.com / demo123 (Demo credentials only - configure your own for production)
+
 * **Prometheus** → Metrics collection
 * **Grafana** → Beautiful dashboards
 * **Loki** → Centralized log aggregation

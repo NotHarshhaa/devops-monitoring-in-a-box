@@ -2,8 +2,25 @@ import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { UserRole } from "@prisma/client"
 
+// Auto-detect environment and set appropriate defaults
+const getNextAuthConfig = () => {
+  const isVercel = process.env.VERCEL === "1"
+  const isProduction = process.env.NODE_ENV === "production"
+  
+  return {
+    secret: process.env.NEXTAUTH_SECRET || "devops-monitoring-demo-secret-key-2024",
+    url: isVercel 
+      ? `https://${process.env.VERCEL_URL || "devops-monitoring-in-a-box.vercel.app"}`
+      : process.env.NEXTAUTH_URL || "http://localhost:3000",
+    debug: !isProduction
+  }
+}
+
+const config = getNextAuthConfig()
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-demo-purposes-only",
+  secret: config.secret,
+  debug: config.debug,
   providers: [
     // Credentials provider for email/password login
     CredentialsProvider({
@@ -78,6 +95,5 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/auth/signin",
-    error: "/auth/error",
   },
 }

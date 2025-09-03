@@ -84,13 +84,15 @@ function SignInForm() {
               </Alert>
             )}
 
-            {/* Demo Credentials */}
+            {/* Demo Notice */}
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Demo Credentials:</strong><br />
-                Email: demo@example.com<br />
-                Password: demo123
+                <strong>🚀 Demo Preview</strong><br />
+                This is a preview version. Use these demo credentials:<br />
+                <strong>Email:</strong> demo@example.com<br />
+                <strong>Password:</strong> demo123<br />
+                <em className="text-xs">For production use, configure your own environment variables.</em>
               </AlertDescription>
             </Alert>
 
