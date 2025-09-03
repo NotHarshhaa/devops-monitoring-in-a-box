@@ -171,7 +171,7 @@ export class TemplateImportService {
             // Extract metric names from PromQL expressions
             const metricMatches = target.expr.match(/([a-zA-Z_][a-zA-Z0-9_]*)/g)
             if (metricMatches) {
-              metricMatches.forEach(metric => {
+              metricMatches.forEach((metric: string) => {
                 if (metric.includes('_') && !metric.includes('(') && !metric.includes(')')) {
                   metrics.add(metric)
                 }
