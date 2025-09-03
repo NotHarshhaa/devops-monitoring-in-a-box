@@ -50,28 +50,28 @@ export default function SettingsPage() {
   const [isAdvancedUser, setIsAdvancedUser] = React.useState(false)
 
   return (
-    <div>
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="mb-8">
+      <div>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
             Configure your monitoring environment
           </p>
         </motion.div>
       </div>
 
       {/* Settings Tabs */}
-      <Tabs defaultValue="general" className="mb-8">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="configuration">Configuration</TabsTrigger>
+      <Tabs defaultValue="general">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <TabsTrigger value="general" className="text-xs sm:text-sm">General</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
+          <TabsTrigger value="security" className="text-xs sm:text-sm">Security</TabsTrigger>
+          <TabsTrigger value="configuration" className="text-xs sm:text-sm">Configuration</TabsTrigger>
         </TabsList>
 
         {/* General Settings */}

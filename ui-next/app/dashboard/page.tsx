@@ -132,19 +132,19 @@ export default function DashboardPage() {
   const { dashboardConfig, isLoading, error } = useMultiTenantDashboardConfig();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:items-center sm:justify-between gap-2 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="min-w-0 flex-1 pr-4"
+          className="min-w-0 flex-1 pr-2 sm:pr-4"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold break-words">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words">
             {dashboardConfig?.title || 'Dashboard'}
           </h1>
-          <p className="text-muted-foreground mt-2 break-words">
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base break-words">
             {dashboardConfig?.description || 'Monitor your system health and performance'}
           </p>
         </motion.div>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Recent Activity & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         {/* Recent Alerts */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

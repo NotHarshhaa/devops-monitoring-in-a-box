@@ -107,12 +107,12 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Dashboard Templates</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">Dashboard Templates</h2>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Pre-built monitoring dashboards for common use cases
           </p>
         </div>
@@ -162,8 +162,8 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
       </Card>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[300px]">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search templates..."
@@ -173,30 +173,32 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
           />
         </div>
         
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="kubernetes">Kubernetes</SelectItem>
-            <SelectItem value="database">Database</SelectItem>
-            <SelectItem value="web-server">Web Server</SelectItem>
-            <SelectItem value="system">System</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-3 sm:gap-4">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="kubernetes">Kubernetes</SelectItem>
+              <SelectItem value="database">Database</SelectItem>
+              <SelectItem value="web-server">Web Server</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Difficulty" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Levels</SelectItem>
-            <SelectItem value="beginner">Beginner</SelectItem>
-            <SelectItem value="intermediate">Intermediate</SelectItem>
-            <SelectItem value="advanced">Advanced</SelectItem>
-          </SelectContent>
-        </Select>
+          <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Difficulty" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Levels</SelectItem>
+              <SelectItem value="beginner">Beginner</SelectItem>
+              <SelectItem value="intermediate">Intermediate</SelectItem>
+              <SelectItem value="advanced">Advanced</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Templates Grid/List */}
@@ -207,7 +209,7 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
           >
             {filteredTemplates.map((template) => (
               <motion.div

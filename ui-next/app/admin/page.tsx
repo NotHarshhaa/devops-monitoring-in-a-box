@@ -124,23 +124,23 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
             Manage users, configurations, and system settings
           </p>
         </motion.div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2">
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />

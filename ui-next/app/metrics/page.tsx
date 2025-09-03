@@ -92,16 +92,16 @@ export default function MetricsPage() {
   const networkTrafficData = allMetricsRange.networkRange.data || []
 
   return (
-    <div>
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold">Metrics</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Metrics</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
             Real-time system performance metrics from Prometheus
           </p>
         </motion.div>

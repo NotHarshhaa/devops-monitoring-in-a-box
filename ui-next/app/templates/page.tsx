@@ -15,7 +15,7 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto py-4 sm:py-6 px-4 sm:px-6">
       <DashboardTemplateManager
         onTemplateSelect={handleTemplateSelect}
         onTemplateCreate={handleTemplateCreate}

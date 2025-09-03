@@ -118,12 +118,12 @@ export function VersionMonitor({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Component Versions</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold">Component Versions</h2>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Monitor current and latest versions of monitoring components
           </p>
         </div>
@@ -140,7 +140,7 @@ export function VersionMonitor({
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>
@@ -154,7 +154,7 @@ export function VersionMonitor({
       )}
 
       {/* Version Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <AnimatePresence>
           {versions.map((component, index) => (
             <motion.div
@@ -206,7 +206,7 @@ export function VersionMonitor({
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     {component.downloadUrl && (
                       <Button
                         size="sm"
@@ -215,7 +215,8 @@ export function VersionMonitor({
                         onClick={() => window.open(component.downloadUrl, '_blank')}
                       >
                         <Download className="h-3 w-3 mr-1" />
-                        Download
+                        <span className="hidden sm:inline">Download</span>
+                        <span className="sm:hidden">DL</span>
                       </Button>
                     )}
                     {component.dockerImage && (
@@ -232,7 +233,8 @@ export function VersionMonitor({
                         }}
                       >
                         <Container className="h-3 w-3 mr-1" />
-                        Docker
+                        <span className="hidden sm:inline">Docker</span>
+                        <span className="sm:hidden">DKR</span>
                       </Button>
                     )}
                   </div>

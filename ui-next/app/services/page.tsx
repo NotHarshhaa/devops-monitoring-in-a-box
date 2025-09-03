@@ -241,14 +241,14 @@ export default function ServicesPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold">Service Health</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Service Health</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
             Monitor and manage your DevOps services health status
           </p>
         </motion.div>
@@ -263,15 +263,15 @@ export default function ServicesPage() {
           ) : (
             <RefreshCw className="h-4 w-4" />
           )}
-          Refresh
+          <span className="hidden sm:inline">Refresh</span>
         </Button>
       </div>
 
       {/* Tabs for Health and Versions */}
-      <Tabs defaultValue="health" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="health">Service Health</TabsTrigger>
-          <TabsTrigger value="versions">Component Versions</TabsTrigger>
+      <Tabs defaultValue="health" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="health" className="text-xs sm:text-sm">Service Health</TabsTrigger>
+          <TabsTrigger value="versions" className="text-xs sm:text-sm">Component Versions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="health" className="space-y-6">
@@ -334,7 +334,7 @@ export default function ServicesPage() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Services Health */}
         <div className="lg:col-span-2">
           <div className="mb-4">
@@ -352,7 +352,7 @@ export default function ServicesPage() {
               </div>
             </div>
           ) : healthData ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               {healthData.services.map((service, index) => (
                 <motion.div
                   key={service.name}

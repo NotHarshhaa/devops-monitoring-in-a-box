@@ -172,7 +172,7 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
             : `Resolved at ${alertmanagerAPI.formatTimestamp(alert.endsAt || alert.updatedAt)}`
           }
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline" 
             size="sm" 
@@ -182,22 +182,22 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
             {isExpanded ? (
               <>
                 <ChevronDown className="h-3 w-3" />
-                Less
+                <span className="hidden sm:inline">Less</span>
               </>
             ) : (
               <>
                 <ChevronRight className="h-3 w-3" />
-                Details
+                <span className="hidden sm:inline">Details</span>
               </>
             )}
           </Button>
           <Button variant="outline" size="sm" className="h-8 gap-1">
             <MessageSquare className="h-3 w-3" />
-            Comment
+            <span className="hidden sm:inline">Comment</span>
           </Button>
           <Button variant="outline" size="sm" className="h-8 gap-1">
             <VolumeX className="h-3 w-3" />
-            Silence
+            <span className="hidden sm:inline">Silence</span>
           </Button>
         </div>
       </CardFooter>
@@ -344,16 +344,16 @@ export default function AlertsPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold">Alerts</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Alerts</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
             Monitor and manage system alerts
           </p>
         </motion.div>
@@ -371,21 +371,21 @@ export default function AlertsPage() {
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
             <Calendar className="h-4 w-4" />
-            History
+            <span className="hidden sm:inline">History</span>
           </Button>
           <Button variant="outline" size="sm" className="gap-1">
             <VolumeX className="h-4 w-4" />
-            Silences
+            <span className="hidden sm:inline">Silences</span>
           </Button>
         </div>
       </div>
 
       {/* Alert stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -442,10 +442,10 @@ export default function AlertsPage() {
       </div>
 
       {/* Search and filters */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="grid gap-4">
-            <div className="flex flex-col sm:flex-row gap-4">
+      <Card>
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -463,7 +463,7 @@ export default function AlertsPage() {
                 )}
               </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Severity</label>
                 <Select value={filters.severity} onValueChange={handleSeverityChange}>

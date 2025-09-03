@@ -105,25 +105,26 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard Templates</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold">Dashboard Templates</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Create, import, and manage monitoring dashboard templates
           </p>
         </div>
         <Button onClick={() => setActiveTab("marketplace")}>
           <Plus className="h-4 w-4 mr-2" />
-          Browse Templates
+          <span className="hidden sm:inline">Browse Templates</span>
+          <span className="sm:hidden">Browse</span>
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-          <TabsTrigger value="my-templates">My Templates</TabsTrigger>
-          <TabsTrigger value="create">Create New</TabsTrigger>
+          <TabsTrigger value="marketplace" className="text-xs sm:text-sm">Marketplace</TabsTrigger>
+          <TabsTrigger value="my-templates" className="text-xs sm:text-sm">My Templates</TabsTrigger>
+          <TabsTrigger value="create" className="text-xs sm:text-sm">Create New</TabsTrigger>
         </TabsList>
 
         <TabsContent value="marketplace" className="space-y-6">
@@ -134,7 +135,7 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
         </TabsContent>
 
         <TabsContent value="my-templates" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {importedTemplates.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <div className="text-muted-foreground">
