@@ -37,7 +37,7 @@ export function SiteConfigManager() {
     setFormData(prev => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] as any || {}),
         [field]: value
       }
     }));
@@ -47,9 +47,9 @@ export function SiteConfigManager() {
     setFormData(prev => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] as any || {}),
         [subsection]: {
-          ...(prev[section] as any)?.[subsection],
+          ...((prev[section] as any)?.[subsection] || {}),
           [field]: value
         }
       }
