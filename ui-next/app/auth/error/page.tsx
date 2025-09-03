@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Suspense } from "react"
 
 const errorMessages: Record<string, string> = {
   Configuration: "There is a problem with the server configuration.",
@@ -14,7 +15,7 @@ const errorMessages: Record<string, string> = {
   NO_SECRET: "Authentication configuration error. Please contact support.",
 }
 
-export default function AuthError() {
+function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
 
@@ -62,5 +63,26 @@ export default function AuthError() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function AuthError() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold text-red-600">Loading...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">Please wait while we load the error details...</div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   )
 }
