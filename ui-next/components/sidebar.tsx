@@ -18,7 +18,8 @@ import {
   Monitor,
   Heart,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Layout
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,7 @@ import { UserMenu } from "@/components/user-menu"
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Templates', href: '/templates', icon: Layout },
   { name: 'Services', href: '/services', icon: Server },
   { name: 'Metrics', href: '/metrics', icon: BarChart3 },
   { name: 'Logs', href: '/logs', icon: FileText },
