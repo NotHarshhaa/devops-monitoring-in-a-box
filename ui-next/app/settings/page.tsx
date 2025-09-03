@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select"
 import { ConfigLoader } from "@/components/config-loader"
 import { NotificationSettings } from "@/components/notification-settings"
+import { SiteConfigManager } from "@/components/site-config-manager"
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
@@ -67,11 +68,12 @@ export default function SettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="general">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
           <TabsTrigger value="general" className="text-xs sm:text-sm">General</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
           <TabsTrigger value="security" className="text-xs sm:text-sm">Security</TabsTrigger>
           <TabsTrigger value="configuration" className="text-xs sm:text-sm">Configuration</TabsTrigger>
+          <TabsTrigger value="site" className="text-xs sm:text-sm">Site Config</TabsTrigger>
         </TabsList>
 
         {/* General Settings */}
@@ -666,6 +668,17 @@ export default function SettingsPage() {
             transition={{ duration: 0.3 }}
           >
             <ConfigLoader />
+          </motion.div>
+        </TabsContent>
+
+        {/* Site Configuration */}
+        <TabsContent value="site">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SiteConfigManager />
           </motion.div>
         </TabsContent>
       </Tabs>

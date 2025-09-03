@@ -1,0 +1,92 @@
+{
+  "name": "Monitoring in a Box",
+  "description": "Modern monitoring solution for your DevOps infrastructure with real-time metrics, logs, and alerts",
+  "url": "http://localhost:3000",
+  "version": "1.0.0",
+  "seo": {
+    "title": "Monitoring in a Box - Modern Infrastructure Monitoring Platform",
+    "description": "Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting. Monitor your infrastructure with Prometheus, Grafana, and Loki integration.",
+    "keywords": [
+      "devops monitoring",
+      "infrastructure monitoring",
+      "prometheus",
+      "grafana",
+      "loki",
+      "alertmanager",
+      "metrics",
+      "logs",
+      "alerts",
+      "observability",
+      "system monitoring",
+      "application monitoring"
+    ],
+    "author": "Monitoring in a Box Team",
+    "robots": "index, follow",
+    "canonical": "http://localhost:3000",
+    "og": {
+      "title": "Monitoring in a Box - Modern Infrastructure Monitoring Platform",
+      "description": "Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting.",
+      "type": "website",
+      "image": "/banner.png",
+      "url": "http://localhost:3000",
+      "site_name": "Monitoring in a Box"
+    },
+    "twitter": {
+      "card": "summary_large_image",
+      "site": "@monitoringinabox",
+      "creator": "@devopsmonitor",
+      "title": "Monitoring in a Box - Modern Infrastructure Monitoring Platform",
+      "description": "Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting.",
+      "image": "/banner.png"
+    }
+  },
+  "branding": {
+    "logo": {
+      "light": "/logo-light.png",
+      "dark": "/logo-dark.png",
+      "favicon": "/favicon.ico",
+      "apple_touch_icon": "/apple-touch-icon.png"
+    },
+    "colors": {
+      "primary": "#3b82f6",
+      "secondary": "#10b981",
+      "accent": "#f59e0b",
+      "background": "#ffffff",
+      "surface": "#f8fafc"
+    },
+    "fonts": {
+      "primary": "Inter",
+      "secondary": "system-ui, sans-serif"
+    }
+  },
+  "contact": {
+    "email": "support@monitoringinabox.com",
+    "phone": "+1 (555) 123-4567",
+    "address": "123 DevOps Street, Monitoring City, MC 12345",
+    "social": {
+      "twitter": "https://twitter.com/monitoringinabox",
+      "linkedin": "https://linkedin.com/company/monitoring-in-a-box",
+      "github": "https://github.com/monitoring-in-a-box",
+      "discord": "https://discord.gg/monitoring-in-a-box"
+    }
+  },
+  "company": {
+    "name": "Monitoring in a Box Inc.",
+    "description": "Leading provider of modern DevOps monitoring solutions",
+    "founded": "2025",
+    "location": "San Francisco, CA"
+  },
+  "legal": {
+    "privacy_policy_url": "/privacy-policy",
+    "terms_of_service_url": "/terms-of-service",
+    "cookie_policy_url": "/cookie-policy",
+    "copyright": "© 2025 Monitoring in a Box Inc. All rights reserved."
+  },
+  "features": {
+    "analytics": true,
+    "notifications": true,
+    "multi_tenant": true,
+    "plugins": true,
+    "api_docs": true
+  }
+}

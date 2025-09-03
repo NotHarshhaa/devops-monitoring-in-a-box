@@ -1,5 +1,99 @@
 // Configuration types for the DevOps Monitoring System
 
+// Site Configuration Types
+export interface SiteConfig {
+  // Basic Site Information
+  name: string;
+  description: string;
+  url: string;
+  version: string;
+  
+  // SEO Configuration
+  seo: {
+    title: string;
+    description: string;
+    keywords: string[];
+    author: string;
+    robots: string;
+    canonical: string;
+    og: {
+      title: string;
+      description: string;
+      type: string;
+      image: string;
+      url: string;
+      site_name: string;
+    };
+    twitter: {
+      card: string;
+      site: string;
+      creator: string;
+      title: string;
+      description: string;
+      image: string;
+    };
+  };
+  
+  // Branding Configuration
+  branding: {
+    logo: {
+      light: string;
+      dark: string;
+      favicon: string;
+      apple_touch_icon: string;
+    };
+    colors: {
+      primary: string;
+      secondary: string;
+      accent: string;
+      background: string;
+      surface: string;
+    };
+    fonts: {
+      primary: string;
+      secondary: string;
+    };
+  };
+  
+  // Contact Information
+  contact: {
+    email: string;
+    phone?: string;
+    address?: string;
+    social: {
+      twitter?: string;
+      linkedin?: string;
+      github?: string;
+      discord?: string;
+    };
+  };
+  
+  // Company Information
+  company: {
+    name: string;
+    description: string;
+    founded?: string;
+    location?: string;
+  };
+  
+  // Legal Information
+  legal: {
+    privacy_policy_url?: string;
+    terms_of_service_url?: string;
+    cookie_policy_url?: string;
+    copyright: string;
+  };
+  
+  // Feature Flags
+  features: {
+    analytics: boolean;
+    notifications: boolean;
+    multi_tenant: boolean;
+    plugins: boolean;
+    api_docs: boolean;
+  };
+}
+
 export interface DashboardConfig {
   refresh_interval?: string;
   title?: string;
@@ -129,7 +223,7 @@ export interface ConfigUpdate {
 export const DEFAULT_CONFIG: MonitoringConfig = {
   dashboard: {
     refresh_interval: '15s',
-    title: 'DevOps Monitor',
+    title: 'Monitoring in a Box',
     description: 'System monitoring dashboard',
     theme: 'system',
   },
@@ -231,18 +325,18 @@ export const DEFAULT_CONFIG: MonitoringConfig = {
         enabled: false,
         webhook_url: '',
         default_channel: '#alerts',
-        username: 'DevOps Monitor',
+        username: 'Monitoring in a Box',
         icon_emoji: ':bell:',
       },
       teams: {
         enabled: false,
         webhook_url: '',
-        title: 'DevOps Monitor Alert',
+        title: 'Monitoring in a Box Alert',
       },
       discord: {
         enabled: false,
         webhook_url: '',
-        username: 'DevOps Monitor',
+        username: 'Monitoring in a Box',
         avatar_url: '',
       },
       email: {
@@ -256,8 +350,8 @@ export const DEFAULT_CONFIG: MonitoringConfig = {
             pass: '',
           },
         },
-        from: 'alerts@devops-monitoring.local',
-        to: ['admin@devops-monitoring.local'],
+        from: 'alerts@monitoringinabox.local',
+        to: ['admin@monitoringinabox.local'],
       },
       webhook: {
         enabled: false,

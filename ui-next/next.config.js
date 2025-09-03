@@ -5,6 +5,13 @@ const nextConfig = {
   // Remove standalone output for Vercel deployment
   images: {
     domains: ['localhost'],
+    formats: ['image/webp', 'image/avif'],
+  },
+  // Site configuration support
+  env: {
+    SITE_NAME: process.env.SITE_NAME || 'Monitoring in a Box',
+    SITE_URL: process.env.SITE_URL || 'http://localhost:3000',
+    SITE_DESCRIPTION: process.env.SITE_DESCRIPTION || 'Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting.',
   },
   // Only apply rewrites in development
   async rewrites() {
