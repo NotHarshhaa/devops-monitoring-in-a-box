@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma-server"
-import bcrypt from "bcryptjs"
-import { UserRole } from "@prisma/client"
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,44 +19,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
-      return NextResponse.json(
-        { message: "User with this email already exists" },
-        { status: 400 }
-      )
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: UserRole.VIEWER, // Default role for new users
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      }
-    })
-
+    // For demo purposes, we'll just return a success message
+    // In production, you would save to database here
     return NextResponse.json(
       { 
-        message: "User created successfully",
-        user 
+        message: "Registration is disabled in demo mode. Please use the demo credentials: demo@example.com / demo123",
+        demo: true
       },
-      { status: 201 }
+      { status: 200 }
     )
 
   } catch (error) {
