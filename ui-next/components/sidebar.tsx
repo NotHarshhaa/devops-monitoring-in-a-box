@@ -19,7 +19,8 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
-  Layout
+  Layout,
+  Plug
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -33,6 +34,7 @@ const navigation = [
   { name: 'Metrics', href: '/metrics', icon: BarChart3 },
   { name: 'Logs', href: '/logs', icon: FileText },
   { name: 'Alerts', href: '/alerts', icon: Bell },
+  { name: 'Plugins', href: '/plugins', icon: Plug },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
