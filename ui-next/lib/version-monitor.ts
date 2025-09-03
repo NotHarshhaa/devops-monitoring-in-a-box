@@ -215,7 +215,7 @@ export class VersionMonitorService {
         lastChecked: new Date().toISOString(),
         status: currentInfo ? 'healthy' : 'error',
         dockerImage: this.getDockerImage(component),
-        downloadUrl: this.getDownloadUrl(component, latestVersion)
+        downloadUrl: latestVersion ? this.getDownloadUrl(component, latestVersion) : ''
       }
     })
 
