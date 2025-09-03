@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button"
 
 import { DynamicMetrics, MetricsConfigSummary } from "@/components/dynamic-metrics"
 import { useMultiTenantDashboardConfig } from "@/lib/hooks/use-multi-tenant-config"
+import { VersionMonitor } from "@/components/version-monitor"
 
 // Mock data - in real app, this would come from React Query API calls
 const systemMetrics = {
@@ -306,6 +307,18 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Component Versions Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.9 }}
+      >
+        <VersionMonitor 
+          showDetails={false}
+          autoRefresh={false}
+        />
+      </motion.div>
     </div>
   )
 }

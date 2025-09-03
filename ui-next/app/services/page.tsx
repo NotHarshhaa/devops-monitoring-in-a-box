@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useHealthMonitoring } from "@/lib/hooks/use-health-monitoring"
 import { healthAPI } from "@/lib/health-api"
+import { VersionMonitor } from "@/components/version-monitor"
 
 // Service Health Component
 interface ServiceHealthCardProps {
@@ -266,6 +267,15 @@ export default function ServicesPage() {
         </Button>
       </div>
 
+      {/* Tabs for Health and Versions */}
+      <Tabs defaultValue="health" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="health">Service Health</TabsTrigger>
+          <TabsTrigger value="versions">Component Versions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="health" className="space-y-6">
+
       {/* Overall Status */}
       {healthData && (
         <motion.div
@@ -382,6 +392,16 @@ export default function ServicesPage() {
           </motion.div>
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="versions" className="space-y-6">
+          <VersionMonitor 
+            showDetails={true}
+            autoRefresh={true}
+            refreshInterval={300000}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
