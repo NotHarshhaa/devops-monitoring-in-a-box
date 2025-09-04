@@ -7,6 +7,9 @@ FROM node:20-alpine AS builder
 # Update Alpine packages and install build dependencies
 RUN apk update && apk upgrade && apk add --no-cache libc6-compat
 
+# Upgrade npm to latest version to fix CVE-2024-21538 in cross-spawn
+RUN npm install -g npm@latest
+
 WORKDIR /app
 
 # Copy package files for dependency installation
@@ -15,9 +18,7 @@ COPY ui-next/package*.json ./
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci --ignore-scripts
 
-# Remove and reinstall vulnerable packages to ensure latest secure versions
-RUN npm uninstall cross-spawn && npm install cross-spawn@latest
-RUN npm uninstall brace-expansion && npm install brace-expansion@latest
+# Note: npm upgrade above automatically fixes CVE-2024-21538 in cross-spawn
 
 # Copy source code
 COPY ui-next/ .
@@ -33,6 +34,9 @@ FROM node:20-alpine AS runner
 
 # Update Alpine packages and install only wget for health checks
 RUN apk update && apk upgrade && apk add --no-cache wget
+
+# Upgrade npm to latest version to fix CVE-2024-21538 in cross-spawn
+RUN npm install -g npm@latest
 
 WORKDIR /app
 
