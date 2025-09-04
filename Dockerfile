@@ -15,6 +15,9 @@ COPY ui-next/package*.json ./
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci --ignore-scripts
 
+# Update vulnerable packages to latest secure versions
+RUN npm update cross-spawn brace-expansion
+
 # Copy source code
 COPY ui-next/ .
 
