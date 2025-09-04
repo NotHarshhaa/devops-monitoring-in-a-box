@@ -211,9 +211,23 @@ docker ps
 docker inspect <container-id> | grep -A 10 Health
 ```
 
+## 🔒 Security Features
+
+### **Automated Security Scanning**
+- **Docker Scout** integration scans every build
+- **Vulnerability detection** for critical and high severity issues
+- **Build failure** on security issues
+- **Security reports** in pull requests
+
+### **Security Measures**
+- **Updated dependencies** to latest secure versions
+- **Alpine Linux** base image with security updates
+- **Non-root user** execution
+- **Minimal attack surface** with multi-stage builds
+
 ## 📚 Additional Resources
 
-- [Commit-Based Build Guide](COMMIT_BASED_BUILD_GUIDE.md) - Build from any commit or branch
+- [Security Guide](SECURITY_GUIDE.md) - Comprehensive security documentation
 - [Docker Hub Documentation](https://docs.docker.com/docker-hub/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Next.js Docker Deployment](https://nextjs.org/docs/deployment#docker-image)

@@ -1,11 +1,11 @@
 # Optimized Dockerfile for DevOps Monitoring Dashboard
-# Multi-stage build for minimal image size (158MB)
+# Multi-stage build with Node.js 20 Alpine for security and performance
 
 # Stage 1: Build the Next.js application
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache libc6-compat
+# Update Alpine packages and install build dependencies
+RUN apk update && apk upgrade && apk add --no-cache libc6-compat
 
 WORKDIR /app
 
@@ -25,10 +25,10 @@ RUN npx prisma generate
 RUN npm run build
 
 # Stage 2: Ultra-minimal production runtime
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
-# Install only wget for health checks
-RUN apk add --no-cache wget
+# Update Alpine packages and install only wget for health checks
+RUN apk update && apk upgrade && apk add --no-cache wget
 
 WORKDIR /app
 

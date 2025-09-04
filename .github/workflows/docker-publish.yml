@@ -116,6 +116,16 @@ jobs:
         cache-from: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha' || '' }}
         cache-to: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha,mode=max' || '' }}
         
+    - name: Run Docker Scout
+      if: ${{ github.event.inputs.push_to_registry != 'false' }}
+      uses: docker/scout-action@v1
+      with:
+        command: cves
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_version }}
+        only-severities: critical,high
+        exit-code: true
+        write-comment: true
+        
     - name: Image digest
       if: ${{ github.event.inputs.push_to_registry != 'false' }}
       run: echo ${{ steps.build.outputs.digest }}
