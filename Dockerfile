@@ -15,8 +15,9 @@ COPY ui-next/package*.json ./
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci --ignore-scripts
 
-# Update vulnerable packages to latest secure versions
-RUN npm update cross-spawn brace-expansion
+# Remove and reinstall vulnerable packages to ensure latest secure versions
+RUN npm uninstall cross-spawn && npm install cross-spawn@latest
+RUN npm uninstall brace-expansion && npm install brace-expansion@latest
 
 # Copy source code
 COPY ui-next/ .
