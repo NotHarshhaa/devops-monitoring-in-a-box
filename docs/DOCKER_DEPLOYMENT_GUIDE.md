@@ -65,12 +65,17 @@ To enable automated Docker Hub publishing, you need to configure the following s
 
 ### Workflow Triggers
 
-The GitHub Actions workflow automatically triggers when you push a Git tag starting with `v*`:
+The GitHub Actions workflow automatically triggers on:
 
+- ✅ **Push to main/master** - Builds automatically on every push
+- ✅ **Version tags** - `v*` tags (e.g., `v1.0.0`, `v2.1.3`)
+- ✅ **Manual trigger** - Build from any commit, branch, or tag
+
+**Examples:**
 - ✅ `v1.0.0` - Will trigger build and publish
 - ✅ `v2.1.3` - Will trigger build and publish  
-- ❌ `1.0.0` - Will NOT trigger (missing 'v' prefix)
-- ❌ `feature-branch` - Will NOT trigger (not a version tag)
+- ✅ `main` branch push - Will trigger build
+- ✅ Manual build from commit SHA - Will trigger build
 
 ## 📦 Release Process
 
@@ -208,6 +213,7 @@ docker inspect <container-id> | grep -A 10 Health
 
 ## 📚 Additional Resources
 
+- [Commit-Based Build Guide](COMMIT_BASED_BUILD_GUIDE.md) - Build from any commit or branch
 - [Docker Hub Documentation](https://docs.docker.com/docker-hub/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Next.js Docker Deployment](https://nextjs.org/docs/deployment#docker-image)
