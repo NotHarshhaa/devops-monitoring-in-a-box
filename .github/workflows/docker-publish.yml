@@ -32,7 +32,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/devops-monitoring-dashboard
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/devops-monitoring-box
 
 jobs:
   build-and-push:

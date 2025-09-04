@@ -105,11 +105,12 @@ The Monitoring in a Box project is organized into several key directories, each 
 - **`exporters/`** - System metrics exporters
 
 ### 🎯 **Key Files**
+- **`devops-monitor.sh`** - Main management script (wrapper)
 - **`env.example`** - Environment variables template
 - **`site-config.json`** - Site configuration (SEO, branding)
 - **`config.json`** - Monitoring configuration
 - **`docker-compose.yml`** - Production stack configuration
-- **`devops-monitor.sh`** - Management script
+- **`scripts/`** - All management and setup scripts
 
 ### 📖 **Detailed Structure**
 For a complete breakdown of all directories, files, and their purposes, see our comprehensive **[Project Structure Guide](docs/PROJECT_STRUCTURE.md)**.
@@ -219,6 +220,8 @@ We've created convenient scripts to manage your entire monitoring stack:
 ```bash
 # Start everything (monitoring stack + UI)
 ./devops-monitor.sh start
+# or
+./scripts/devops-monitor.sh start
 
 # Start just the UI development server
 ./devops-monitor.sh ui

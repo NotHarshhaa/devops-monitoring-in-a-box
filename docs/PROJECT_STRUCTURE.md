@@ -12,14 +12,50 @@ devops-monitoring-in-a-box/
 ├── config.json                  # Monitoring configuration
 ├── docker-compose.yml           # Production monitoring stack
 ├── docker-compose.dev.yml       # Development setup with hot reloading
-├── devops-monitor.sh            # Management script for the stack
-├── start.sh                     # Quick start script
-├── stop.sh                      # Stop all services
-├── start-ui.sh                  # Start UI development server
-├── setup-ui-next.sh             # UI setup script
+├── devops-monitor.sh            # Main management script wrapper
+├── scripts/                     # Management and setup scripts
+│   ├── README.md                # Scripts documentation
+│   ├── devops-monitor.sh        # Main management script
+│   ├── start.sh                 # Quick start script
+│   ├── stop.sh                  # Stop all services
+│   ├── start-ui.sh              # Start UI development server
+│   ├── start-full-stack.sh      # Full stack startup script
+│   ├── setup-ui-next.sh         # UI setup script
+│   ├── setup-env.sh             # Environment setup script
+│   ├── generate-env.sh          # Environment generation script
+│   └── test-docker-build.sh     # Docker build testing script
 ├── LICENSE                      # MIT License
 └── package-lock.json            # NPM lock file
 ```
+
+## 📜 Management Scripts
+
+```bash
+scripts/
+├── README.md                    # Scripts documentation and usage guide
+├── devops-monitor.sh            # Main management script for the stack
+├── start.sh                     # Quick start script
+├── stop.sh                      # Quick stop script
+├── start-ui.sh                  # UI development server startup
+├── start-full-stack.sh          # Full stack startup script
+├── setup-ui-next.sh             # UI setup and configuration
+├── setup-env.sh                 # Environment setup script
+├── generate-env.sh              # Environment generation script
+└── test-docker-build.sh         # Docker build testing script
+```
+
+**Purpose**: Centralized location for all management and setup scripts.
+
+**Key Scripts:**
+- **`devops-monitor.sh`** - Main management script with start/stop/status/logs commands
+- **`start.sh`** - Quick start for the monitoring stack
+- **`stop.sh`** - Quick stop for all services
+- **`start-ui.sh`** - Start UI development server
+- **`start-full-stack.sh`** - Full stack startup with all services
+- **`setup-ui-next.sh`** - Complete UI setup and configuration
+- **`setup-env.sh`** - Environment configuration setup
+- **`generate-env.sh`** - Interactive environment file generation
+- **`test-docker-build.sh`** - Docker build testing and validation
 
 ## 🔧 Core Monitoring Services
 
@@ -200,8 +236,6 @@ ui-next/
 ├── tailwind.config.js           # Tailwind CSS configuration
 ├── tsconfig.json                # TypeScript configuration
 ├── middleware.ts                # Next.js middleware for authentication
-├── generate-env.sh              # Environment file generation script
-├── setup-env.sh                 # Environment setup script
 └── test-prisma.js               # Database connection testing script
 ```
 
@@ -305,14 +339,17 @@ exporters/
 
 ### Development Setup
 ```bash
-# Install dependencies
-cd ui-next
-npm install
-
-# Set up environment
-cp ../env.example .env
+# Setup for first time
+./scripts/setup-ui-next.sh
+./scripts/setup-env.sh
 
 # Start development server
+./scripts/start-ui.sh
+
+# Or manually:
+cd ui-next
+npm install
+cp ../env.example .env
 npm run dev
 ```
 

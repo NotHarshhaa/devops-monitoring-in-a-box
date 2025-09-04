@@ -3,6 +3,18 @@
 # Setup script for DevOps Monitoring UI environment variables
 echo "Setting up environment variables for DevOps Monitoring UI..."
 
+# Get the directory of the script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the project root directory (parent of scripts directory)
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+UI_NEXT_DIR="$PROJECT_ROOT/ui-next"
+
+# Change to ui-next directory
+cd "$UI_NEXT_DIR" || {
+    echo "❌ Failed to change to ui-next directory."
+    exit 1
+}
+
 # Create .env.local file if it doesn't exist
 if [ ! -f ".env.local" ]; then
     echo "Creating .env.local file..."

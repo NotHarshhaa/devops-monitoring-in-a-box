@@ -5,6 +5,14 @@
 
 set -e
 
+# Get the directory of the script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the project root directory (parent of scripts directory)
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Change to project root directory
+cd "$PROJECT_ROOT"
+
 echo "🚀 Starting DevOps Monitoring Dashboard - Full Stack"
 echo "=================================================="
 
@@ -16,7 +24,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+if ! docker compose version &> /dev/null; then
     echo "❌ Docker Compose is not installed. Please install Docker Compose first."
     echo "   Visit: https://docs.docker.com/compose/install/"
     exit 1
@@ -39,11 +47,11 @@ fi
 
 # Pull latest images
 echo "📦 Pulling latest Docker images..."
-docker-compose pull
+docker compose pull
 
 # Start the services
 echo "🏗️  Starting monitoring stack..."
-docker-compose up -d
+docker compose up -d
 
 # Wait for services to be ready
 echo "⏳ Waiting for services to start..."
@@ -53,7 +61,7 @@ sleep 10
 echo ""
 echo "📊 Service Status:"
 echo "=================="
-docker-compose ps
+docker compose ps
 
 echo ""
 echo "🎉 DevOps Monitoring Dashboard is starting up!"
@@ -68,13 +76,13 @@ echo "   • Node Exporter: http://localhost:9100"
 echo "   • cAdvisor:      http://localhost:8080"
 echo ""
 echo "📋 Useful Commands:"
-echo "   • View logs:     docker-compose logs -f"
-echo "   • Stop services: docker-compose down"
-echo "   • Restart:       docker-compose restart"
+echo "   • View logs:     docker compose logs -f"
+echo "   • Stop services: docker compose down"
+echo "   • Restart:       docker compose restart"
 echo ""
 echo "🔍 To view logs for a specific service:"
-echo "   docker-compose logs -f devops-monitor-ui"
-echo "   docker-compose logs -f prometheus"
-echo "   docker-compose logs -f grafana"
+echo "   docker compose logs -f devops-monitor-ui"
+echo "   docker compose logs -f prometheus"
+echo "   docker compose logs -f grafana"
 echo ""
 echo "✨ Happy monitoring!"

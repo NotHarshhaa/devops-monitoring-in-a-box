@@ -8,11 +8,13 @@ NC='\033[0m' # No Color
 
 # Get the directory of the script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UI_DIR="$SCRIPT_DIR/ui-next"
+# Get the project root directory (parent of scripts directory)
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+UI_DIR="$PROJECT_ROOT/ui-next"
 
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║                                                          ║${NC}"
-echo -e "${BLUE}║              Starting DevOps Monitor UI                 ║${NC}"
+echo -e "${BLUE}║              Starting DevOps Monitor UI                  ║${NC}"
 echo -e "${BLUE}║                                                          ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════╝${NC}"
 echo ""
