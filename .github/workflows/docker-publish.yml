@@ -48,7 +48,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.inputs.tag != 'latest' && github.event.inputs.tag || github.ref }}
+        ref: ${{ github.event.inputs.tag != 'latest' && github.event.inputs.tag != '' && github.event.inputs.tag || github.ref }}
+        fetch-depth: 0
+      
+    - name: Validate Git reference
+      run: |
+        echo "🔍 Validating Git reference..."
+        if [ "${{ github.event.inputs.tag }}" != "latest" ] && [ "${{ github.event.inputs.tag }}" != "" ]; then
+          echo "📋 Checking if tag/branch '${{ github.event.inputs.tag }}' exists..."
+          if git rev-parse --verify "${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+            echo "✅ Git reference '${{ github.event.inputs.tag }}' found"
+            echo "📍 Current commit: $(git rev-parse HEAD)"
+            echo "🏷️  Current branch: $(git branch --show-current)"
+          else
+            echo "❌ Git reference '${{ github.event.inputs.tag }}' not found"
+            echo "📋 Available tags:"
+            git tag --list | head -10
+            echo "📋 Available branches:"
+            git branch -r | head -10
+            exit 1
+          fi
+        else
+          echo "✅ Using current branch/commit"
+          echo "📍 Current commit: $(git rev-parse HEAD)"
+          echo "🏷️  Current branch: $(git branch --show-current)"
+        fi
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
