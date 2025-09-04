@@ -6,7 +6,7 @@ on:
       - main
       - master
     tags:
-      - 'v*'  # Still support version tags like v1.0.0, v2.1.3, etc.
+      - 'v*'   # Still supports version tags like v1.0.0, v2.1.3
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -24,15 +24,6 @@ on:
         required: true
         default: true
         type: boolean
-      build_platform:
-        description: 'Build platform'
-        required: true
-        default: 'linux/amd64'
-        type: choice
-        options:
-          - linux/amd64
-          - linux/arm64
-          - linux/amd64,linux/arm64
       cache_enabled:
         description: 'Enable build cache'
         required: true
@@ -58,29 +49,14 @@ jobs:
       run: |
         echo "🔍 Validating Git reference..."
         if [ "${{ github.event.inputs.commit_sha }}" != "latest" ] && [ "${{ github.event.inputs.commit_sha }}" != "" ]; then
-          echo "📋 Checking if commit/branch '${{ github.event.inputs.commit_sha }}' exists..."
           if git rev-parse --verify "${{ github.event.inputs.commit_sha }}" >/dev/null 2>&1; then
             echo "✅ Git reference '${{ github.event.inputs.commit_sha }}' found"
-            echo "📍 Current commit: $(git rev-parse HEAD)"
-            echo "🏷️  Current branch: $(git branch --show-current)"
-            echo "📅 Commit date: $(git log -1 --format=%ci)"
-            echo "👤 Commit author: $(git log -1 --format=%an)"
-            echo "💬 Commit message: $(git log -1 --format=%s)"
           else
             echo "❌ Git reference '${{ github.event.inputs.commit_sha }}' not found"
-            echo "📋 Available branches:"
-            git branch -r | head -10
-            echo "📋 Recent commits:"
-            git log --oneline -10
             exit 1
           fi
         else
           echo "✅ Using current branch/commit"
-          echo "📍 Current commit: $(git rev-parse HEAD)"
-          echo "🏷️  Current branch: $(git branch --show-current)"
-          echo "📅 Commit date: $(git log -1 --format=%ci)"
-          echo "👤 Commit author: $(git log -1 --format=%an)"
-          echo "💬 Commit message: $(git log -1 --format=%s)"
         fi
       
     - name: Set up Docker Buildx
@@ -103,7 +79,7 @@ jobs:
           type=raw,value=${{ github.event.inputs.image_version }}
           type=raw,value=latest,enable={{is_default_branch}}
           
-    - name: Build and push Docker image
+    - name: Build and push Docker image (multi-arch)
       id: build
       uses: docker/build-push-action@v5
       with:
@@ -112,11 +88,13 @@ jobs:
         push: ${{ github.event.inputs.push_to_registry != 'false' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        platforms: ${{ github.event.inputs.build_platform }}
-        cache-from: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha' || '' }}
+        platforms: linux/amd64,linux/arm64
+        cache-from: |
+          type=gha
+          type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         cache-to: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha,mode=max' || '' }}
         
-    - name: Run Docker Scout
+    - name: Run Docker Scout (security scan)
       if: ${{ github.event.inputs.push_to_registry != 'false' }}
       uses: docker/scout-action@v1
       with:
@@ -125,7 +103,6 @@ jobs:
         only-severities: critical
         exit-code: true
         write-comment: true
-      # Note: Only fails on CRITICAL vulnerabilities. HIGH vulnerabilities (like CVE-2024-21538 in npm base image) are reported but don't fail the build.
         
     - name: Image digest
       if: ${{ github.event.inputs.push_to_registry != 'false' }}
@@ -139,7 +116,7 @@ jobs:
         echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
         echo "| **Git Reference** | \`${{ github.event.inputs.commit_sha }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "| **Image Version** | \`${{ github.event.inputs.image_version }}\` |" >> $GITHUB_STEP_SUMMARY
-        echo "| **Build Platform** | \`${{ github.event.inputs.build_platform }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Platforms** | linux/amd64, linux/arm64 |" >> $GITHUB_STEP_SUMMARY
         echo "| **Push to Registry** | \`${{ github.event.inputs.push_to_registry }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "| **Cache Enabled** | \`${{ github.event.inputs.cache_enabled }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -152,10 +129,8 @@ jobs:
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🔒 Security Status" >> $GITHUB_STEP_SUMMARY
-        echo "- **CRITICAL vulnerabilities**: 0 (workflow will fail if found)" >> $GITHUB_STEP_SUMMARY
-        echo "- **HIGH vulnerabilities**: 1 (CVE-2024-21538 in npm base image - reported but not blocking)" >> $GITHUB_STEP_SUMMARY
-        echo "- **Application dependencies**: All secure" >> $GITHUB_STEP_SUMMARY
-        echo "- **Base image**: Alpine Linux 3.22.1 (fully patched)" >> $GITHUB_STEP_SUMMARY
+        echo "- **CRITICAL vulnerabilities**: 0 (workflow fails if found)" >> $GITHUB_STEP_SUMMARY
+        echo "- **HIGH vulnerabilities**: Reported (not blocking)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
         if [ "${{ github.event.inputs.push_to_registry }}" != "false" ]; then
@@ -167,13 +142,7 @@ jobs:
       
     - name: Notify success
       run: |
-        echo "✅ Successfully built Docker image"
+        echo "✅ Successfully built multi-arch Docker image"
         echo "📦 Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
         echo "🏷️  Tags: ${{ steps.meta.outputs.tags }}"
-        echo "🔧 Platform: ${{ github.event.inputs.build_platform }}"
-        echo "📋 Git Reference: ${{ github.event.inputs.commit_sha }}"
-        if [ "${{ github.event.inputs.push_to_registry }}" != "false" ]; then
-          echo "📤 Pushed to Docker Hub registry"
-        else
-          echo "🏠 Built locally (not pushed)"
-        fi
+        echo "🔧 Platforms: linux/amd64, linux/arm64"
