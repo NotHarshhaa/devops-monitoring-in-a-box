@@ -75,21 +75,154 @@ See what you'll get with our modern monitoring dashboard:
 
 *Comprehensive settings and configuration options for all monitoring aspects*
 
-## ⚡ Quick Start
+## 🚀 Usage & Deployment
 
+Choose your preferred deployment method based on your needs:
+
+### 🐳 **Docker Deployment (Recommended)**
+
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/harshhaareddy/devops-monitoring-box)
+
+**Option 1: Use Pre-built Image (Fastest)**
 ```bash
-git clone https://github.com/<your-username>/devops-monitoring-in-a-box.git
-cd devops-monitoring-in-a-box
-docker-compose up -d
+# Pull and run the pre-built image
+docker pull harshhaareddy/devops-monitoring-box:latest
+docker run -d -p 4000:4000 --name devops-monitor harshhaareddy/devops-monitoring-box:latest
+
+# Access the application
+open http://localhost:4000
 ```
 
-Then open:
+**Option 2: Build Your Own Image**
+```bash
+# Clone the repository
+git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
+cd devops-monitoring-in-a-box
 
-* 🎨 **DevOps Monitor UI** → [http://localhost:4000](http://localhost:4000) - Modern unified dashboard
-* Grafana → [http://localhost:3000](http://localhost:3000) (user: `admin`, pass: `admin`)
-* Prometheus → [http://localhost:9090](http://localhost:9090)
-* Loki → [http://localhost:3100](http://localhost:3100)
-* Alertmanager → [http://localhost:9093](http://localhost:9093)
+# Build your custom image
+docker build -t your-username/devops-monitoring-box:latest .
+
+# Run your custom image
+docker run -d -p 4000:4000 --name devops-monitor your-username/devops-monitoring-box:latest
+
+# Push to your registry (optional)
+docker push your-username/devops-monitoring-box:latest
+```
+
+**Option 3: Full Stack with Docker Compose**
+```bash
+# Clone and start the complete monitoring stack
+git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
+cd devops-monitoring-in-a-box
+
+# Start all services (Prometheus, Grafana, Loki, etc.)
+./devops-monitor.sh start
+
+# Or manually with Docker Compose
+docker compose up -d
+```
+
+### 🌐 **Cloud Deployment**
+
+#### **Vercel (Frontend Only)**
+[![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/new/clone?repository-url=https://github.com/NotHarshhaa/devops-monitoring-in-a-box)
+
+```bash
+# Deploy the UI to Vercel
+cd ui-next
+npm install
+vercel --prod
+
+# Or use the one-click deploy button above
+```
+
+**Features:**
+- ✅ Automatic deployments from GitHub
+- ✅ Custom domain support
+- ✅ Environment variables management
+- ✅ Serverless functions support
+
+#### **Netlify (Frontend Only)**
+[![Netlify](https://img.shields.io/badge/Netlify-Deploy-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://app.netlify.com/start/deploy?repository=https://github.com/NotHarshhaa/devops-monitoring-in-a-box)
+
+```bash
+# Build and deploy to Netlify
+cd ui-next
+npm install
+npm run build
+
+# Upload the 'out' folder to Netlify
+# Or connect your GitHub repository for auto-deployments
+```
+
+**Features:**
+- ✅ Continuous deployment from Git
+- ✅ Form handling and serverless functions
+- ✅ CDN and edge functions
+- ✅ Branch previews
+
+#### **Railway (Full Stack)**
+[![Railway](https://img.shields.io/badge/Railway-Deploy-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app/template/your-template-id)
+
+```bash
+# Deploy full stack to Railway
+railway login
+railway init
+railway up
+```
+
+### 🏗️ **Self-Hosted Options**
+
+#### **Kubernetes**
+```bash
+# Apply Kubernetes manifests
+kubectl apply -f k8s/
+kubectl get pods -n monitoring
+```
+
+#### **Traditional VPS/Server**
+```bash
+# On your server
+git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
+cd devops-monitoring-in-a-box
+
+# Install dependencies
+sudo apt update && sudo apt install docker.io docker-compose
+
+# Start services
+./devops-monitor.sh start
+```
+
+### 🎯 **Access Points**
+
+Once deployed, access your monitoring tools:
+
+| Service | URL | Credentials | Description |
+|---------|-----|-------------|-------------|
+| 🎨 **Modern UI** | [http://localhost:4000](http://localhost:4000) | - | Unified dashboard experience |
+| 📊 **Grafana** | [http://localhost:3000](http://localhost:3000) | admin/admin | Visualization dashboards |
+| 📈 **Prometheus** | [http://localhost:9090](http://localhost:9090) | - | Metrics collection & querying |
+| 📜 **Loki** | [http://localhost:3100](http://localhost:3100) | - | Log aggregation |
+| 🚨 **Alertmanager** | [http://localhost:9093](http://localhost:9093) | - | Alert management |
+
+### 🔧 **Quick Management Commands**
+
+```bash
+# Check status
+./devops-monitor.sh status
+
+# View logs
+./devops-monitor.sh logs
+
+# Stop services
+./devops-monitor.sh stop
+
+# Restart services
+./devops-monitor.sh restart
+
+# Clean up (removes all containers and volumes)
+./devops-monitor.sh clean
+```
 
 ## 📂 Project Structure
 
