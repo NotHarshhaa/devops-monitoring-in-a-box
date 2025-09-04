@@ -4,6 +4,37 @@ on:
   push:
     tags:
       - 'v*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag or version (e.g., v1.0.0)'
+        required: true
+        default: 'latest'
+        type: string
+      image_version:
+        description: 'Docker image version tag'
+        required: true
+        default: 'latest'
+        type: string
+      push_to_registry:
+        description: 'Push to Docker Hub registry'
+        required: true
+        default: true
+        type: boolean
+      build_platform:
+        description: 'Build platform'
+        required: true
+        default: 'linux/amd64'
+        type: choice
+        options:
+          - linux/amd64
+          - linux/arm64
+          - linux/amd64,linux/arm64
+      cache_enabled:
+        description: 'Enable build cache'
+        required: true
+        default: true
+        type: boolean
 
 env:
   REGISTRY: docker.io
@@ -16,11 +47,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.tag != 'latest' && github.event.inputs.tag || github.ref }}
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       
     - name: Log in to Docker Hub
+      if: ${{ github.event.inputs.push_to_registry != 'false' }}
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -33,24 +67,62 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
           type=ref,event=tag
+          type=raw,value=${{ github.event.inputs.image_version }}
           type=raw,value=latest,enable={{is_default_branch}}
           
     - name: Build and push Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile
-        push: true
+        push: ${{ github.event.inputs.push_to_registry != 'false' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        platforms: ${{ github.event.inputs.build_platform }}
+        cache-from: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha' || '' }}
+        cache-to: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha,mode=max' || '' }}
         
     - name: Image digest
+      if: ${{ github.event.inputs.push_to_registry != 'false' }}
       run: echo ${{ steps.build.outputs.digest }}
+      
+    - name: Build summary
+      run: |
+        echo "## 🐳 Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+        echo "| **Git Tag** | \`${{ github.event.inputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Image Version** | \`${{ github.event.inputs.image_version }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Build Platform** | \`${{ github.event.inputs.build_platform }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Push to Registry** | \`${{ github.event.inputs.push_to_registry }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Cache Enabled** | \`${{ github.event.inputs.cache_enabled }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Image Details" >> $GITHUB_STEP_SUMMARY
+        echo "- **Registry**: \`${{ env.REGISTRY }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image Name**: \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tags**: \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event.inputs.push_to_registry }}" != "false" ]; then
+          echo "- **Digest**: \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event.inputs.push_to_registry }}" != "false" ]; then
+          echo "1. Pull the image: \`docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Run the container: \`docker run -p 3000:3000 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_version }}\`" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ Image built successfully (not pushed to registry)" >> $GITHUB_STEP_SUMMARY
+        fi
       
     - name: Notify success
       run: |
-        echo "✅ Successfully built and pushed Docker image"
+        echo "✅ Successfully built Docker image"
         echo "📦 Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
         echo "🏷️  Tags: ${{ steps.meta.outputs.tags }}"
+        echo "🔧 Platform: ${{ github.event.inputs.build_platform }}"
+        if [ "${{ github.event.inputs.push_to_registry }}" != "false" ]; then
+          echo "📤 Pushed to Docker Hub registry"
+        else
+          echo "🏠 Built locally (not pushed)"
+        fi
