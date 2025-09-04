@@ -123,19 +123,16 @@ services:
 
   # DevOps Monitor UI - Modern Next.js web dashboard
   devops-monitor-ui:
-    build:
-      context: ./ui-next
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME:-yourusername}/devops-monitoring-dashboard:latest
     container_name: devops-monitor-ui
     ports:
-      - "4000:3000"
-    volumes:
-      - ./ui-next:/app
-      - /app/node_modules
-      - /app/.next
+      - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - SITE_NAME=${SITE_NAME:-DevOps Monitoring Dashboard}
+      - SITE_URL=${SITE_URL:-http://localhost:3000}
+      - SITE_DESCRIPTION=${SITE_DESCRIPTION:-Comprehensive DevOps monitoring solution}
     restart: unless-stopped
     networks:
       - monitoring
