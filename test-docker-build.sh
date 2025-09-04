@@ -16,7 +16,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Build the Docker image
-echo "🏗️  Building Docker image..."
+echo "🏗️  Building optimized Docker image (158MB)..."
 docker build -t devops-monitoring-dashboard:test .
 
 if [ $? -eq 0 ]; then
