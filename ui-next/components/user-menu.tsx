@@ -62,16 +62,7 @@ export function UserMenu() {
   }
 
   if (!session?.user) {
-    return (
-      <Button 
-        variant="ghost" 
-        size="sm"
-        onClick={() => router.push("/auth/signin")}
-        className="h-8"
-      >
-        Sign In
-      </Button>
-    )
+    return null
   }
 
   return (

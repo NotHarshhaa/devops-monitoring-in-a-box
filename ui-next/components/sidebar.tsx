@@ -67,16 +67,29 @@ const NavigationItem = memo(({ item, isActive, isCollapsed }: {
   <Link
     href={item.href}
     className={cn(
-      "relative flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+      "group relative flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 hover:scale-[1.02]",
       isActive
-        ? "bg-primary/10 text-primary"
-        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 shadow-md shadow-blue-500/10 dark:shadow-blue-400/20 border border-blue-200 dark:border-blue-700"
+        : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white hover:shadow-sm",
       isCollapsed && "justify-center"
     )}
     title={isCollapsed ? item.name : undefined}
     aria-current={isActive ? "page" : undefined}
   >
-    <item.icon className={cn("h-5 w-5 flex-shrink-0", !isCollapsed && "mr-3")} />
+    <div className={cn(
+      "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
+      isActive 
+        ? "bg-blue-500 dark:bg-blue-600 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/30" 
+        : "bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800"
+    )}>
+      <item.icon className={cn(
+        "h-4 w-4 flex-shrink-0 transition-colors duration-200",
+        isActive 
+          ? "text-white" 
+          : "text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400",
+        !isCollapsed && "mr-0"
+      )} />
+    </div>
     <AnimatePresence>
       {!isCollapsed && (
         <motion.span
@@ -84,7 +97,7 @@ const NavigationItem = memo(({ item, isActive, isCollapsed }: {
           animate={{ opacity: 1, width: "auto" }}
           exit={{ opacity: 0, width: 0 }}
           transition={{ duration: 0.2 }}
-          className="truncate overflow-hidden"
+          className="truncate overflow-hidden ml-3"
         >
           {item.name}
         </motion.span>
@@ -92,7 +105,7 @@ const NavigationItem = memo(({ item, isActive, isCollapsed }: {
     </AnimatePresence>
     {isActive && !isCollapsed && (
       <motion.div
-        className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
+        className="absolute left-0 w-1 h-10 bg-blue-500 dark:bg-blue-400 rounded-r-full shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20"
         layoutId="activeNav"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -114,11 +127,13 @@ const ServiceStatusItem = memo(({ service, isCollapsed }: {
   isCollapsed: boolean 
 }) => (
   <div className={cn(
-    "flex items-center",
+    "group flex items-center p-3 rounded-xl transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-[1.02]",
     isCollapsed ? "justify-center" : "justify-between"
   )}>
-    <div className="flex items-center space-x-2 min-w-0">
-      <service.icon className="h-4 w-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+    <div className="flex items-center space-x-3 min-w-0">
+      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800 transition-colors duration-200">
+        <service.icon className="h-4 w-4 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors duration-200" aria-hidden="true" />
+      </div>
       <AnimatePresence>
         {!isCollapsed && (
           <motion.span
@@ -126,7 +141,7 @@ const ServiceStatusItem = memo(({ service, isCollapsed }: {
             animate={{ opacity: 1, width: "auto" }}
             exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.2 }}
-            className="text-sm truncate overflow-hidden"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate overflow-hidden"
           >
             {service.name}
           </motion.span>
@@ -140,25 +155,29 @@ const ServiceStatusItem = memo(({ service, isCollapsed }: {
           animate={{ opacity: 1, width: "auto" }}
           exit={{ opacity: 0, width: 0 }}
           transition={{ duration: 0.2 }}
-          className="flex items-center space-x-1 flex-shrink-0 overflow-hidden"
+          className="flex items-center space-x-2 flex-shrink-0 overflow-hidden"
         >
-          <span 
-            className={cn(
-              "relative flex h-2 w-2 rounded-full",
-              service.status === 'healthy' ? "bg-green-500" : "bg-red-500"
-            )}
-            aria-label={`${service.name} status: ${service.status}`}
-          >
-            {service.status === 'healthy' && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
-            )}
-          </span>
-          <span className={cn(
-            "text-xs",
-            getStatusColor(service.status)
-          )}>
-            {service.status === 'healthy' ? 'Healthy' : 'Error'}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span 
+              className={cn(
+                "relative flex h-3 w-3 rounded-full shadow-lg",
+                service.status === 'healthy' ? "bg-green-500 shadow-green-500/25" : "bg-red-500 shadow-red-500/25"
+              )}
+              aria-label={`${service.name} status: ${service.status}`}
+            >
+              {service.status === 'healthy' && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              )}
+            </span>
+            <span className={cn(
+              "text-xs font-medium px-2 py-1 rounded-full",
+              service.status === 'healthy' 
+                ? "text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30" 
+                : "text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30"
+            )}>
+              {service.status === 'healthy' ? 'Healthy' : 'Error'}
+            </span>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -252,7 +271,10 @@ export const Sidebar = memo(() => {
   return (
     <>
       {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className={cn(
+        "lg:hidden fixed z-50 transition-all duration-300",
+        isOpen ? "top-4 right-4" : "top-4 left-4"
+      )}>
         <Button
           id="menu-button"
           variant="outline"
@@ -260,7 +282,7 @@ export const Sidebar = memo(() => {
           onClick={toggleSidebar}
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
-          className="bg-background/80 backdrop-blur-sm border-border/50"
+          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/50 dark:border-gray-700 shadow-lg shadow-gray-900/10 dark:shadow-black/30 hover:scale-105 transition-all duration-200 h-10 w-10"
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -270,7 +292,7 @@ export const Sidebar = memo(() => {
               exit={{ opacity: 0, rotate: 90 }}
               transition={{ duration: 0.2 }}
             >
-              {isOpen ? <X size={20} /> : <Menu size={20} />}
+              {isOpen ? <X size={22} className="text-gray-700 dark:text-gray-300" /> : <Menu size={22} className="text-gray-700 dark:text-gray-300" />}
             </motion.div>
           </AnimatePresence>
         </Button>
@@ -280,7 +302,7 @@ export const Sidebar = memo(() => {
       <motion.div
         id="sidebar"
         className={cn(
-          "bg-background/95 backdrop-blur-sm border-r border-border/50 overflow-hidden transition-all duration-300 ease-in-out",
+          "bg-white/95 dark:bg-gray-900 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700 overflow-hidden transition-all duration-300 ease-in-out shadow-2xl shadow-gray-900/5 dark:shadow-black/30",
           isDesktop 
             ? "relative z-auto" 
             : "fixed inset-y-0 left-0 z-40"
@@ -305,7 +327,7 @@ export const Sidebar = memo(() => {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className={cn(
-            "flex items-center border-b border-border/50",
+            "flex items-center border-b border-gray-200/60 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800",
             isCollapsed ? "justify-center p-4" : "justify-between p-6"
           )}>
             {isCollapsed ? (
@@ -314,35 +336,35 @@ export const Sidebar = memo(() => {
                   variant="ghost"
                   size="icon"
                   onClick={expandSidebar}
-                  className="h-10 w-10 p-0"
+                  className="h-12 w-12 p-0 group hover:scale-105 transition-transform duration-200"
                   aria-label="Expand sidebar"
                 >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
-                    <Activity className="h-6 w-6 text-primary-foreground" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500 dark:bg-blue-600 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/30 group-hover:shadow-xl group-hover:shadow-blue-500/30 dark:group-hover:shadow-blue-400/40 transition-all duration-200">
+                    <Activity className="h-6 w-6 text-white" />
                   </div>
                 </Button>
               </div>
             ) : (
               <>
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
-                    <Activity className="h-6 w-6 text-primary-foreground" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500 dark:bg-blue-600 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/30">
+                    <Activity className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-lg font-bold">DevOps Monitor</h1>
-                    <p className="text-sm text-muted-foreground">Monitoring in a Box</p>
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-white">DevOps Monitor</h1>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Monitoring in a Box</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2">
                   {isDesktop && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={toggleCollapse}
-                  className="h-8 w-8"
+                  className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
                   aria-label="Collapse sidebar"
                 >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                     </Button>
                   )}
                   <ThemeToggle />
@@ -362,7 +384,7 @@ export const Sidebar = memo(() => {
 
           {/* Service Status */}
           <div className={cn(
-            "border-t border-border/50",
+            "border-t border-gray-200/60 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800",
             isCollapsed ? "p-2" : "p-4"
           )}>
             <AnimatePresence>
@@ -372,8 +394,9 @@ export const Sidebar = memo(() => {
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3"
+                  className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center"
                 >
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                   Service Status
                 </motion.h3>
               )}
@@ -385,7 +408,7 @@ export const Sidebar = memo(() => {
 
           {/* Footer */}
           <div className={cn(
-            "border-t border-border/50 text-center",
+            "border-t border-gray-200/60 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800 text-center",
             isCollapsed ? "p-2" : "p-4"
           )}>
             <AnimatePresence>
@@ -395,9 +418,10 @@ export const Sidebar = memo(() => {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-xs text-muted-foreground flex items-center justify-center"
+                  className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center font-medium"
                 >
-                  Built with <Heart className="h-3 w-3 mx-1 text-red-500" /> by Harshhaa
+                  Built with <Heart className="h-3 w-3 mx-1 text-red-500 animate-pulse" /> by 
+                  <span className="ml-1 font-bold text-blue-600 dark:text-blue-400">Harshhaa</span>
                 </motion.p>
               ) : (
                 <motion.div
@@ -407,7 +431,9 @@ export const Sidebar = memo(() => {
                   transition={{ duration: 0.2 }}
                   className="flex justify-center"
                 >
-                  <Heart className="h-4 w-4 text-red-500" />
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30">
+                    <Heart className="h-4 w-4 text-red-500 animate-pulse" />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
