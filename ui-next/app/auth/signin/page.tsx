@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Github, Chrome, AlertCircle, Eye, EyeOff } from "lucide-react"
+import { Loader2, Github, Chrome, AlertCircle, Eye, EyeOff, Home } from "lucide-react"
 import Link from "next/link"
 
 function SignInForm() {
@@ -94,6 +94,29 @@ function SignInForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
+            {/* Back to Home Button */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex justify-start mb-2"
+            >
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="group relative overflow-hidden bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-blue-400/20 transition-all duration-300 rounded-xl px-4 py-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Home className="h-4 w-4 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-300">
+                      Back to Home
+                    </span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/5 to-blue-500/0 dark:from-blue-400/0 dark:via-blue-400/5 dark:to-blue-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </Button>
+              </Link>
+            </motion.div>
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -105,7 +128,7 @@ function SignInForm() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
             >
               <Alert className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-blue-200 dark:border-blue-700/50 dark:shadow-lg dark:shadow-blue-500/10">
                 <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -130,7 +153,7 @@ function SignInForm() {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
               className="space-y-3"
             >
               <Button
@@ -157,7 +180,7 @@ function SignInForm() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
               className="relative"
             >
               <div className="absolute inset-0 flex items-center">
@@ -174,7 +197,7 @@ function SignInForm() {
             <motion.form 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
               onSubmit={handleCredentialsSignIn} 
               className="space-y-4"
             >
@@ -241,7 +264,7 @@ function SignInForm() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
               className="text-center text-sm text-muted-foreground dark:text-gray-400"
             >
               Don't have an account?{" "}

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Github, Chrome, AlertCircle, Eye, EyeOff, CheckCircle } from "lucide-react"
+import { Loader2, Github, Chrome, AlertCircle, Eye, EyeOff, CheckCircle, Home } from "lucide-react"
 import Link from "next/link"
 
 export default function SignUpPage() {
@@ -195,6 +195,29 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
+            {/* Back to Home Button */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex justify-start mb-2"
+            >
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="group relative overflow-hidden bg-gradient-to-r from-gray-50 to-green-50 dark:from-gray-800 dark:to-green-900/20 border-2 border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500 hover:shadow-lg hover:shadow-green-500/10 dark:hover:shadow-green-400/20 transition-all duration-300 rounded-xl px-4 py-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Home className="h-4 w-4 text-gray-600 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors duration-300">
+                      Back to Home
+                    </span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-green-500/0 dark:from-green-400/0 dark:via-green-400/5 dark:to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </Button>
+              </Link>
+            </motion.div>
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -206,7 +229,7 @@ export default function SignUpPage() {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
               className="space-y-3"
             >
               <Button
@@ -233,7 +256,7 @@ export default function SignUpPage() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
               className="relative"
             >
               <div className="absolute inset-0 flex items-center">
@@ -250,7 +273,7 @@ export default function SignUpPage() {
             <motion.form 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
               onSubmit={handleSubmit} 
               className="space-y-4"
             >
@@ -365,7 +388,7 @@ export default function SignUpPage() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
               className="text-center text-sm text-muted-foreground dark:text-gray-400"
             >
               Already have an account?{" "}
