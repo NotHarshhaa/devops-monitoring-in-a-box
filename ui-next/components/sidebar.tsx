@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { memo, useCallback, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -58,7 +58,116 @@ const getStatusColor = (status: string) => {
   }
 }
 
-export function Sidebar() {
+// Memoized navigation item component for better performance
+const NavigationItem = memo(({ item, isActive, isCollapsed }: { 
+  item: typeof navigation[0], 
+  isActive: boolean, 
+  isCollapsed: boolean 
+}) => (
+  <Link
+    href={item.href}
+    className={cn(
+      "relative flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+      isActive
+        ? "bg-primary/10 text-primary"
+        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+      isCollapsed && "justify-center"
+    )}
+    title={isCollapsed ? item.name : undefined}
+    aria-current={isActive ? "page" : undefined}
+  >
+    <item.icon className={cn("h-5 w-5 flex-shrink-0", !isCollapsed && "mr-3")} />
+    <AnimatePresence>
+      {!isCollapsed && (
+        <motion.span
+          initial={{ opacity: 0, width: 0 }}
+          animate={{ opacity: 1, width: "auto" }}
+          exit={{ opacity: 0, width: 0 }}
+          transition={{ duration: 0.2 }}
+          className="truncate overflow-hidden"
+        >
+          {item.name}
+        </motion.span>
+      )}
+    </AnimatePresence>
+    {isActive && !isCollapsed && (
+      <motion.div
+        className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
+        layoutId="activeNav"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{
+          type: "spring",
+          stiffness: 350,
+          damping: 30
+        }}
+      />
+    )}
+  </Link>
+))
+
+NavigationItem.displayName = "NavigationItem"
+
+// Memoized service status item component
+const ServiceStatusItem = memo(({ service, isCollapsed }: { 
+  service: typeof serviceStatus[0], 
+  isCollapsed: boolean 
+}) => (
+  <div className={cn(
+    "flex items-center",
+    isCollapsed ? "justify-center" : "justify-between"
+  )}>
+    <div className="flex items-center space-x-2 min-w-0">
+      <service.icon className="h-4 w-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+      <AnimatePresence>
+        {!isCollapsed && (
+          <motion.span
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: "auto" }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.2 }}
+            className="text-sm truncate overflow-hidden"
+          >
+            {service.name}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </div>
+    <AnimatePresence>
+      {!isCollapsed && (
+        <motion.div
+          initial={{ opacity: 0, width: 0 }}
+          animate={{ opacity: 1, width: "auto" }}
+          exit={{ opacity: 0, width: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex items-center space-x-1 flex-shrink-0 overflow-hidden"
+        >
+          <span 
+            className={cn(
+              "relative flex h-2 w-2 rounded-full",
+              service.status === 'healthy' ? "bg-green-500" : "bg-red-500"
+            )}
+            aria-label={`${service.name} status: ${service.status}`}
+          >
+            {service.status === 'healthy' && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+            )}
+          </span>
+          <span className={cn(
+            "text-xs",
+            getStatusColor(service.status)
+          )}>
+            {service.status === 'healthy' ? 'Healthy' : 'Error'}
+          </span>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+))
+
+ServiceStatusItem.displayName = "ServiceStatusItem"
+
+export const Sidebar = memo(() => {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isDesktop, setIsDesktop] = React.useState(false)
   const [isCollapsed, setIsCollapsed] = React.useState(false)
@@ -104,6 +213,42 @@ export function Sidebar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen, isDesktop])
 
+  // Optimized callbacks
+  const toggleSidebar = useCallback(() => {
+    setIsOpen(!isOpen)
+  }, [isOpen])
+
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed(!isCollapsed)
+  }, [isCollapsed])
+
+  const expandSidebar = useCallback(() => {
+    setIsCollapsed(false)
+  }, [])
+
+  // Memoized navigation items
+  const navigationItems = useMemo(() => 
+    navigation.map((item) => (
+      <NavigationItem
+        key={item.name}
+        item={item}
+        isActive={pathname === item.href}
+        isCollapsed={isCollapsed}
+      />
+    )), [pathname, isCollapsed]
+  )
+
+  // Memoized service status items
+  const serviceStatusItems = useMemo(() =>
+    serviceStatus.map((service) => (
+      <ServiceStatusItem
+        key={service.name}
+        service={service}
+        isCollapsed={isCollapsed}
+      />
+    )), [isCollapsed]
+  )
+
   return (
     <>
       {/* Mobile menu button */}
@@ -112,8 +257,9 @@ export function Sidebar() {
           id="menu-button"
           variant="outline"
           size="icon"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={toggleSidebar}
           aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
           className="bg-background/80 backdrop-blur-sm border-border/50"
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -153,6 +299,8 @@ export function Sidebar() {
           minWidth: isDesktop ? (isCollapsed ? 80 : 280) : 280,
           maxWidth: isDesktop ? (isCollapsed ? 80 : 280) : 280
         }}
+        role="navigation"
+        aria-label="Main navigation"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -165,7 +313,7 @@ export function Sidebar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setIsCollapsed(false)}
+                  onClick={expandSidebar}
                   className="h-10 w-10 p-0"
                   aria-label="Expand sidebar"
                 >
@@ -187,13 +335,13 @@ export function Sidebar() {
                 </div>
                 <div className="flex items-center space-x-1">
                   {isDesktop && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsCollapsed(!isCollapsed)}
-                      className="h-8 w-8"
-                      aria-label="Collapse sidebar"
-                    >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleCollapse}
+                  className="h-8 w-8"
+                  aria-label="Collapse sidebar"
+                >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                   )}
@@ -209,51 +357,7 @@ export function Sidebar() {
             "flex-1 space-y-1 overflow-y-auto",
             isCollapsed ? "p-2" : "p-4"
           )}>
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "relative flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    isCollapsed && "justify-center"
-                  )}
-                  title={isCollapsed ? item.name : undefined}
-                >
-                  <item.icon className={cn("h-5 w-5 flex-shrink-0", !isCollapsed && "mr-3")} />
-                  <AnimatePresence>
-                    {!isCollapsed && (
-                      <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="truncate overflow-hidden"
-                      >
-                        {item.name}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                  {isActive && !isCollapsed && (
-                    <motion.div
-                      className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
-                      layoutId="activeNav"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 30
-                      }}
-                    />
-                  )}
-                </Link>
-              )
-            })}
+            {navigationItems}
           </nav>
 
           {/* Service Status */}
@@ -275,55 +379,7 @@ export function Sidebar() {
               )}
             </AnimatePresence>
             <div className="space-y-2">
-              {serviceStatus.map((service) => (
-                <div key={service.name} className={cn(
-                  "flex items-center",
-                  isCollapsed ? "justify-center" : "justify-between"
-                )}>
-                  <div className="flex items-center space-x-2 min-w-0">
-                    <service.icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <AnimatePresence>
-                      {!isCollapsed && (
-                        <motion.span
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: "auto" }}
-                          exit={{ opacity: 0, width: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="text-sm truncate overflow-hidden"
-                        >
-                          {service.name}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  <AnimatePresence>
-                    {!isCollapsed && (
-                      <motion.div
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center space-x-1 flex-shrink-0 overflow-hidden"
-                      >
-                        <span className={cn(
-                          "relative flex h-2 w-2 rounded-full",
-                          service.status === 'healthy' ? "bg-green-500" : "bg-red-500"
-                        )}>
-                          {service.status === 'healthy' && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
-                          )}
-                        </span>
-                        <span className={cn(
-                          "text-xs",
-                          getStatusColor(service.status)
-                        )}>
-                          {service.status === 'healthy' ? 'Healthy' : 'Error'}
-                        </span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+              {serviceStatusItems}
             </div>
           </div>
 
@@ -373,4 +429,6 @@ export function Sidebar() {
       </AnimatePresence>
     </>
   )
-}
+})
+
+Sidebar.displayName = "Sidebar"

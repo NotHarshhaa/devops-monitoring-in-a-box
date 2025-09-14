@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { Suspense, lazy, memo } from "react"
 import { motion } from "framer-motion"
 import {
   Cpu,
@@ -26,10 +26,14 @@ import {
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 
-import { DynamicMetrics, MetricsConfigSummary } from "@/components/dynamic-metrics"
+// Lazy load heavy components for better performance
+const DynamicMetrics = lazy(() => import("@/components/dynamic-metrics").then(module => ({ default: module.DynamicMetrics })))
+const MetricsConfigSummary = lazy(() => import("@/components/dynamic-metrics").then(module => ({ default: module.MetricsConfigSummary })))
+const VersionMonitor = lazy(() => import("@/components/version-monitor").then(module => ({ default: module.VersionMonitor })))
+
 import { useMultiTenantDashboardConfig } from "@/lib/hooks/use-multi-tenant-config"
-import { VersionMonitor } from "@/components/version-monitor"
 
 // Mock data - in real app, this would come from React Query API calls
 const systemMetrics = {
@@ -151,11 +155,32 @@ export default function DashboardPage() {
       </div>
 
       {/* Dynamic Metrics */}
-      <DynamicMetrics 
-        showCards={true}
-        showCharts={false}
-        groupBy={false}
-      />
+      <Suspense fallback={
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center space-x-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      }>
+        <DynamicMetrics 
+          showCards={true}
+          showCharts={false}
+          groupBy={false}
+        />
+      </Suspense>
 
       {/* Configuration Summary */}
       <motion.div
@@ -163,7 +188,9 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
-        <MetricsConfigSummary />
+        <Suspense fallback={<Card><CardContent><Skeleton className="h-32 w-full" /></CardContent></Card>}>
+          <MetricsConfigSummary />
+        </Suspense>
       </motion.div>
 
       {/* Dynamic Charts */}
@@ -172,11 +199,13 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <DynamicMetrics 
-          showCards={false}
-          showCharts={true}
-          groupBy={true}
-        />
+        <Suspense fallback={<Card><CardContent><Skeleton className="h-64 w-full" /></CardContent></Card>}>
+          <DynamicMetrics 
+            showCards={false}
+            showCharts={true}
+            groupBy={true}
+          />
+        </Suspense>
       </motion.div>
 
       {/* Recent Activity & Quick Actions */}
@@ -314,10 +343,12 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.9 }}
       >
-        <VersionMonitor 
-          showDetails={false}
-          autoRefresh={false}
-        />
+        <Suspense fallback={<Card><CardContent><Skeleton className="h-32 w-full" /></CardContent></Card>}>
+          <VersionMonitor 
+            showDetails={false}
+            autoRefresh={false}
+          />
+        </Suspense>
       </motion.div>
     </div>
   )

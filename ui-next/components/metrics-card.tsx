@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -22,7 +22,7 @@ interface MetricsCardProps {
   color?: 'default' | 'success' | 'warning' | 'danger';
 }
 
-export function MetricsCard({
+export const MetricsCard = memo(({
   title,
   description,
   value,
@@ -36,8 +36,9 @@ export function MetricsCard({
   className,
   icon,
   color = 'default'
-}: MetricsCardProps) {
-  const getColorClasses = () => {
+}: MetricsCardProps) => {
+  // Memoized color classes for better performance
+  const colorClasses = useMemo(() => {
     switch (color) {
       case 'success':
         return 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950';
@@ -48,16 +49,18 @@ export function MetricsCard({
       default:
         return '';
     }
-  };
+  }, [color]);
 
-  const getProgressColor = () => {
+  // Memoized progress color
+  const progressColor = useMemo(() => {
     if (percentage === undefined) return 'bg-blue-500';
     if (percentage < 50) return 'bg-green-500';
     if (percentage < 80) return 'bg-yellow-500';
     return 'bg-red-500';
-  };
+  }, [percentage]);
 
-  const formatValue = (val: number | string) => {
+  // Memoized value formatting
+  const formatValue = useCallback((val: number | string) => {
     if (typeof val === 'number') {
       if (val >= 1000) {
         return (val / 1000).toFixed(1) + 'k';
@@ -65,7 +68,7 @@ export function MetricsCard({
       return val.toFixed(1);
     }
     return val;
-  };
+  }, []);
 
   if (isLoading) {
     return (
@@ -136,7 +139,7 @@ export function MetricsCard({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <Card className={cn("relative overflow-hidden transition-all duration-200 hover:shadow-md", getColorClasses(), className)}>
+        <Card className={cn("relative overflow-hidden transition-all duration-200 hover:shadow-md", colorClasses, className)}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -203,4 +206,6 @@ export function MetricsCard({
       </Card>
     </motion.div>
   );
-}
+});
+
+MetricsCard.displayName = "MetricsCard";
