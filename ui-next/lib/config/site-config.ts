@@ -5,7 +5,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   // Basic Site Information
   name: 'Monitoring in a Box',
   description: 'Modern monitoring solution for your DevOps infrastructure with real-time metrics, logs, and alerts',
-  url: 'http://localhost:3000',
+  url: 'http://localhost:4000',
   version: '1.0.0',
   
   // SEO Configuration
@@ -34,7 +34,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
       description: 'Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting.',
       type: 'website',
       image: '/banner.png',
-      url: 'http://localhost:3000',
+      url: 'http://localhost:4000',
       site_name: 'Monitoring in a Box'
     },
     twitter: {
