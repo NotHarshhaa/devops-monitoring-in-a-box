@@ -236,6 +236,8 @@ show_help() {
     echo "  status    - Show current project and service status"
     echo "  logs      - Show logs from all services"
     echo "  clean     - Clean up Docker containers and volumes"
+    echo "  health    - Run health check on all services"
+    echo "  setup     - Setup environment and dependencies"
     echo "  help      - Show this help message"
     echo ""
     echo "Examples:"
@@ -333,6 +335,12 @@ main() {
             ;;
         clean)
             clean_up
+            ;;
+        health)
+            ./scripts/health-check.sh
+            ;;
+        setup)
+            ./scripts/setup-env.sh
             ;;
         help|--help|-h)
             show_help

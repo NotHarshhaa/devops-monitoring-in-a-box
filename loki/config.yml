@@ -65,25 +65,11 @@ limits_config:
   max_query_series: 100000
   max_query_lookback: 30d
   max_query_length: 721h
-  max_query_parallelism: 32
   max_streams_per_user: 0
   max_line_size: 256000
   max_entries_limit_per_query: 5000
   max_global_streams_per_user: 0
   max_chunks_per_query: 2000000
-  max_query_series: 100000
-  max_query_parallelism: 32
-  max_streams_matchers_per_query: 1000
-  max_concurrent_tail_requests: 10
-  max_cache_freshness_per_query: 10m
-  max_query_parallelism: 32
-  max_streams_per_user: 0
-  max_line_size: 256000
-  max_entries_limit_per_query: 5000
-  max_global_streams_per_user: 0
-  max_chunks_per_query: 2000000
-  max_query_series: 100000
-  max_query_parallelism: 32
   max_streams_matchers_per_query: 1000
   max_concurrent_tail_requests: 10
 

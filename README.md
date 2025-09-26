@@ -346,84 +346,127 @@ For detailed configuration options, environment variables, and deployment settin
 
 📖 **For detailed setup instructions, see [SETUP.md](SETUP.md)**
 
-### 🎯 Quick Commands
+### 🎯 Quick Setup
+
+1. **Clone and setup environment:**
+   ```bash
+   git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
+   cd devops-monitoring-in-a-box
+   
+   # Setup environment (creates .env files, installs dependencies)
+   ./scripts/setup-env.sh
+   ```
+
+2. **Start the monitoring stack:**
+   ```bash
+   # Start everything (monitoring stack + UI)
+   ./scripts/devops-monitor.sh start
+   
+   # Check health of all services
+   ./scripts/devops-monitor.sh health
+   ```
+
+### 🎯 Management Commands
 
 We've created convenient scripts to manage your entire monitoring stack:
 
 ```bash
 # Start everything (monitoring stack + UI)
-./devops-monitor.sh start
-# or
 ./scripts/devops-monitor.sh start
 
 # Start just the UI development server
-./devops-monitor.sh ui
+./scripts/devops-monitor.sh ui
 
 # Check project status
-./devops-monitor.sh status
+./scripts/devops-monitor.sh status
+
+# Run comprehensive health check
+./scripts/devops-monitor.sh health
 
 # View service logs
-./devops-monitor.sh logs
+./scripts/devops-monitor.sh logs
 
 # Stop everything
-./devops-monitor.sh stop
+./scripts/devops-monitor.sh stop
+
+# Clean up (removes containers and volumes)
+./scripts/devops-monitor.sh clean
 
 # Get help
-./devops-monitor.sh help
+./scripts/devops-monitor.sh help
 ```
 
 ### Prerequisites
 
 * Docker and Docker Compose installed
 * At least 2GB of available RAM
-* Ports 3000, 9090, 3100, 9093 available
+* Ports 3000, 4000, 9090, 3100, 9093 available
 
 ### Installation
 
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/<your-username>/devops-monitoring-in-a-box.git
+   git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
    cd devops-monitoring-in-a-box
    ```
 
-2. **Start the monitoring stack:**
+2. **Setup environment:**
+
+   ```bash
+   # Setup environment (creates .env files, installs dependencies)
+   ./scripts/setup-env.sh
+   ```
+
+3. **Start the monitoring stack:**
 
    ```bash
    # Option 1: Using the management script (Recommended)
-   ./devops-monitor.sh start
+   ./scripts/devops-monitor.sh start
    
    # Option 2: Using Docker Compose directly
-   docker-compose up -d
+   docker compose up -d
    ```
 
-3. **Verify all services are running:**
+4. **Verify all services are running:**
 
    ```bash
-   docker-compose ps
+   # Check status
+   ./scripts/devops-monitor.sh status
+   
+   # Run health check
+   ./scripts/devops-monitor.sh health
    ```
 
-4. **Access the services:**
-   * **Grafana**: <http://localhost:3000> (admin/admin)
-   * **Prometheus**: <http://localhost:9090>
-   * **Loki**: <http://localhost:3100>
-   * **Alertmanager**: <http://localhost:9093>
+5. **Access the services:**
+   * **🎨 DevOps Monitor UI**: <http://localhost:4000>
+   * **📊 Grafana**: <http://localhost:3000> (admin/admin)
+   * **📈 Prometheus**: <http://localhost:9090>
+   * **📜 Loki**: <http://localhost:3100>
+   * **🚨 Alertmanager**: <http://localhost:9093>
 
 ### Stopping the Stack
 
 ```bash
-docker-compose down
+# Using management script
+./scripts/devops-monitor.sh stop
+
+# Or using Docker Compose directly
+docker compose down
 ```
 
 ### Viewing Logs
 
 ```bash
 # All services
-docker-compose logs
+./scripts/devops-monitor.sh logs
+
+# Or using Docker Compose directly
+docker compose logs
 
 # Specific service
-docker-compose logs prometheus
-docker-compose logs grafana
+docker compose logs prometheus
+docker compose logs grafana
 ```
 
 ## 📈 What You'll Get

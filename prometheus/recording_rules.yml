@@ -1,0 +1,122 @@
+groups:
+  - name: system_recording_rules
+    rules:
+      # CPU usage percentage
+      - record: node_cpu_usage_percent
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+      # Memory usage percentage
+      - record: node_memory_usage_percent
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100
+
+      # Disk usage percentage
+      - record: node_disk_usage_percent
+        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100
+
+      # Network traffic rate
+      - record: node_network_traffic_rate
+        expr: rate(node_network_receive_bytes_total[5m]) + rate(node_network_transmit_bytes_total[5m])
+
+      # System load average
+      - record: node_load_average
+        expr: node_load1
+
+  - name: container_recording_rules
+    rules:
+      # Container CPU usage percentage
+      - record: container_cpu_usage_percent
+        expr: rate(container_cpu_usage_seconds_total[5m]) * 100
+
+      # Container memory usage percentage
+      - record: container_memory_usage_percent
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100
+
+      # Container restart count
+      - record: container_restart_count
+        expr: increase(container_start_time_seconds[1h])
+
+  - name: application_recording_rules
+    rules:
+      # HTTP request rate
+      - record: http_request_rate
+        expr: rate(http_requests_total[5m])
+
+      # HTTP error rate percentage
+      - record: http_error_rate_percent
+        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100
+
+      # HTTP response time 95th percentile
+      - record: http_response_time_95th
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+      # HTTP response time 99th percentile
+      - record: http_response_time_99th
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+
+  - name: infrastructure_recording_rules
+    rules:
+      # Prometheus uptime
+      - record: prometheus_uptime
+        expr: up{job="prometheus"}
+
+      # Grafana uptime
+      - record: grafana_uptime
+        expr: up{job="grafana"}
+
+      # Loki uptime
+      - record: loki_uptime
+        expr: up{job="loki"}
+
+      # Alertmanager uptime
+      - record: alertmanager_uptime
+        expr: up{job="alertmanager"}
+
+      # Node exporter uptime
+      - record: node_exporter_uptime
+        expr: up{job="node-exporter"}
+
+      # cAdvisor uptime
+      - record: cadvisor_uptime
+        expr: up{job="cadvisor"}
+
+  - name: database_recording_rules
+    rules:
+      # Database uptime
+      - record: database_uptime
+        expr: up{job=~"postgres|mysql|redis"}
+
+      # Database connections
+      - record: database_connections
+        expr: pg_stat_database_numbackends
+
+      # Database query rate
+      - record: database_query_rate
+        expr: rate(pg_stat_database_tup_returned[5m])
+
+  - name: alerting_recording_rules
+    rules:
+      # Alert firing rate
+      - record: alert_firing_rate
+        expr: rate(alertmanager_alerts[5m])
+
+      # Alert resolution rate
+      - record: alert_resolution_rate
+        expr: rate(alertmanager_alerts{state="resolved"}[5m])
+
+      # Notification success rate
+      - record: notification_success_rate
+        expr: rate(alertmanager_notifications_total{status="success"}[5m])
+
+  - name: logging_recording_rules
+    rules:
+      # Log ingestion rate
+      - record: log_ingestion_rate
+        expr: rate(loki_distributor_received_bytes_total[5m])
+
+      # Log query rate
+      - record: log_query_rate
+        expr: rate(loki_query_frontend_queries_total[5m])
+
+      # Log error rate
+      - record: log_error_rate
+        expr: rate(loki_distributor_errors_total[5m])
