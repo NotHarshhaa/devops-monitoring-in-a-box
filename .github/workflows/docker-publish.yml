@@ -79,8 +79,28 @@ jobs:
           type=raw,value=${{ github.event.inputs.image_version }}
           type=raw,value=latest,enable={{is_default_branch}}
           
-    - name: Build and push Docker image (multi-arch)
-      id: build
+    - name: Build and push Docker image (buildx multi-arch)
+      id: build_buildx
+      continue-on-error: true
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.buildx
+        push: ${{ github.event.inputs.push_to_registry != 'false' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        platforms: linux/amd64,linux/arm64
+        build-args: |
+          NODE_OPTIONS=--max-old-space-size=2048
+          NEXT_BUILD_WORKERS=1
+        cache-from: |
+          type=gha
+          type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        cache-to: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha,mode=max' || '' }}
+        
+    - name: Build and push Docker image (standard fallback)
+      if: ${{ steps.build_buildx.outcome == 'failure' }}
+      id: build_standard
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -88,7 +108,7 @@ jobs:
         push: ${{ github.event.inputs.push_to_registry != 'false' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         cache-from: |
           type=gha
           type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -104,9 +124,27 @@ jobs:
         exit-code: true
         write-comment: true
         
+    - name: Set build result
+      id: build_result
+      run: |
+        if [ "${{ steps.build_buildx.outcome }}" = "success" ]; then
+          echo "build_step=build_buildx" >> $GITHUB_OUTPUT
+          echo "platforms=linux/amd64,linux/arm64" >> $GITHUB_OUTPUT
+          echo "build_type=buildx" >> $GITHUB_OUTPUT
+        else
+          echo "build_step=build_standard" >> $GITHUB_OUTPUT
+          echo "platforms=linux/amd64" >> $GITHUB_OUTPUT
+          echo "build_type=standard" >> $GITHUB_OUTPUT
+        fi
+        
     - name: Image digest
       if: ${{ github.event.inputs.push_to_registry != 'false' }}
-      run: echo ${{ steps.build.outputs.digest }}
+      run: |
+        if [ "${{ steps.build_result.outputs.build_step }}" = "build_buildx" ]; then
+          echo ${{ steps.build_buildx.outputs.digest }}
+        else
+          echo ${{ steps.build_standard.outputs.digest }}
+        fi
       
     - name: Build summary
       run: |
@@ -116,7 +154,8 @@ jobs:
         echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
         echo "| **Git Reference** | \`${{ github.event.inputs.commit_sha }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "| **Image Version** | \`${{ github.event.inputs.image_version }}\` |" >> $GITHUB_STEP_SUMMARY
-        echo "| **Platforms** | linux/amd64, linux/arm64 |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Platforms** | ${{ steps.build_result.outputs.platforms }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Build Type** | ${{ steps.build_result.outputs.build_type }} |" >> $GITHUB_STEP_SUMMARY
         echo "| **Push to Registry** | \`${{ github.event.inputs.push_to_registry }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "| **Cache Enabled** | \`${{ github.event.inputs.cache_enabled }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -125,7 +164,22 @@ jobs:
         echo "- **Image Name**: \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
         echo "- **Tags**: \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
         if [ "${{ github.event.inputs.push_to_registry }}" != "false" ]; then
-          echo "- **Digest**: \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.build_result.outputs.build_step }}" = "build_buildx" ]; then
+            echo "- **Digest**: \`${{ steps.build_buildx.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Digest**: \`${{ steps.build_standard.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🛠️ Build Details" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.build_result.outputs.build_type }}" = "buildx" ]; then
+          echo "- **Build Method**: Docker Buildx (multi-platform)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Optimizations**: Memory-limited build for QEMU emulation" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dockerfile**: \`Dockerfile.buildx\` (optimized for buildx)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Build Method**: Standard Docker Build (fallback)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason**: Buildx failed, using reliable standard build" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dockerfile**: \`Dockerfile\` (standard)" >> $GITHUB_STEP_SUMMARY
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🔒 Security Status" >> $GITHUB_STEP_SUMMARY
@@ -142,7 +196,10 @@ jobs:
       
     - name: Notify success
       run: |
-        echo "✅ Successfully built multi-arch Docker image"
+        echo "✅ Successfully built Docker image using ${{ steps.build_result.outputs.build_type }} build"
         echo "📦 Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
         echo "🏷️  Tags: ${{ steps.meta.outputs.tags }}"
-        echo "🔧 Platforms: linux/amd64, linux/arm64"
+        echo "🔧 Platforms: ${{ steps.build_result.outputs.platforms }}"
+        if [ "${{ steps.build_result.outputs.build_type }}" = "standard" ]; then
+          echo "⚠️  Note: Used standard build (buildx failed) - only linux/amd64 platform available"
+        fi

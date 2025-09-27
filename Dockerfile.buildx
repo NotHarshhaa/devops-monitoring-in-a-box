@@ -1,5 +1,5 @@
-# Optimized Dockerfile for DevOps Monitoring Dashboard
-# Multi-stage build with Node.js 20 Alpine for security and performance
+# Buildx-optimized Dockerfile for DevOps Monitoring Dashboard
+# Specifically designed for multi-platform builds with QEMU emulation
 
 # Stage 1: Build the Next.js application
 FROM node:20-alpine AS builder
@@ -18,20 +18,20 @@ COPY ui-next/package*.json ./
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci --ignore-scripts
 
-# Note: npm upgrade above automatically fixes CVE-2024-21538 in cross-spawn
-
 # Copy source code
 COPY ui-next/ .
 
-# Set build environment variables for better compatibility
+# Set build environment variables for buildx compatibility
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NEXT_BUILD_WORKERS=1
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the application with optimizations for limited environments
+# Build the application with buildx optimizations
+# Use single worker and reduced memory for QEMU emulation compatibility
 RUN npm run build
 
 # Stage 2: Ultra-minimal production runtime
