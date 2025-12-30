@@ -1,17 +1,9 @@
 #!/bin/bash
 
-# Build and Push Script for DevOps Monitoring Dashboard
-# Supports both standard Docker build and buildx for multi-platform
+# Build and Push Script for ui-next Docker Image
+# Optimized for Next.js standalone builds
 
 set -e
-
-# Get the directory of the script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Get the project root directory (parent of scripts directory)
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-
-# Change to project root directory
-cd "$PROJECT_ROOT"
 
 # Colors for output
 RED='\033[0;31m'
@@ -44,33 +36,36 @@ print_header() {
 
 # Default values
 DOCKER_USERNAME=""
-IMAGE_NAME="devops-monitoring-dashboard"
+IMAGE_NAME="devops-monitoring-ui"
 IMAGE_TAG="latest"
 USE_BUILDX=false
 PLATFORMS="linux/amd64"
 PUSH_TO_REGISTRY=false
+NO_CACHE=""
+BUILD_CONTEXT="."
 
 # Function to show help
 show_help() {
     echo ""
-    print_header "DevOps Monitoring Dashboard - Build and Push Script"
+    print_header "ui-next Docker Build and Push Script"
     echo ""
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  -u, --username USERNAME    Docker Hub username (required for push)"
-    echo "  -n, --name NAME           Image name (default: devops-monitoring-dashboard)"
-    echo "  -t, --tag TAG             Image tag (default: latest)"
-    echo "  -x, --buildx              Use Docker buildx for multi-platform builds"
-    echo "  -p, --platforms PLATFORMS Comma-separated platforms (default: linux/amd64)"
-    echo "  --push                    Push to registry after building"
-    echo "  --no-cache                Build without cache"
-    echo "  -h, --help                Show this help message"
+    echo "  -u, --username USERNAME    Docker Hub username (required for --push)"
+    echo "  -i, --image IMAGE_NAME     Docker image name (default: devops-monitoring-ui)"
+    echo "  -t, --tag TAG              Docker image tag (default: latest)"
+    echo "  -x, --buildx               Use Docker Buildx for multi-platform builds"
+    echo "  -p, --platforms PLATFORMS  Comma-separated platforms (default: linux/amd64)"
+    echo "                             Example: linux/amd64,linux/arm64"
+    echo "  --push                     Push image to Docker Hub registry"
+    echo "  --no-cache                 Build without using cache"
+    echo "  -h, --help                 Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 -u myusername --push"
-    echo "  $0 -u myusername -x --platforms linux/amd64,linux/arm64 --push"
-    echo "  $0 -n my-dashboard -t v1.0.0"
+    echo "  $0 --username myuser --tag v1.0.0 --push"
+    echo "  $0 --username myuser --buildx --platforms linux/amd64,linux/arm64 --push"
+    echo "  $0 --tag local --no-cache"
     echo ""
 }
 
@@ -81,7 +76,7 @@ while [[ $# -gt 0 ]]; do
             DOCKER_USERNAME="$2"
             shift 2
             ;;
-        -n|--name)
+        -i|--image)
             IMAGE_NAME="$2"
             shift 2
             ;;
@@ -131,12 +126,17 @@ else
     FULL_IMAGE_NAME="$IMAGE_NAME:$IMAGE_TAG"
 fi
 
-print_header "Building DevOps Monitoring Dashboard"
+# Get the directory of the script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+print_header "Building ui-next Docker Image"
 echo ""
 print_info "Image: $FULL_IMAGE_NAME"
 print_info "Platforms: $PLATFORMS"
 print_info "Build method: $([ "$USE_BUILDX" == true ] && echo "Docker Buildx" || echo "Standard Docker")"
 print_info "Push to registry: $([ "$PUSH_TO_REGISTRY" == true ] && echo "Yes" || echo "No")"
+print_info "Build context: $BUILD_CONTEXT"
 echo ""
 
 # Check if Docker is installed
@@ -162,17 +162,22 @@ if [[ "$USE_BUILDX" == true ]]; then
     fi
 fi
 
+# Verify Dockerfile exists
+if [[ ! -f "Dockerfile" ]]; then
+    print_error "Dockerfile not found in current directory"
+    exit 1
+fi
+
 # Build the image
 print_info "Starting build process..."
 echo ""
 
 if [[ "$USE_BUILDX" == true ]]; then
-    # Use buildx for multi-platform builds with unified Dockerfile
-    BUILD_CMD="docker buildx build --platform $PLATFORMS $NO_CACHE -f ui-next/Dockerfile -t $FULL_IMAGE_NAME ui-next"
+    # Use buildx for multi-platform builds with BuildKit cache
+    BUILD_CMD="docker buildx build --platform $PLATFORMS $NO_CACHE -f Dockerfile -t $FULL_IMAGE_NAME"
     
     # Add build arguments for better buildx compatibility
-    BUILD_CMD="$BUILD_CMD --build-arg NODE_OPTIONS=--max-old-space-size=2048"
-    BUILD_CMD="$BUILD_CMD --build-arg NEXT_BUILD_WORKERS=1"
+    BUILD_CMD="$BUILD_CMD --build-arg NODE_OPTIONS=--max-old-space-size=4096"
     
     if [[ "$PUSH_TO_REGISTRY" == true ]]; then
         BUILD_CMD="$BUILD_CMD --push"
@@ -180,14 +185,20 @@ if [[ "$USE_BUILDX" == true ]]; then
         BUILD_CMD="$BUILD_CMD --load"
     fi
     
-    print_info "Running buildx build with optimizations for QEMU emulation..."
+    # Add cache configuration
+    BUILD_CMD="$BUILD_CMD --cache-from type=local,src=/tmp/.buildx-cache"
+    BUILD_CMD="$BUILD_CMD --cache-to type=local,dest=/tmp/.buildx-cache,mode=max"
+    
+    print_info "Running buildx build with BuildKit cache optimizations..."
     print_info "Command: $BUILD_CMD"
     eval $BUILD_CMD
 else
-    # Use standard Docker build with unified Dockerfile
-    BUILD_CMD="docker build $NO_CACHE -f ui-next/Dockerfile -t $FULL_IMAGE_NAME ui-next"
+    # Use standard Docker build with BuildKit
+    export DOCKER_BUILDKIT=1
+    BUILD_CMD="docker build $NO_CACHE -t $FULL_IMAGE_NAME -f Dockerfile ."
     
-    print_info "Running: $BUILD_CMD"
+    print_info "Running standard Docker build with BuildKit..."
+    print_info "Command: $BUILD_CMD"
     eval $BUILD_CMD
     
     # Push if requested
@@ -212,38 +223,21 @@ if [[ $? -eq 0 ]]; then
     
     echo ""
     print_info "Image details:"
-    docker images "$FULL_IMAGE_NAME"
+    docker images "$FULL_IMAGE_NAME" 2>/dev/null || echo "Image not found locally (may have been pushed only)"
     echo ""
     print_info "To run the container:"
     echo "  docker run -p 3000:3000 $FULL_IMAGE_NAME"
+    echo ""
+    print_info "Build optimizations applied:"
+    echo "  ✓ BuildKit cache mounts for npm and Prisma"
+    echo "  ✓ Multi-stage build for minimal image size"
+    echo "  ✓ Non-root user for security"
+    echo "  ✓ Health check included"
+    echo "  ✓ Standalone Next.js output"
     
 else
     print_error "Build failed!"
     echo ""
-    
-    if [[ "$USE_BUILDX" == true ]]; then
-        print_warning "Buildx build failed. This is often due to QEMU emulation issues."
-        echo ""
-        print_info "Troubleshooting options:"
-        echo "  1. Use standard Docker build: $0 -u $DOCKER_USERNAME"
-        echo "  2. Try single platform: $0 -u $DOCKER_USERNAME -x -p linux/amd64"
-        echo "  3. Increase Docker Desktop memory to 8GB+"
-        echo "  4. Try building without cache: $0 -u $DOCKER_USERNAME -x --no-cache"
-        echo ""
-        print_info "The buildx error is typically caused by:"
-        echo "  • Insufficient memory in QEMU emulation"
-        echo "  • Webpack build process running out of resources"
-        echo "  • Architecture emulation issues"
-        echo ""
-        print_info "Recommended solution: Use standard Docker build for now"
-        echo "  $0 -u $DOCKER_USERNAME --push"
-    else
-        print_info "Standard build failed. Check the error messages above."
-        print_info "Common issues:"
-        echo "  • Missing dependencies"
-        echo "  • TypeScript compilation errors"
-        echo "  • Prisma client generation issues"
-    fi
-    
     exit 1
 fi
+

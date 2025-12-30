@@ -84,8 +84,8 @@ jobs:
       continue-on-error: true
       uses: docker/build-push-action@v5
       with:
-        context: .
-        file: ./Dockerfile.buildx
+        context: ./ui-next
+        file: ./ui-next/Dockerfile
         push: ${{ github.event.inputs.push_to_registry != 'false' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -103,12 +103,14 @@ jobs:
       id: build_standard
       uses: docker/build-push-action@v5
       with:
-        context: .
-        file: ./Dockerfile
+        context: ./ui-next
+        file: ./ui-next/Dockerfile
         push: ${{ github.event.inputs.push_to_registry != 'false' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: linux/amd64
+        build-args: |
+          NODE_OPTIONS=--max-old-space-size=4096
         cache-from: |
           type=gha
           type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -174,12 +176,14 @@ jobs:
         echo "### 🛠️ Build Details" >> $GITHUB_STEP_SUMMARY
         if [ "${{ steps.build_result.outputs.build_type }}" = "buildx" ]; then
           echo "- **Build Method**: Docker Buildx (multi-platform)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Optimizations**: Memory-limited build for QEMU emulation" >> $GITHUB_STEP_SUMMARY
-          echo "- **Dockerfile**: \`Dockerfile.buildx\` (optimized for buildx)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Optimizations**: BuildKit cache mounts for npm, Prisma, and Next.js" >> $GITHUB_STEP_SUMMARY
+          echo "- **Memory**: Limited to 2048MB for QEMU emulation compatibility" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dockerfile**: \`ui-next/Dockerfile\` (unified, buildx-optimized via build args)" >> $GITHUB_STEP_SUMMARY
         else
           echo "- **Build Method**: Standard Docker Build (fallback)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Optimizations**: BuildKit cache mounts for npm, Prisma, and Next.js" >> $GITHUB_STEP_SUMMARY
           echo "- **Reason**: Buildx failed, using reliable standard build" >> $GITHUB_STEP_SUMMARY
-          echo "- **Dockerfile**: \`Dockerfile\` (standard)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dockerfile**: \`ui-next/Dockerfile\` (unified)" >> $GITHUB_STEP_SUMMARY
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🔒 Security Status" >> $GITHUB_STEP_SUMMARY
