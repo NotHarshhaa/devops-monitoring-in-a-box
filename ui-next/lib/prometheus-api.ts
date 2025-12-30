@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { HttpClient } from './http-client';
 import { config } from './config';
 
 export interface PrometheusQueryResponse {
@@ -24,42 +24,33 @@ export interface PrometheusRangeResponse {
 }
 
 export class PrometheusAPI {
-  private baseURL: string;
+  private httpClient: HttpClient;
 
-  constructor(baseURL: string = config.prometheus.baseURL) {
-    this.baseURL = baseURL;
+  constructor(baseURL?: string) {
+    this.httpClient = new HttpClient({
+      serviceName: 'prometheus',
+      customConfig: baseURL ? { url: baseURL } as any : undefined,
+    });
   }
 
   private async query<T>(query: string, time?: number): Promise<T> {
-    try {
-      const params: Record<string, string> = { query };
-      if (time) {
-        params.time = time.toString();
-      }
-
-      const response = await axios.get<T>(`${this.baseURL}/api/v1/query`, { params });
-      return response.data;
-    } catch (error) {
-      console.error('Prometheus query error:', error);
-      throw new Error(`Failed to query Prometheus: ${error}`);
+    const params: Record<string, string> = { query };
+    if (time) {
+      params.time = time.toString();
     }
+
+    return this.httpClient.get<T>('/api/v1/query', { params });
   }
 
   private async queryRange<T>(query: string, start: number, end: number, step: string): Promise<T> {
-    try {
-      const params = {
-        query,
-        start: start.toString(),
-        end: end.toString(),
-        step,
-      };
+    const params = {
+      query,
+      start: start.toString(),
+      end: end.toString(),
+      step,
+    };
 
-      const response = await axios.get<T>(`${this.baseURL}/api/v1/query_range`, { params });
-      return response.data;
-    } catch (error) {
-      console.error('Prometheus query range error:', error);
-      throw new Error(`Failed to query Prometheus range: ${error}`);
-    }
+    return this.httpClient.get<T>('/api/v1/query_range', { params });
   }
 
   // CPU Usage

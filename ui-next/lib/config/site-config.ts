@@ -28,7 +28,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
     ],
     author: 'Monitoring in a Box Team',
     robots: 'index, follow',
-    canonical: 'http://localhost:3000',
+    canonical: 'http://localhost:4000',
     og: {
       title: 'Monitoring in a Box - Modern Infrastructure Monitoring',
       description: 'Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting.',

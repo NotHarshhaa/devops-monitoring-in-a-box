@@ -1,8 +1,13 @@
 // Configuration for the DevOps Monitoring UI
+// Import service configuration manager for centralized config
+import { serviceConfigManager } from './service-config';
+
 export const config = {
   // Prometheus API Configuration
   prometheus: {
-    baseURL: process.env.NEXT_PUBLIC_PROMETHEUS_URL || 'http://localhost:9090',
+    get baseURL() {
+      return serviceConfigManager.getServiceConfig('prometheus').url;
+    },
     // Default time range for charts (in hours)
     defaultTimeRange: 24,
     // Auto-refresh interval in milliseconds
@@ -11,7 +16,9 @@ export const config = {
   
   // Loki API Configuration
   loki: {
-    baseURL: process.env.NEXT_PUBLIC_LOKI_URL || 'http://localhost:3100',
+    get baseURL() {
+      return serviceConfigManager.getServiceConfig('loki').url;
+    },
     // Default time range for logs (in hours)
     defaultTimeRange: 1,
     // Auto-refresh interval in milliseconds
@@ -22,7 +29,9 @@ export const config = {
   
   // Alertmanager API Configuration
   alertmanager: {
-    baseURL: process.env.NEXT_PUBLIC_ALERTMANAGER_URL || 'http://localhost:9093',
+    get baseURL() {
+      return serviceConfigManager.getServiceConfig('alertmanager').url;
+    },
     // Auto-refresh interval in milliseconds
     refreshInterval: 5000,
     // Maximum number of alerts to fetch

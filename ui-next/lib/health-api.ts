@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { config } from './config';
+import { serviceConfigManager } from './service-config';
 
 export interface ServiceHealth {
   name: string;
@@ -24,44 +24,58 @@ export class HealthAPI {
     url: string;
     endpoint: string;
     description: string;
-  }> = [
-    {
-      name: 'Prometheus',
-      url: config.prometheus.baseURL,
-      endpoint: '/api/v1/status/config',
-      description: 'Metrics collection and storage'
-    },
-    {
-      name: 'Grafana',
-      url: 'http://localhost:3000',
-      endpoint: '/api/health',
-      description: 'Visualization and dashboards'
-    },
-    {
-      name: 'Loki',
-      url: config.loki.baseURL,
-      endpoint: '/ready',
-      description: 'Log aggregation system'
-    },
-    {
-      name: 'Alertmanager',
-      url: config.alertmanager.baseURL,
-      endpoint: '/api/v2/status',
-      description: 'Alert routing and management'
-    },
-    {
-      name: 'Node Exporter',
-      url: 'http://localhost:9100',
-      endpoint: '/metrics',
-      description: 'System metrics collection'
-    },
-    {
-      name: 'cAdvisor',
-      url: 'http://localhost:8080',
-      endpoint: '/healthz',
-      description: 'Container metrics collection'
+  }> = [];
+
+  constructor() {
+    // Initialize services from centralized configuration
+    const configs = serviceConfigManager.getAllConfigs();
+    
+    this.services = [
+      {
+        name: 'Prometheus',
+        url: configs.prometheus.url,
+        endpoint: configs.prometheus.healthCheckEndpoint || '/api/v1/status/config',
+        description: 'Metrics collection and storage'
+      },
+      {
+        name: 'Grafana',
+        url: configs.grafana.url,
+        endpoint: configs.grafana.healthCheckEndpoint || '/api/health',
+        description: 'Visualization and dashboards'
+      },
+      {
+        name: 'Loki',
+        url: configs.loki.url,
+        endpoint: configs.loki.healthCheckEndpoint || '/ready',
+        description: 'Log aggregation system'
+      },
+      {
+        name: 'Alertmanager',
+        url: configs.alertmanager.url,
+        endpoint: configs.alertmanager.healthCheckEndpoint || '/api/v2/status',
+        description: 'Alert routing and management'
+      },
+    ];
+
+    // Add optional services if enabled
+    if (configs.nodeExporter?.enabled) {
+      this.services.push({
+        name: 'Node Exporter',
+        url: configs.nodeExporter.url,
+        endpoint: configs.nodeExporter.healthCheckEndpoint || '/metrics',
+        description: 'System metrics collection'
+      });
     }
-  ];
+
+    if (configs.cadvisor?.enabled) {
+      this.services.push({
+        name: 'cAdvisor',
+        url: configs.cadvisor.url,
+        endpoint: configs.cadvisor.healthCheckEndpoint || '/healthz',
+        description: 'Container metrics collection'
+      });
+    }
+  }
 
   private async checkServiceHealth(service: {
     name: string;
@@ -170,14 +184,23 @@ export class HealthAPI {
    * Get service URLs for quick links
    */
   getServiceUrls(): Record<string, string> {
-    return {
-      'Prometheus': config.prometheus.baseURL,
-      'Grafana': 'http://localhost:3000',
-      'Loki': config.loki.baseURL,
-      'Alertmanager': config.alertmanager.baseURL,
-      'Node Exporter': 'http://localhost:9100',
-      'cAdvisor': 'http://localhost:8080'
+    const configs = serviceConfigManager.getAllConfigs();
+    const urls: Record<string, string> = {
+      'Prometheus': configs.prometheus.url,
+      'Grafana': configs.grafana.url,
+      'Loki': configs.loki.url,
+      'Alertmanager': configs.alertmanager.url,
     };
+    
+    if (configs.nodeExporter?.enabled) {
+      urls['Node Exporter'] = configs.nodeExporter.url;
+    }
+    
+    if (configs.cadvisor?.enabled) {
+      urls['cAdvisor'] = configs.cadvisor.url;
+    }
+    
+    return urls;
   }
 
   /**
@@ -189,32 +212,53 @@ export class HealthAPI {
     description: string;
     icon: string;
   }> {
-    return [
+    const configs = serviceConfigManager.getAllConfigs();
+    const links = [
       {
         name: 'Grafana',
-        url: 'http://localhost:3000',
+        url: configs.grafana.url,
         description: 'Open Grafana dashboards',
         icon: '📊'
       },
       {
         name: 'Prometheus',
-        url: config.prometheus.baseURL,
+        url: configs.prometheus.url,
         description: 'Open Prometheus query interface',
         icon: '🔍'
       },
       {
         name: 'Alertmanager',
-        url: config.alertmanager.baseURL,
+        url: configs.alertmanager.url,
         description: 'Open Alertmanager web UI',
         icon: '🚨'
       },
       {
         name: 'Loki',
-        url: config.loki.baseURL,
+        url: configs.loki.url,
         description: 'Open Loki query interface',
         icon: '📝'
       }
     ];
+    
+    if (configs.nodeExporter?.enabled) {
+      links.push({
+        name: 'Node Exporter',
+        url: configs.nodeExporter.url,
+        description: 'Open Node Exporter metrics',
+        icon: '📈'
+      });
+    }
+    
+    if (configs.cadvisor?.enabled) {
+      links.push({
+        name: 'cAdvisor',
+        url: configs.cadvisor.url,
+        description: 'Open cAdvisor container metrics',
+        icon: '🐳'
+      });
+    }
+    
+    return links;
   }
 
   /**

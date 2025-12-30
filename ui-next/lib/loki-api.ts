@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { HttpClient } from './http-client';
 import { config } from './config';
 
 export interface LokiLogEntry {
@@ -44,26 +44,17 @@ export interface LogQueryParams {
 }
 
 export class LokiAPI {
-  private baseURL: string;
+  private httpClient: HttpClient;
 
-  constructor(baseURL: string = config.loki.baseURL) {
-    this.baseURL = baseURL;
+  constructor(baseURL?: string) {
+    this.httpClient = new HttpClient({
+      serviceName: 'loki',
+      customConfig: baseURL ? { url: baseURL } as any : undefined,
+    });
   }
 
   private async query<T>(endpoint: string, params: Record<string, any> = {}): Promise<T> {
-    try {
-      const response = await axios.get<T>(`${this.baseURL}${endpoint}`, { 
-        params,
-        timeout: 30000 // 30 second timeout
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Loki query error:', error);
-      if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to query Loki: ${error.response?.data?.message || error.message}`);
-      }
-      throw new Error(`Failed to query Loki: ${error}`);
-    }
+    return this.httpClient.get<T>(endpoint, { params });
   }
 
   /**

@@ -32,7 +32,7 @@ export function checkAuthConfig() {
     } else {
       warnings.push(
         "NEXTAUTH_URL is not set. " +
-        "Defaulting to http://localhost:3000. " +
+        "Defaulting to http://localhost:4000. " +
         "Set NEXTAUTH_URL in your .env.local file if running on a different port."
       )
     }
@@ -43,7 +43,7 @@ export function checkAuthConfig() {
     } catch {
       issues.push(
         `NEXTAUTH_URL is set to an invalid URL: ${process.env.NEXTAUTH_URL}. ` +
-        "Please set a valid URL (e.g., http://localhost:3000 or https://your-domain.com)."
+        "Please set a valid URL (e.g., http://localhost:4000 or https://your-domain.com)."
       )
     }
   }
@@ -55,7 +55,7 @@ export function checkAuthConfig() {
       console.warn(`${index + 1}. ${warning}`)
     })
     console.warn("\nTo fix these warnings, create a .env.local file with:")
-    console.warn("NEXTAUTH_URL=http://localhost:3000")
+    console.warn("NEXTAUTH_URL=http://localhost:4000")
     console.warn("NEXTAUTH_SECRET=your-secure-secret-key-here\n")
   }
 

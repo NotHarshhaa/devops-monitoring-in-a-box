@@ -102,7 +102,7 @@ export default function SettingsPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="base-url" className="text-sm font-medium">Base URL</Label>
-                    <Input id="base-url" defaultValue="http://localhost:3000" className="h-10 sm:h-11" />
+                    <Input id="base-url" defaultValue="http://localhost:4000" className="h-10 sm:h-11" />
                     <p className="text-xs sm:text-sm text-muted-foreground">
                       The base URL for generating links and webhooks
                     </p>

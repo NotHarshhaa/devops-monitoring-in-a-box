@@ -27,12 +27,12 @@ const getNextAuthUrl = () => {
     if (process.env.VERCEL_URL) {
       return `https://${process.env.VERCEL_URL}`
     }
-    // Default development URL
-    return "http://localhost:3000"
+    // Default development URL (UI runs on port 4000)
+    return "http://localhost:4000"
   }
   
   // Production fallback - should be set explicitly
-  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:4000"
 }
 
 // Warn if NEXTAUTH_URL is not set in production
