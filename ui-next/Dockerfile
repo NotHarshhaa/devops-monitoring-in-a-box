@@ -9,9 +9,10 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 # Use BuildKit cache mount for faster rebuilds
+# Skip scripts during install since postinstall (prisma generate) needs schema file
 COPY package.json package-lock.json* ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit
+    npm ci --prefer-offline --no-audit --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
