@@ -1,5 +1,4 @@
 import { HttpClient } from './http-client';
-import { config } from './config';
 
 export interface AlertmanagerAlert {
   id: string;
@@ -105,35 +104,14 @@ export class AlertmanagerAPI {
       isRegex: boolean;
     }>;
   }): Promise<{ silenceID: string }> {
-    try {
-      const response = await axios.post(`${this.baseURL}/api/v2/silences`, silence, {
-        timeout: 30000
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Alertmanager create silence error:', error);
-      if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to create silence: ${error.response?.data?.message || error.message}`);
-      }
-      throw new Error(`Failed to create silence: ${error}`);
-    }
+    return this.httpClient.post<{ silenceID: string }>('/api/v2/silences', silence);
   }
 
   /**
    * Delete a silence by ID
    */
   async deleteSilence(silenceId: string): Promise<void> {
-    try {
-      await axios.delete(`${this.baseURL}/api/v2/silence/${silenceId}`, {
-        timeout: 30000
-      });
-    } catch (error) {
-      console.error('Alertmanager delete silence error:', error);
-      if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to delete silence: ${error.response?.data?.message || error.message}`);
-      }
-      throw new Error(`Failed to delete silence: ${error}`);
-    }
+    await this.httpClient.delete(`/api/v2/silence/${silenceId}`);
   }
 
   /**
