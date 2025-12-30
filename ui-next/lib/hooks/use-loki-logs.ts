@@ -1,110 +1,48 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { lokiAPI, LokiLogEntry } from '../loki-api';
 
-export interface LogFilters {
-  searchQuery: string;
-  job: string;
-  namespace: string;
-  severity: string;
-  timeRange: string;
+export interface UseLokiLogsOptions {
+  query?: string;
+  limit?: number;
+  start?: number;
+  end?: number;
+  refetchInterval?: number;
 }
 
-export interface UseLokiLogsReturn {
-  logs: LokiLogEntry[];
-  loading: boolean;
-  error: string | null;
-  jobs: string[];
-  namespaces: string[];
-  severityLevels: string[];
-  refresh: () => void;
-  setFilters: (filters: Partial<LogFilters>) => void;
-  filters: LogFilters;
-}
+export function useLokiLogs(options: UseLokiLogsOptions = {}) {
+  const {
+    query = '{job=~".+"}',
+    limit = 50,
+    start,
+    end,
+    refetchInterval = 30000, // 30 seconds
+  } = options;
 
-export function useLokiLogs(): UseLokiLogsReturn {
-  const [logs, setLogs] = useState<LokiLogEntry[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [jobs, setJobs] = useState<string[]>([]);
-  const [namespaces, setNamespaces] = useState<string[]>([]);
-  const [severityLevels, setSeverityLevels] = useState<string[]>([]);
-  
-  const [filters, setFiltersState] = useState<LogFilters>({
-    searchQuery: '',
-    job: 'all',
-    namespace: 'all',
-    severity: 'all',
-    timeRange: '1h',
+  return useQuery<LokiLogEntry[]>({
+    queryKey: ['loki-logs', query, limit, start, end],
+    queryFn: () => lokiAPI.queryLogs({
+      query,
+      limit,
+      start,
+      end,
+      direction: 'backward',
+    }),
+    refetchInterval,
+    staleTime: refetchInterval,
+    retry: 2,
+    retryDelay: 1000,
   });
+}
 
-  const fetchLogs = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+export function useRecentLogs(limit: number = 20) {
+  const end = Date.now() * 1000000; // Convert to nanoseconds
+  const start = end - (3600 * 1000000000); // Last hour
 
-    try {
-      const query = lokiAPI.buildQuery(filters);
-      const { start, end } = lokiAPI.getTimeRange(filters.timeRange);
-      
-      const logEntries = await lokiAPI.queryLogs({
-        query,
-        start,
-        end,
-        limit: 1000,
-        direction: 'backward',
-      });
-
-      setLogs(logEntries);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch logs');
-      console.error('Error fetching logs:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
-
-  const fetchMetadata = useCallback(async () => {
-    try {
-      const [jobsData, namespacesData, severityData] = await Promise.all([
-        lokiAPI.getJobs(),
-        lokiAPI.getNamespaces(),
-        lokiAPI.getSeverityLevels(),
-      ]);
-
-      setJobs(jobsData);
-      setNamespaces(namespacesData);
-      setSeverityLevels(severityData);
-    } catch (err) {
-      console.error('Error fetching metadata:', err);
-    }
-  }, []);
-
-  const setFilters = useCallback((newFilters: Partial<LogFilters>) => {
-    setFiltersState(prev => ({ ...prev, ...newFilters }));
-  }, []);
-
-  const refresh = useCallback(() => {
-    fetchLogs();
-  }, [fetchLogs]);
-
-  // Fetch metadata on mount
-  useEffect(() => {
-    fetchMetadata();
-  }, [fetchMetadata]);
-
-  // Fetch logs when filters change
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
-
-  return {
-    logs,
-    loading,
-    error,
-    jobs,
-    namespaces,
-    severityLevels,
-    refresh,
-    setFilters,
-    filters,
-  };
+  return useLokiLogs({
+    query: '{job=~".+"}',
+    limit,
+    start,
+    end,
+    refetchInterval: 15000, // Refresh every 15 seconds
+  });
 }

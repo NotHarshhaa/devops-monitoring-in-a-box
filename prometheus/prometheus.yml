@@ -171,6 +171,22 @@ scrape_configs:
         action: replace
         target_label: kubernetes_pod_name
 
+  # Demo Application - Sample app for monitoring demonstration
+  - job_name: 'demo-app'
+    static_configs:
+      - targets: ['demo-app:5000']
+        labels:
+          app: 'demo-app'
+          environment: 'demo'
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+):.*'
+        replacement: '${1}'
+
   # Application metrics (if applications expose metrics)
   - job_name: 'applications'
     static_configs:

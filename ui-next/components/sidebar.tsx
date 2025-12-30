@@ -34,6 +34,7 @@ const navigation = [
   { name: 'Metrics', href: '/metrics', icon: BarChart3 },
   { name: 'Logs', href: '/logs', icon: FileText },
   { name: 'Alerts', href: '/alerts', icon: Bell },
+  { name: 'Demo', href: '/demo', icon: Activity },
   { name: 'Plugins', href: '/plugins', icon: Plug },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]

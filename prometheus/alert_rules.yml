@@ -1,4 +1,66 @@
 groups:
+  - name: demo_app_alerts
+    rules:
+      # Demo App - High Error Rate
+      - alert: DemoAppHighErrorRate
+        expr: rate(demo_app_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: demo-app
+          component: errors
+        annotations:
+          summary: "High error rate in demo application"
+          description: "Demo app error rate is {{ $value }} errors/second (threshold: 0.1)"
+          
+      # Demo App - Slow Response Time
+      - alert: DemoAppSlowResponse
+        expr: demo_app_response_time_seconds > 2
+        for: 3m
+        labels:
+          severity: warning
+          service: demo-app
+          component: performance
+        annotations:
+          summary: "Slow response time in demo application"
+          description: "Demo app response time is {{ $value }}s (threshold: 2s)"
+          
+      # Demo App - High CPU Usage
+      - alert: DemoAppHighCPU
+        expr: demo_app_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: demo-app
+          component: cpu
+        annotations:
+          summary: "High CPU usage in demo application"
+          description: "Demo app CPU usage is {{ $value }}% (threshold: 80%)"
+          
+      # Demo App - High Memory Usage
+      - alert: DemoAppHighMemory
+        expr: demo_app_memory_usage_bytes > 1000000000
+        for: 5m
+        labels:
+          severity: warning
+          service: demo-app
+          component: memory
+        annotations:
+          summary: "High memory usage in demo application"
+          description: "Demo app memory usage is {{ $value | humanize1024 }}B (threshold: 1GB)"
+          
+      # Demo App - No Metrics (Service Down)
+      - alert: DemoAppDown
+        expr: up{job="demo-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: demo-app
+          component: availability
+        annotations:
+          summary: "Demo application is down"
+          description: "Demo app has been down for more than 1 minute"
+
   - name: node_alerts
     rules:
       # High CPU usage

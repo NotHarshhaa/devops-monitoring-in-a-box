@@ -7,6 +7,8 @@ alertmanager_data/
 # Logs
 *.log
 logs/
+# Don't ignore Next.js app routes
+!ui-next/app/logs/
 
 # Environment files
 .env

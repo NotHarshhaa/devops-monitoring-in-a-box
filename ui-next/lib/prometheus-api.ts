@@ -238,6 +238,36 @@ export class PrometheusAPI {
       load,
     };
   }
+
+  // Get Prometheus targets (scrape targets status)
+  async getTargets(): Promise<Array<{
+    discoveredLabels: Record<string, string>;
+    labels: Record<string, string>;
+    scrapePool: string;
+    scrapeUrl: string;
+    lastError: string;
+    lastScrape: string;
+    lastScrapeDuration: number;
+    health: 'up' | 'down' | 'unknown';
+  }>> {
+    const response = await this.httpClient.get<{
+      status: string;
+      data: {
+        activeTargets: Array<{
+          discoveredLabels: Record<string, string>;
+          labels: Record<string, string>;
+          scrapePool: string;
+          scrapeUrl: string;
+          lastError: string;
+          lastScrape: string;
+          lastScrapeDuration: number;
+          health: 'up' | 'down' | 'unknown';
+        }>;
+      };
+    }>('/api/v1/targets');
+
+    return response.data.activeTargets || [];
+  }
 }
 
 export const prometheusAPI = new PrometheusAPI();

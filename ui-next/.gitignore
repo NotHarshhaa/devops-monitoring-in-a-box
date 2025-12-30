@@ -99,6 +99,8 @@ temp/
 # Logs
 logs
 *.log
+# Don't ignore Next.js app routes
+!app/logs/
 
 # Runtime data
 pids

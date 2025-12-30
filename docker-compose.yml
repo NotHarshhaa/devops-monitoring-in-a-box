@@ -141,6 +141,34 @@ services:
       - grafana
       - loki
 
+  # Demo Application - Sample app for monitoring demonstration
+  demo-app:
+    build:
+      context: ./demo-app
+      dockerfile: Dockerfile
+    container_name: demo-app
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+      - prometheus
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=5000"
+      - "prometheus.io/path=/metrics"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "app,environment"
+
 
 
 volumes:

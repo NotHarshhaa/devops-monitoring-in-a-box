@@ -200,6 +200,7 @@ Once deployed, access your monitoring tools:
 | Service | URL | Credentials | Description |
 |---------|-----|-------------|-------------|
 | 🎨 **Modern UI** | [http://localhost:4000](http://localhost:4000) | - | Unified dashboard experience |
+| 🎮 **Demo App** | [http://localhost:5000](http://localhost:5000) | - | Sample application for monitoring demo |
 | 📊 **Grafana** | [http://localhost:3000](http://localhost:3000) | admin/admin | Visualization dashboards |
 | 📈 **Prometheus** | [http://localhost:9090](http://localhost:9090) | - | Metrics collection & querying |
 | 📜 **Loki** | [http://localhost:3100](http://localhost:3100) | - | Log aggregation |
@@ -440,10 +441,17 @@ We've created convenient scripts to manage your entire monitoring stack:
 
 5. **Access the services:**
    * **🎨 DevOps Monitor UI**: <http://localhost:4000>
+   * **🎮 Demo Application**: <http://localhost:5000> (Sample app for monitoring demo)
    * **📊 Grafana**: <http://localhost:3000> (admin/admin)
    * **📈 Prometheus**: <http://localhost:9090>
    * **📜 Loki**: <http://localhost:3100>
    * **🚨 Alertmanager**: <http://localhost:9093>
+
+6. **Try the Demo Application:**
+   * Navigate to **Demo** in the sidebar (http://localhost:4000/demo)
+   * Use the interactive controls to simulate errors, slow responses, and high load
+   * Watch metrics appear in Prometheus, logs in Loki, and alerts in Alertmanager
+   * See the [Demo Application Guide](docs/DEMO_APPLICATION_GUIDE.md) for details
 
 ### Stopping the Stack
 
