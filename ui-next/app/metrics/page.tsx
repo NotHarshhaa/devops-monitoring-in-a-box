@@ -92,23 +92,24 @@ export default function MetricsPage() {
   const networkTrafficData = allMetricsRange.networkRange.data || []
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="min-w-0 flex-1"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold">Metrics</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Metrics</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Real-time system performance metrics from Prometheus
           </p>
         </motion.div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[120px]">
+            <SelectTrigger className="w-[120px] sm:w-[140px] h-9 sm:h-10">
               <SelectValue placeholder="Time Range" />
             </SelectTrigger>
             <SelectContent>
@@ -120,14 +121,14 @@ export default function MetricsPage() {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="sm" className="gap-1" onClick={handleRefresh}>
+          <Button variant="outline" size="sm" className="gap-1.5 h-9 sm:h-10" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
 
-          <Button variant="outline" size="sm" className="gap-1">
+          <Button variant="outline" size="sm" className="gap-1.5 h-9 sm:h-10">
             <Download className="h-4 w-4" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>
@@ -154,12 +155,12 @@ export default function MetricsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="mb-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="cpu">CPU</TabsTrigger>
-          <TabsTrigger value="memory">Memory</TabsTrigger>
-          <TabsTrigger value="disk">Disk</TabsTrigger>
-          <TabsTrigger value="network">Network</TabsTrigger>
+        <TabsList className="h-10 sm:h-11 w-full grid grid-cols-2 sm:grid-cols-5">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+          <TabsTrigger value="cpu" className="text-xs sm:text-sm">CPU</TabsTrigger>
+          <TabsTrigger value="memory" className="text-xs sm:text-sm">Memory</TabsTrigger>
+          <TabsTrigger value="disk" className="text-xs sm:text-sm">Disk</TabsTrigger>
+          <TabsTrigger value="network" className="text-xs sm:text-sm">Network</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -207,48 +208,54 @@ export default function MetricsPage() {
                   <div className="space-y-4">
                     {allCurrentMetrics.data ? (
                       <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">CPU</span>
-                          <span className="font-medium">{allCurrentMetrics.data.cpu.toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${allCurrentMetrics.data.cpu}%` }}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Memory</span>
-                          <span className="font-medium">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${allCurrentMetrics.data.memory}%` }}
-                          />
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-muted-foreground">CPU</span>
+                            <span className="text-sm sm:text-base font-medium">{allCurrentMetrics.data.cpu.toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2 sm:h-2.5">
+                            <div 
+                              className="bg-blue-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                              style={{ width: `${allCurrentMetrics.data.cpu}%` }}
+                            />
+                          </div>
                         </div>
                         
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Disk</span>
-                          <span className="font-medium">{allCurrentMetrics.data.disk.toFixed(1)}%</span>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-muted-foreground">Memory</span>
+                            <span className="text-sm sm:text-base font-medium">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2 sm:h-2.5">
+                            <div 
+                              className="bg-green-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                              style={{ width: `${allCurrentMetrics.data.memory}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${allCurrentMetrics.data.disk}%` }}
-                          />
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-muted-foreground">Disk</span>
+                            <span className="text-sm sm:text-base font-medium">{allCurrentMetrics.data.disk.toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2 sm:h-2.5">
+                            <div 
+                              className="bg-yellow-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                              style={{ width: `${allCurrentMetrics.data.disk}%` }}
+                            />
+                          </div>
                         </div>
                       </>
                     ) : (
-                      <div className="text-center text-muted-foreground py-8">
+                      <div className="text-center text-muted-foreground py-8 sm:py-12">
                         {allCurrentMetrics.isLoading ? (
-                          <div className="flex items-center justify-center">
-                            <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                            Loading...
+                          <div className="flex flex-col items-center justify-center gap-3">
+                            <RefreshCw className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
+                            <span className="text-sm sm:text-base">Loading...</span>
                           </div>
                         ) : (
-                          "No data available"
+                          <span className="text-sm sm:text-base">No data available</span>
                         )}
                       </div>
                     )}
@@ -299,37 +306,41 @@ export default function MetricsPage() {
                   <div className="space-y-4">
                     {allCurrentMetrics.data ? (
                       <>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Used</span>
-                          <span className="font-medium">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${allCurrentMetrics.data.memory}%` }}
-                          />
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-muted-foreground">Used</span>
+                            <span className="text-sm sm:text-base font-medium">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2 sm:h-2.5">
+                            <div 
+                              className="bg-green-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                              style={{ width: `${allCurrentMetrics.data.memory}%` }}
+                            />
+                          </div>
                         </div>
                         
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Available</span>
-                          <span className="font-medium">{(100 - allCurrentMetrics.data.memory).toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${100 - allCurrentMetrics.data.memory}%` }}
-                          />
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm text-muted-foreground">Available</span>
+                            <span className="text-sm sm:text-base font-medium">{(100 - allCurrentMetrics.data.memory).toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2 sm:h-2.5">
+                            <div 
+                              className="bg-blue-500 h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                              style={{ width: `${100 - allCurrentMetrics.data.memory}%` }}
+                            />
+                          </div>
                         </div>
                       </>
                     ) : (
-                      <div className="text-center text-muted-foreground py-8">
+                      <div className="text-center text-muted-foreground py-8 sm:py-12">
                         {allCurrentMetrics.isLoading ? (
-                          <div className="flex items-center justify-center">
-                            <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                            Loading...
+                          <div className="flex flex-col items-center justify-center gap-3">
+                            <RefreshCw className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
+                            <span className="text-sm sm:text-base">Loading...</span>
                           </div>
                         ) : (
-                          "No data available"
+                          <span className="text-sm sm:text-base">No data available</span>
                         )}
                       </div>
                     )}

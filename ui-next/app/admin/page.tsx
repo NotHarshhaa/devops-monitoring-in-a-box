@@ -124,25 +124,26 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="min-w-0 flex-1"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Admin Panel</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Manage users, configurations, and system settings
           </p>
         </motion.div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-2 h-9 sm:h-10">
             <RefreshCw className="h-4 w-4" />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
-          <Button className="gap-2">
+          <Button size="sm" className="gap-2 h-9 sm:h-10">
             <Plus className="h-4 w-4" />
             Add User
           </Button>
@@ -238,37 +239,39 @@ export default function AdminPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-sm font-medium">
+                      <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm sm:text-base font-medium">
                             {user.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{user.name}</h3>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h3 className="font-medium text-sm sm:text-base break-words">{user.name}</h3>
                             <Badge className={getRoleColor(user.role)}>
                               {getRoleIcon(user.role)}
-                              <span className="ml-1">{user.role}</span>
+                              <span className="ml-1 text-xs">{user.role}</span>
                             </Badge>
                             <Badge variant="outline" className={getStatusColor(user.status)}>
-                              {user.status}
+                              <span className="text-xs">{user.status}</span>
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground break-words">{user.email}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
                             Last login: {new Date(user.lastLogin).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Button variant="outline" size="sm" className="h-9 flex-1 sm:flex-initial">
+                          <Edit className="h-4 w-4 mr-1.5 sm:mr-0" />
+                          <span className="sm:hidden">Edit</span>
                         </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                          <Trash2 className="h-4 w-4" />
+                        <Button variant="outline" size="sm" className="h-9 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex-1 sm:flex-initial">
+                          <Trash2 className="h-4 w-4 mr-1.5 sm:mr-0" />
+                          <span className="sm:hidden">Delete</span>
                         </Button>
                       </div>
                     </motion.div>

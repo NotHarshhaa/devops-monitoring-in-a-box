@@ -136,19 +136,19 @@ export default function DashboardPage() {
   const { dashboardConfig, isLoading, error } = useMultiTenantDashboardConfig();
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:items-center sm:justify-between gap-2 sm:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="min-w-0 flex-1 pr-2 sm:pr-4"
+          className="min-w-0 flex-1"
         >
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold break-words text-foreground">
             {dashboardConfig?.title || 'Dashboard'}
           </h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base break-words">
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base break-words">
             {dashboardConfig?.description || 'Monitor your system health and performance'}
           </p>
         </motion.div>
@@ -156,19 +156,19 @@ export default function DashboardPage() {
 
       {/* Dynamic Metrics */}
       <Suspense fallback={
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="animate-pulse">
               <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center space-x-3">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-6 w-16" />
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg flex-shrink-0" />
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <Skeleton className="h-4 w-full max-w-[120px]" />
+                    <Skeleton className="h-6 sm:h-7 w-full max-w-[80px]" />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <Skeleton className="h-3 w-20" />
+                <div className="mt-3 sm:mt-4">
+                  <Skeleton className="h-3 w-full max-w-[100px]" />
                 </div>
               </CardContent>
             </Card>
@@ -209,33 +209,33 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Recent Activity & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Recent Alerts */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Recent Alerts</CardTitle>
-              <Button variant="outline" size="sm">
-                <Bell className="h-4 w-4 mr-2" />
-                View All
+          <Card className="h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg sm:text-xl">Recent Alerts</CardTitle>
+              <Button variant="outline" size="sm" className="h-8">
+                <Bell className="h-4 w-4 mr-1.5 sm:mr-2" />
+                <span className="hidden sm:inline">View All</span>
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {recentAlerts.map((alert) => (
-                  <div key={alert.id} className="flex items-start space-x-3">
+                  <div key={alert.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div
-                      className={`p-2 rounded-full ${getSeverityColor(alert.severity)}`}
+                      className={`p-2 rounded-lg flex-shrink-0 ${getSeverityColor(alert.severity)}`}
                     >
                       {getSeverityIcon(alert.severity)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{alert.message}</p>
-                      <p className="text-xs text-muted-foreground">{alert.time}</p>
+                      <p className="text-sm font-medium break-words">{alert.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>
                     </div>
                   </div>
                 ))}
@@ -250,14 +250,20 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.7 }}
         >
-          <Card>
+          <Card className="h-full">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full">View All Metrics</Button>
-              <Button variant="outline" className="w-full">Manage Alerts</Button>
-              <Button variant="outline" className="w-full">System Settings</Button>
+            <CardContent className="space-y-2 sm:space-y-3">
+              <Button className="w-full h-10 sm:h-11" size="default">
+                View All Metrics
+              </Button>
+              <Button variant="outline" className="w-full h-10 sm:h-11" size="default">
+                Manage Alerts
+              </Button>
+              <Button variant="outline" className="w-full h-10 sm:h-11" size="default">
+                System Settings
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -269,66 +275,66 @@ export default function DashboardPage() {
           transition={{ duration: 0.5, delay: 0.8 }}
           className="lg:col-span-2 xl:col-span-1"
         >
-          <Card>
+          <Card className="h-full">
             <CardHeader>
-              <CardTitle>System Status</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">System Status</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <a
                     href="http://localhost:9090"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-primary font-medium hover:underline flex items-center min-w-0"
+                    className="text-sm text-primary font-medium hover:underline flex items-center min-w-0 flex-1"
                   >
                     <Cpu className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span className="truncate">Prometheus</span>
                   </a>
-                  <div className="flex items-center space-x-2 flex-shrink-0">
-                    <div className="relative flex h-2 w-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="relative flex h-2.5 w-2.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </div>
-                    <span className="text-sm text-green-600 dark:text-green-500">Healthy</span>
+                    <span className="text-xs sm:text-sm text-green-600 dark:text-green-500 font-medium">Healthy</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <a
                     href="http://localhost:3000"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-primary font-medium hover:underline flex items-center min-w-0"
+                    className="text-sm text-primary font-medium hover:underline flex items-center min-w-0 flex-1"
                   >
                     <HardDrive className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span className="truncate">Grafana</span>
                   </a>
-                  <div className="flex items-center space-x-2 flex-shrink-0">
-                    <div className="relative flex h-2 w-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="relative flex h-2.5 w-2.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </div>
-                    <span className="text-sm text-green-600 dark:text-green-500">Healthy</span>
+                    <span className="text-xs sm:text-sm text-green-600 dark:text-green-500 font-medium">Healthy</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                   <a
                     href="http://localhost:3100"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-primary font-medium hover:underline flex items-center min-w-0"
+                    className="text-sm text-primary font-medium hover:underline flex items-center min-w-0 flex-1"
                   >
                     <Network className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span className="truncate">Loki</span>
                   </a>
-                  <div className="flex items-center space-x-2 flex-shrink-0">
-                    <div className="relative flex h-2 w-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="relative flex h-2.5 w-2.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </div>
-                    <span className="text-sm text-green-600 dark:text-green-500">Healthy</span>
+                    <span className="text-xs sm:text-sm text-green-600 dark:text-green-500 font-medium">Healthy</span>
                   </div>
                 </div>
               </div>

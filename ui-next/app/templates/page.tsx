@@ -15,7 +15,14 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div className="container mx-auto py-4 sm:py-6 px-4 sm:px-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Dashboard Templates</h1>
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+          Browse and manage dashboard templates
+        </p>
+      </div>
       <DashboardTemplateManager
         onTemplateSelect={handleTemplateSelect}
         onTemplateCreate={handleTemplateCreate}

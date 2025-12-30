@@ -105,16 +105,17 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="min-w-0 flex-1"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold">Profile</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Profile</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Manage your account settings and preferences
           </p>
         </motion.div>
@@ -128,38 +129,38 @@ export default function ProfilePage() {
         className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6"
       >
         {/* Profile Card */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <Avatar className="h-24 w-24">
+        <Card className="lg:col-span-1 h-full">
+          <CardHeader className="text-center pb-4">
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                 <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
-                <AvatarFallback className="text-2xl">
+                <AvatarFallback className="text-xl sm:text-2xl">
                   {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
             </div>
-            <CardTitle className="text-xl">{session.user.name || "User"}</CardTitle>
-            <CardDescription>{session.user.email}</CardDescription>
-            <div className="flex justify-center mt-2">
+            <CardTitle className="text-lg sm:text-xl break-words">{session.user.name || "User"}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm break-words mt-1">{session.user.email}</CardDescription>
+            <div className="flex justify-center mt-3">
               <Badge className={getRoleColor((session.user as any).role || "VIEWER")}>
                 {getRoleIcon((session.user as any).role || "VIEWER")}
-                <span className="ml-1">{(session.user as any).role || "VIEWER"}</span>
+                <span className="ml-1 text-xs sm:text-sm">{(session.user as any).role || "VIEWER"}</span>
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="text-muted-foreground">Member since</span>
-                <span>October 2023</span>
+                <span className="font-medium">October 2023</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="text-muted-foreground">Last login</span>
-                <span>Today</span>
+                <span className="font-medium">Today</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs sm:text-sm">
                 <span className="text-muted-foreground">Status</span>
-                <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
                   Active
                 </Badge>
               </div>
@@ -254,20 +255,21 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
+                      className="h-10 sm:h-11"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
                     <Input
                       id="email"
                       name="email"
@@ -275,17 +277,18 @@ export default function ProfilePage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       disabled={!isEditing}
+                      className="h-10 sm:h-11"
                     />
                   </div>
                 </div>
 
                 {isEditing && (
-                  <div className="flex gap-2">
-                    <Button onClick={handleSave}>
-                      <Save className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
+                    <Button onClick={handleSave} className="h-10 sm:h-11 gap-2">
+                      <Save className="h-4 w-4" />
                       Save Changes
                     </Button>
-                    <Button variant="outline" onClick={handleCancel}>
+                    <Button variant="outline" onClick={handleCancel} className="h-10 sm:h-11">
                       Cancel
                     </Button>
                   </div>

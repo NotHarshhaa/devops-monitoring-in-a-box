@@ -60,47 +60,51 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
       severity === "warning" ? "border-l-yellow-500" :
       "border-l-blue-500"
     }`}>
-      <CardHeader className="p-4 pb-2">
-        <div className="flex justify-between">
-          <div className="flex items-center gap-2">
-            {getSeverityIcon(severity)}
-            <CardTitle className="text-lg">{alertName}</CardTitle>
+      <CardHeader className="p-4 sm:p-6 pb-3">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="flex-shrink-0 mt-0.5">
+              {getSeverityIcon(severity)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base sm:text-lg break-words">{alertName}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1 break-words">
+                {summary}
+              </CardDescription>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
             {getStatusBadge(isFiring ? 'firing' : isSuppressed ? 'suppressed' : 'resolved')}
             {getSeverityBadge(severity)}
           </div>
         </div>
-        <CardDescription className="text-sm">
-          {summary}
-        </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 pt-0 pb-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-2 md:gap-x-4 text-sm">
-          <div>
-            <p className="text-muted-foreground">Service</p>
-            <p className="font-medium">{serviceName}</p>
+      <CardContent className="p-4 sm:p-6 pt-0 pb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
+          <div className="space-y-1">
+            <p className="text-xs sm:text-sm text-muted-foreground">Service</p>
+            <p className="text-sm sm:text-base font-medium break-words">{serviceName}</p>
           </div>
-          <div>
-            <p className="text-muted-foreground">Value</p>
-            <p className="font-medium">{value}</p>
+          <div className="space-y-1">
+            <p className="text-xs sm:text-sm text-muted-foreground">Value</p>
+            <p className="text-sm sm:text-base font-medium break-words">{value}</p>
           </div>
-          <div>
-            <p className="text-muted-foreground">Duration</p>
-            <p className="font-medium">
+          <div className="space-y-1">
+            <p className="text-xs sm:text-sm text-muted-foreground">Duration</p>
+            <p className="text-sm sm:text-base font-medium">
               {alertmanagerAPI.calculateDuration(alert.startsAt, alert.endsAt)}
             </p>
           </div>
-          <div className="md:col-span-3">
-            <p className="text-muted-foreground">Description</p>
-            <p>{description}</p>
+          <div className="sm:col-span-3 space-y-1">
+            <p className="text-xs sm:text-sm text-muted-foreground">Description</p>
+            <p className="text-sm sm:text-base break-words">{description}</p>
           </div>
           {Object.keys(alert.labels).length > 0 && (
-            <div className="md:col-span-3">
-              <p className="text-muted-foreground mb-1">Labels</p>
+            <div className="sm:col-span-3 space-y-2">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Labels</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(alert.labels).map(([key, value]) => (
-                  <Badge key={key} variant="secondary">
+                  <Badge key={key} variant="secondary" className="text-xs">
                     {key}={String(value)}
                   </Badge>
                 ))}
@@ -164,40 +168,46 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
           </motion.div>
         )}
       </CardContent>
-      <CardFooter className="p-4 flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">
-          <Clock className="h-3 w-3 inline mr-1" />
-          {isFiring
-            ? `Started at ${alertmanagerAPI.formatTimestamp(alert.startsAt)}`
-            : `Resolved at ${alertmanagerAPI.formatTimestamp(alert.endsAt || alert.updatedAt)}`
-          }
+      <CardFooter className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
+          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="break-words">
+            {isFiring
+              ? `Started at ${alertmanagerAPI.formatTimestamp(alert.startsAt)}`
+              : `Resolved at ${alertmanagerAPI.formatTimestamp(alert.endsAt || alert.updatedAt)}`
+            }
+          </span>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-8 gap-1"
+            className="h-8 sm:h-9 gap-1.5 flex-1 sm:flex-initial"
             onClick={onToggle}
           >
             {isExpanded ? (
               <>
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Less</span>
+                <span className="sm:hidden">Collapse</span>
               </>
             ) : (
               <>
-                <ChevronRight className="h-3 w-3" />
+                <ChevronRight className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Details</span>
+                <span className="sm:hidden">Expand</span>
               </>
             )}
           </Button>
-          <Button variant="outline" size="sm" className="h-8 gap-1">
-            <MessageSquare className="h-3 w-3" />
+          <Button variant="outline" size="sm" className="h-8 sm:h-9 gap-1.5 flex-1 sm:flex-initial">
+            <MessageSquare className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Comment</span>
+            <span className="sm:hidden">Comment</span>
           </Button>
-          <Button variant="outline" size="sm" className="h-8 gap-1">
-            <VolumeX className="h-3 w-3" />
+          <Button variant="outline" size="sm" className="h-8 sm:h-9 gap-1.5 flex-1 sm:flex-initial">
+            <VolumeX className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Silence</span>
+            <span className="sm:hidden">Silence</span>
           </Button>
         </div>
       </CardFooter>
@@ -344,25 +354,26 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="min-w-0 flex-1"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold">Alerts</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Alerts</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Monitor and manage system alerts
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1" 
+            className="gap-1.5 h-9 sm:h-10" 
             onClick={refresh}
             disabled={loading}
           >
@@ -373,11 +384,11 @@ export default function AlertsPage() {
             )}
             <span className="hidden sm:inline">Refresh</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-1">
+          <Button variant="outline" size="sm" className="gap-1.5 h-9 sm:h-10">
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">History</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-1">
+          <Button variant="outline" size="sm" className="gap-1.5 h-9 sm:h-10">
             <VolumeX className="h-4 w-4" />
             <span className="hidden sm:inline">Silences</span>
           </Button>
@@ -392,13 +403,13 @@ export default function AlertsPage() {
           transition={{ duration: 0.3, delay: 0.1 }}
         >
           <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-red-800 dark:text-red-300">Firing</p>
-                  <p className="text-2xl font-bold text-red-900 dark:text-red-200">{stats.firing}</p>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-red-800 dark:text-red-300">Firing</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900 dark:text-red-200 mt-1">{stats.firing}</p>
                 </div>
-                <AlertTriangle className="h-8 w-8 text-red-500 dark:text-red-400" />
+                <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-red-500 dark:text-red-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -410,13 +421,13 @@ export default function AlertsPage() {
           transition={{ duration: 0.3, delay: 0.2 }}
         >
           <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900/30">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-800 dark:text-green-300">Resolved</p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-200">{stats.total - stats.firing - stats.suppressed}</p>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-green-800 dark:text-green-300">Resolved</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-green-900 dark:text-green-200 mt-1">{stats.total - stats.firing - stats.suppressed}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-500 dark:text-green-400" />
+                <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 dark:text-green-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -428,13 +439,13 @@ export default function AlertsPage() {
           transition={{ duration: 0.3, delay: 0.3 }}
         >
           <Card className="bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-300">Suppressed</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-200">{stats.suppressed}</p>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-300">Suppressed</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-200 mt-1">{stats.suppressed}</p>
                 </div>
-                <VolumeX className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+                <VolumeX className="h-6 w-6 sm:h-8 sm:w-8 text-gray-500 dark:text-gray-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -444,30 +455,31 @@ export default function AlertsPage() {
       {/* Search and filters */}
       <Card>
         <CardContent className="p-4 sm:p-6">
-          <div className="grid gap-3 sm:gap-4">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search alerts..."
-                  className="pl-8"
+                  className="pl-9 h-10 sm:h-11"
                   value={filters.searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                 />
               </div>
-              <Button onClick={refresh} disabled={loading}>
+              <Button onClick={refresh} disabled={loading} className="h-10 sm:h-11">
                 {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
-                  "Search"
+                  <Search className="h-4 w-4 mr-2" />
                 )}
+                Search
               </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Severity</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium">Severity</label>
                 <Select value={filters.severity} onValueChange={handleSeverityChange}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10">
                     <SelectValue placeholder="Filter by severity" />
                   </SelectTrigger>
                   <SelectContent>
@@ -480,10 +492,10 @@ export default function AlertsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Status</label>
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium">Status</label>
                 <Select value={filters.status} onValueChange={handleStatusChange}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -494,10 +506,10 @@ export default function AlertsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Service</label>
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium">Service</label>
                 <Select value={filters.service} onValueChange={handleServiceChange}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10">
                     <SelectValue placeholder="Filter by service" />
                   </SelectTrigger>
                   <SelectContent>
@@ -517,49 +529,59 @@ export default function AlertsPage() {
 
       {/* Alerts list */}
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle>Alerts</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-1">
-                <ArrowUpDown className="h-3 w-3" />
-                Sort
+        <CardHeader className="pb-3 sm:pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-lg sm:text-xl">Alerts</CardTitle>
+              <CardDescription className="mt-1">
+                {error ? (
+                  <span className="text-red-600 dark:text-red-400 text-sm">Error: {error}</span>
+                ) : loading ? (
+                  <span className="flex items-center gap-2 text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading alerts...
+                  </span>
+                ) : (
+                  <span className="text-sm">Showing {filteredAlerts.length} alert{filteredAlerts.length !== 1 ? 's' : ''}</span>
+                )}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button variant="outline" size="sm" className="gap-1.5 h-9">
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sort</span>
               </Button>
-              <Button variant="outline" size="sm" className="gap-1">
-                <Filter className="h-3 w-3" />
-                More Filters
+              <Button variant="outline" size="sm" className="gap-1.5 h-9">
+                <Filter className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">More Filters</span>
+                <span className="sm:hidden">Filters</span>
               </Button>
             </div>
           </div>
-          <CardDescription>
-            {error ? (
-              <span className="text-red-500">Error: {error}</span>
-            ) : loading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading alerts...
-              </span>
-            ) : (
-              `Showing ${filteredAlerts.length} alerts`
-            )}
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredAlerts.map((alert) => (
-              <motion.div
-                key={alert.fingerprint}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <AlertCard
-                  alert={alert}
-                  isExpanded={expandedAlerts.has(alert.fingerprint)}
-                  onToggle={() => toggleAlertExpansion(alert.fingerprint)}
-                />
-              </motion.div>
-            ))}
+          <div className="space-y-3 sm:space-y-4">
+            {filteredAlerts.length === 0 && !loading ? (
+              <div className="text-center py-12 sm:py-16">
+                <AlertCircle className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-sm sm:text-base text-muted-foreground">No alerts found</p>
+              </div>
+            ) : (
+              filteredAlerts.map((alert) => (
+                <motion.div
+                  key={alert.fingerprint}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AlertCard
+                    alert={alert}
+                    isExpanded={expandedAlerts.has(alert.fingerprint)}
+                    onToggle={() => toggleAlertExpansion(alert.fingerprint)}
+                  />
+                </motion.div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

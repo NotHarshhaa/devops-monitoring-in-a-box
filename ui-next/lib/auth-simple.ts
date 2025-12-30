@@ -1,11 +1,47 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { checkAuthConfig } from "./auth-config-check"
+
+// Run configuration check
+if (typeof window === "undefined") {
+  checkAuthConfig()
+}
 
 // Define UserRole enum locally to avoid Prisma dependency
 enum UserRole {
   ADMIN = "ADMIN",
   VIEWER = "VIEWER", 
   EDITOR = "EDITOR"
+}
+
+// Validate and set NEXTAUTH_URL
+const getNextAuthUrl = () => {
+  // Check if NEXTAUTH_URL is explicitly set
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL
+  }
+  
+  // In development, try to detect from common ports
+  if (process.env.NODE_ENV === "development") {
+    // Check if running on Vercel
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`
+    }
+    // Default development URL
+    return "http://localhost:3000"
+  }
+  
+  // Production fallback - should be set explicitly
+  return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+}
+
+// Warn if NEXTAUTH_URL is not set in production
+if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_URL) {
+  console.warn(
+    "[NextAuth] Warning: NEXTAUTH_URL is not set. " +
+    "This may cause authentication issues in production. " +
+    "Please set NEXTAUTH_URL to your production URL."
+  )
 }
 
 export const authOptions: NextAuthOptions = {

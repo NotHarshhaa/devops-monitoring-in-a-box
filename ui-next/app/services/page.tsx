@@ -72,93 +72,93 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="p-2 rounded-md bg-primary/10">
-              <Server className="h-5 w-5 text-primary" />
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+              <Server className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <CardTitle>{service.name}</CardTitle>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base sm:text-lg truncate">{service.name}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1 line-clamp-2">{service.description}</CardDescription>
+            </div>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {getStatusBadge(service.status)}
           </div>
         </div>
-        <CardDescription>{service.description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         <Tabs defaultValue="overview">
-          <TabsList className="mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsList className="mb-4 h-9 sm:h-10 w-full grid grid-cols-2">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="details" className="text-xs sm:text-sm">Details</TabsTrigger>
           </TabsList>
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
+          <TabsContent value="overview" className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Status</p>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(service.status)}
-                  <p className="text-sm font-medium capitalize">{service.status}</p>
+                  <p className="text-xs sm:text-sm font-medium capitalize">{service.status}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Port</p>
-                <p className="text-sm font-medium">{getPortFromUrl(service.url)}</p>
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Port</p>
+                <p className="text-xs sm:text-sm font-medium">{getPortFromUrl(service.url)}</p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Response Time</p>
-                <p className="text-sm font-medium">
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Response Time</p>
+                <p className="text-xs sm:text-sm font-medium">
                   {service.responseTime ? healthAPI.formatResponseTime(service.responseTime) : 'N/A'}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Last Checked</p>
-                <p className="text-sm font-medium">
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Last Checked</p>
+                <p className="text-xs sm:text-sm font-medium">
                   {new Date(service.lastChecked).toLocaleTimeString()}
                 </p>
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="details" className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Endpoint</p>
-              <p className="text-sm font-mono bg-muted p-2 rounded">{service.endpoint}</p>
+          <TabsContent value="details" className="space-y-3 sm:space-y-4">
+            <div className="space-y-2">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Endpoint</p>
+              <p className="text-xs sm:text-sm font-mono bg-muted p-2 sm:p-3 rounded break-all">{service.endpoint}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">URL</p>
-              <p className="text-sm font-mono bg-muted p-2 rounded break-all">{service.url}</p>
+            <div className="space-y-2">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">URL</p>
+              <p className="text-xs sm:text-sm font-mono bg-muted p-2 sm:p-3 rounded break-all">{service.url}</p>
             </div>
             {service.error && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Error</p>
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{service.error}</p>
+              <div className="space-y-2">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Error</p>
+                <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 sm:p-3 rounded break-words">{service.error}</p>
               </div>
             )}
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex flex-col sm:flex-row justify-between gap-2 pt-4">
         <Button 
           variant="outline" 
           size="sm" 
-          className="gap-1"
+          className="gap-1.5 w-full sm:w-auto h-9"
           onClick={() => onOpenExternal(service.url)}
         >
-          <ExternalLink className="h-3 w-3" />
+          <ExternalLink className="h-3.5 w-3.5" />
           Open
         </Button>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-1"
-            onClick={onRefresh}
-          >
-            <RefreshCw className="h-3 w-3" />
-            Refresh
-          </Button>
-        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-1.5 w-full sm:w-auto h-9"
+          onClick={onRefresh}
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Refresh
+        </Button>
       </CardFooter>
     </Card>
   )
@@ -239,22 +239,24 @@ export default function ServicesPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
-      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="min-w-0 flex-1"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold">Service Health</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Service Health</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Monitor and manage your DevOps services health status
           </p>
         </motion.div>
         <Button 
           variant="outline" 
-          className="gap-2"
+          size="sm"
+          className="gap-2 h-9 sm:h-10"
           onClick={refresh}
           disabled={loading}
         >
@@ -269,9 +271,9 @@ export default function ServicesPage() {
 
       {/* Tabs for Health and Versions */}
       <Tabs defaultValue="health" className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="health" className="text-xs sm:text-sm">Service Health</TabsTrigger>
-          <TabsTrigger value="versions" className="text-xs sm:text-sm">Component Versions</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 h-10 sm:h-11">
+          <TabsTrigger value="health" className="text-sm">Service Health</TabsTrigger>
+          <TabsTrigger value="versions" className="text-sm">Component Versions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="health" className="space-y-6">
@@ -282,28 +284,27 @@ export default function ServicesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-6"
         >
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="text-4xl">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="text-3xl sm:text-4xl flex-shrink-0">
                     {healthAPI.getOverallStatusIcon(healthData.overallStatus)}
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">Overall Status</h2>
-                    <p className={`text-lg font-medium ${healthAPI.getOverallStatusColor(healthData.overallStatus)}`}>
+                  <div className="min-w-0">
+                    <h2 className="text-xl sm:text-2xl font-bold">Overall Status</h2>
+                    <p className={`text-base sm:text-lg font-medium ${healthAPI.getOverallStatusColor(healthData.overallStatus)}`}>
                       {healthData.overallStatus.charAt(0).toUpperCase() + healthData.overallStatus.slice(1)}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Last Updated</p>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Last Updated</p>
                   <p className="text-sm font-medium">
                     {healthData.lastUpdated.toLocaleTimeString()}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {healthData.services.filter(s => s.status === 'up').length} of {healthData.services.length} services up
                   </p>
                 </div>
@@ -319,15 +320,17 @@ export default function ServicesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-6"
         >
           <Card className="border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-500" />
-                <p className="text-red-700 dark:text-red-400">
-                  Error: {error}
-                </p>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm sm:text-base font-medium text-red-700 dark:text-red-400 mb-1">Error</p>
+                  <p className="text-sm text-red-600 dark:text-red-500 break-words">
+                    {error}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -336,19 +339,19 @@ export default function ServicesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Services Health */}
-        <div className="lg:col-span-2">
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold mb-2">Service Health Status</h2>
-            <p className="text-muted-foreground">
+        <div className="lg:col-span-2 space-y-4">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-2">Service Health Status</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Real-time health monitoring of all monitoring services
             </p>
           </div>
           
           {loading && !healthData ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-12 sm:py-16">
               <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">Checking service health...</p>
+                <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-sm sm:text-base text-muted-foreground">Checking service health...</p>
               </div>
             </div>
           ) : healthData ? (
@@ -370,9 +373,9 @@ export default function ServicesPage() {
             </div>
           ) : (
             <Card>
-              <CardContent className="p-8 text-center">
-                <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No health data available</p>
+              <CardContent className="p-8 sm:p-12 text-center">
+                <AlertTriangle className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-sm sm:text-base text-muted-foreground">No health data available</p>
               </CardContent>
             </Card>
           )}

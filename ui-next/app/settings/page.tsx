@@ -51,7 +51,7 @@ export default function SettingsPage() {
   const [isAdvancedUser, setIsAdvancedUser] = React.useState(false)
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
         <motion.div
@@ -59,8 +59,8 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl sm:text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Configure your monitoring environment
           </p>
         </motion.div>
@@ -68,7 +68,7 @@ export default function SettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs defaultValue="general">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-10 sm:h-11 overflow-x-auto">
           <TabsTrigger value="general" className="text-xs sm:text-sm">General</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
           <TabsTrigger value="security" className="text-xs sm:text-sm">Security</TabsTrigger>
@@ -91,29 +91,29 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-4">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="instance-name">Instance Name</Label>
-                    <Input id="instance-name" defaultValue="DevOps Monitor" />
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="instance-name" className="text-sm font-medium">Instance Name</Label>
+                    <Input id="instance-name" defaultValue="DevOps Monitor" className="h-10 sm:h-11" />
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       The name of your monitoring instance
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="base-url">Base URL</Label>
-                    <Input id="base-url" defaultValue="http://localhost:3000" />
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="base-url" className="text-sm font-medium">Base URL</Label>
+                    <Input id="base-url" defaultValue="http://localhost:3000" className="h-10 sm:h-11" />
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       The base URL for generating links and webhooks
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Advanced Mode</Label>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-sm">Enable advanced features</p>
-                        <p className="text-sm text-muted-foreground">
+                    <Label className="text-sm font-medium">Advanced Mode</Label>
+                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
+                      <div className="space-y-0.5 min-w-0 flex-1">
+                        <p className="text-sm font-medium">Enable advanced features</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Shows advanced configuration options
                         </p>
                       </div>
@@ -125,23 +125,23 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Language</Label>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" className="gap-2">
+                    <Label className="text-sm font-medium">Language</Label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button variant="outline" className="gap-2 h-10 sm:h-11">
                         <Globe className="h-4 w-4" />
                         English
                       </Button>
-                      <Badge variant="outline">Default</Badge>
+                      <Badge variant="outline" className="h-10 sm:h-11 px-3">Default</Badge>
                     </div>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" className="gap-2">
+              <CardFooter className="flex flex-col sm:flex-row justify-between gap-3 pt-6">
+                <Button variant="outline" className="gap-2 w-full sm:w-auto h-10 sm:h-11">
                   <RotateCcw className="h-4 w-4" />
                   Reset to Defaults
                 </Button>
-                <Button className="gap-2">
+                <Button className="gap-2 w-full sm:w-auto h-10 sm:h-11">
                   <Save className="h-4 w-4" />
                   Save Changes
                 </Button>
@@ -166,31 +166,31 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Theme</Label>
-                  <div className="grid grid-cols-3 gap-4">
+                  <Label className="text-sm font-medium">Theme</Label>
+                  <div className="grid grid-cols-3 gap-3 sm:gap-4">
                     <Button
                       variant={theme === "light" ? "default" : "outline"}
                       onClick={() => setTheme("light")}
-                      className="flex flex-col items-center justify-center gap-2 py-6"
+                      className="flex flex-col items-center justify-center gap-2 py-5 sm:py-6 h-auto"
                     >
-                      <Sun className="h-6 w-6" />
-                      <span>Light</span>
+                      <Sun className="h-5 w-5 sm:h-6 sm:w-6" />
+                      <span className="text-sm">Light</span>
                     </Button>
                     <Button
                       variant={theme === "dark" ? "default" : "outline"}
                       onClick={() => setTheme("dark")}
-                      className="flex flex-col items-center justify-center gap-2 py-6"
+                      className="flex flex-col items-center justify-center gap-2 py-5 sm:py-6 h-auto"
                     >
-                      <Moon className="h-6 w-6" />
-                      <span>Dark</span>
+                      <Moon className="h-5 w-5 sm:h-6 sm:w-6" />
+                      <span className="text-sm">Dark</span>
                     </Button>
                     <Button
                       variant={theme === "system" ? "default" : "outline"}
                       onClick={() => setTheme("system")}
-                      className="flex flex-col items-center justify-center gap-2 py-6"
+                      className="flex flex-col items-center justify-center gap-2 py-5 sm:py-6 h-auto"
                     >
-                      <Globe className="h-6 w-6" />
-                      <span>System</span>
+                      <Globe className="h-5 w-5 sm:h-6 sm:w-6" />
+                      <span className="text-sm">System</span>
                     </Button>
                   </div>
                 </div>
@@ -277,10 +277,10 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <Label>General Settings</Label>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-sm">Enable alert notifications</p>
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
+                      <div className="space-y-0.5 min-w-0 flex-1">
+                        <p className="text-sm font-medium">Enable alert notifications</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Receive notifications for all alerts
                         </p>
                       </div>
@@ -295,13 +295,13 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <Label>Notification Channels</Label>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
+                      <div className="space-y-0.5 min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-medium">Email Notifications</p>
-                          <Badge variant="outline">Primary</Badge>
+                          <Badge variant="outline" className="text-xs">Primary</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Send alert notifications to admin@example.com
                         </p>
                       </div>
@@ -311,10 +311,10 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
+                      <div className="space-y-0.5 min-w-0 flex-1">
                         <p className="text-sm font-medium">Slack Notifications</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Send alerts to #monitoring channel
                         </p>
                       </div>
@@ -324,14 +324,14 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
+                      <div className="space-y-0.5 min-w-0 flex-1">
                         <p className="text-sm font-medium">Webhook (Not configured)</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Set up a webhook to receive alerts
                         </p>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="h-9 flex-shrink-0">
                         Configure
                       </Button>
                     </div>
@@ -395,28 +395,29 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="data-retention">Data Retention</Label>
-                  <div className="flex gap-4 items-center">
+                  <Label htmlFor="data-retention" className="text-sm font-medium">Data Retention</Label>
+                  <div className="flex gap-3 sm:gap-4 items-center">
                     <Input
                       id="data-retention"
                       value={dataRetentionDays}
                       onChange={(e) => setDataRetentionDays(e.target.value)}
-                      className="max-w-[100px]"
+                      className="max-w-[100px] sm:max-w-[120px] h-10 sm:h-11"
                     />
-                    <span>days</span>
+                    <span className="text-sm sm:text-base">days</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     How long to keep historical metric data (7-365 days)
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="backup-frequency">Backup Frequency</Label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <Label htmlFor="backup-frequency" className="text-sm font-medium">Backup Frequency</Label>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <Button
                       type="button"
                       variant={backupFrequency === "daily" ? "default" : "outline"}
                       onClick={() => setBackupFrequency("daily")}
+                      className="h-10 sm:h-11 text-sm"
                     >
                       Daily
                     </Button>
@@ -424,6 +425,7 @@ export default function SettingsPage() {
                       type="button"
                       variant={backupFrequency === "weekly" ? "default" : "outline"}
                       onClick={() => setBackupFrequency("weekly")}
+                      className="h-10 sm:h-11 text-sm"
                     >
                       Weekly
                     </Button>
@@ -431,11 +433,12 @@ export default function SettingsPage() {
                       type="button"
                       variant={backupFrequency === "monthly" ? "default" : "outline"}
                       onClick={() => setBackupFrequency("monthly")}
+                      className="h-10 sm:h-11 text-sm"
                     >
                       Monthly
                     </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     How often to create automatic backups
                   </p>
                 </div>
@@ -523,34 +526,35 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <Label>Authentication</Label>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
+                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
+                      <div className="space-y-0.5 min-w-0 flex-1">
                         <p className="text-sm font-medium">Basic Authentication</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Username and password login
                         </p>
                       </div>
-                      <Badge>Active</Badge>
+                      <Badge className="flex-shrink-0">Active</Badge>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input id="username" defaultValue="admin" />
+                      <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+                      <Input id="username" defaultValue="admin" className="h-10 sm:h-11" />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
+                      <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                       <div className="relative">
                         <Input
                           id="password"
                           type={passwordVisible ? "text" : "password"}
                           defaultValue="••••••••••••"
+                          className="h-10 sm:h-11 pr-10"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-1 top-1 h-8 w-8 p-0"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
                           onClick={() => setPasswordVisible(!passwordVisible)}
                         >
                           {passwordVisible ? (
