@@ -70,14 +70,12 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel
+      - GF_INSTALL_PLUGINS=
       - GF_SECURITY_COOKIE_SECURE=true
       - GF_SECURITY_COOKIE_SAMESITE=strict
       - GF_SECURITY_CONTENT_TYPE_PROTECTION=true
       - GF_SECURITY_X_CONTENT_TYPE_OPTIONS=nosniff
       - GF_SECURITY_X_XSS_PROTECTION=true
-      - GF_DATABASE_TYPE=sqlite
-      - GF_DATABASE_PATH=/var/lib/grafana/grafana.db
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_DIAGNOSTICS_ENABLED=false
       - GF_SMTP_ENABLED=false
@@ -218,7 +216,6 @@ services:
       - '--no-collector.ipvs'
       - '--no-collector.netdev'
       - '--no-collector.bonding'
-      - '--no-collector.dmstats'
       - '--no-collector.infiniband'
       - '--no-collector.wifi'
     restart: unless-stopped
@@ -276,7 +273,9 @@ services:
 
   # DevOps Monitor UI - Modern Next.js web dashboard
   devops-monitor-ui:
-    image: ${DOCKERHUB_USERNAME:-yourusername}/devops-monitoring-dashboard:latest
+    build:
+      context: ./ui-next
+      dockerfile: Dockerfile
     container_name: devops-monitor-ui
     ports:
       - "4000:3000"

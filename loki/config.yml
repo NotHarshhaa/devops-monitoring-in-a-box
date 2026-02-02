@@ -25,7 +25,6 @@ query_range:
         max_size_mb: 100
   cache_results: true
   max_retries: 5
-  split_queries_by_interval: 15m
   align_queries_with_step: true
 
 schema_config:

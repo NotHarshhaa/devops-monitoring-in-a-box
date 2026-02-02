@@ -16,8 +16,6 @@ clients:
       max_retries: 10
     batchwait: 1s
     batchsize: 1048576
-    max_retries: 10
-    max_backoff: 5m
 
 scrape_configs:
   # System logs
