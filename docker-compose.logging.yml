@@ -1,0 +1,20 @@
+# Logging Configuration for DevOps Monitoring Stack
+# This file defines centralized logging configuration for all services
+
+version: '3.8'
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+    labels: "project=devops-monitoring"
+
+x-logging-debug: &debug-logging
+  driver: "json-file"
+  options:
+    max-size: "20m"
+    max-file: "5"
+    labels: "project=devops-monitoring"
+
+# Use this as an override file with: docker compose -f docker-compose.yml -f docker-compose.logging.yml up -d

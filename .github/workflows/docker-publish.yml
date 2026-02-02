@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: 'Git commit SHA or branch name (e.g., abc1234, main, latest)'
+        description: 'Git commit SHA, branch name, or tag (e.g., abc1234, main, v1.0.0)'
         required: true
-        default: 'latest'
+        default: 'master'
         type: string
       image_version:
         description: 'Docker image version tag'
@@ -29,6 +29,14 @@ on:
         required: true
         default: true
         type: boolean
+      build_platforms:
+        description: 'Build platforms (multi-arch or single)'
+        required: true
+        default: 'multi-arch'
+        type: choice
+        options:
+          - multi-arch
+          - single-arch
 
 env:
   REGISTRY: docker.io
@@ -42,20 +50,55 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.inputs.commit_sha != 'latest' && github.event.inputs.commit_sha != '' && github.event.inputs.commit_sha || github.ref }}
+        ref: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.commit_sha != 'latest' && github.event.inputs.commit_sha || github.ref) || github.ref }}
         fetch-depth: 0
       
+    - name: Display workflow information
+      run: |
+        echo "🚀 Docker Build and Publish Workflow"
+        echo "==================================="
+        echo ""
+        echo "📋 Trigger Information:"
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "  - Trigger Type: Manual (workflow_dispatch)"
+          echo "  - Triggered by: ${{ github.actor }}"
+          echo "  - Git Reference: ${{ github.event.inputs.commit_sha }}"
+          echo "  - Image Version: ${{ github.event.inputs.image_version }}"
+          echo "  - Push to Registry: ${{ github.event.inputs.push_to_registry }}"
+          echo "  - Cache Enabled: ${{ github.event.inputs.cache_enabled }}"
+          echo "  - Build Platforms: ${{ github.event.inputs.build_platforms }}"
+        else
+          echo "  - Trigger Type: Automatic (${{ github.event_name }})"
+          echo "  - Branch: ${{ github.ref_name }}"
+          echo "  - Commit: ${{ github.sha }}"
+        fi
+        echo ""
+        echo "🔧 Build Configuration:"
+        echo "  - Registry: ${{ env.REGISTRY }}"
+        echo "  - Image Name: ${{ env.IMAGE_NAME }}"
+        echo "  - Runner: ${{ runner.os }}"
+        echo ""
+        
     - name: Validate Git reference
       run: |
         echo "🔍 Validating Git reference..."
-        if [ "${{ github.event.inputs.commit_sha }}" != "latest" ] && [ "${{ github.event.inputs.commit_sha }}" != "" ]; then
-          if git rev-parse --verify "${{ github.event.inputs.commit_sha }}" >/dev/null 2>&1; then
-            echo "✅ Git reference '${{ github.event.inputs.commit_sha }}' found"
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "📋 Manual trigger detected"
+          if [ "${{ github.event.inputs.commit_sha }}" != "latest" ] && [ "${{ github.event.inputs.commit_sha }}" != "" ]; then
+            if git rev-parse --verify "${{ github.event.inputs.commit_sha }}" >/dev/null 2>&1; then
+              echo "✅ Git reference '${{ github.event.inputs.commit_sha }}' found"
+            else
+              echo "❌ Git reference '${{ github.event.inputs.commit_sha }}' not found"
+              echo "💡 Available refs:"
+              git branch -a | head -10
+              git tag | head -10
+              exit 1
+            fi
           else
-            echo "❌ Git reference '${{ github.event.inputs.commit_sha }}' not found"
-            exit 1
+            echo "✅ Using current branch/commit"
           fi
         else
+          echo "📋 Automatic trigger detected (${{ github.event_name }})"
           echo "✅ Using current branch/commit"
         fi
       
@@ -89,7 +132,7 @@ jobs:
         push: ${{ github.event.inputs.push_to_registry != 'false' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        platforms: linux/amd64,linux/arm64
+        platforms: ${{ github.event.inputs.build_platforms == 'multi-arch' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
         build-args: |
           NODE_OPTIONS=--max-old-space-size=2048
           NEXT_BUILD_WORKERS=1
@@ -131,7 +174,7 @@ jobs:
       run: |
         if [ "${{ steps.build_buildx.outcome }}" = "success" ]; then
           echo "build_step=build_buildx" >> $GITHUB_OUTPUT
-          echo "platforms=linux/amd64,linux/arm64" >> $GITHUB_OUTPUT
+          echo "platforms=${{ github.event.inputs.build_platforms == 'multi-arch' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}" >> $GITHUB_OUTPUT
           echo "build_type=buildx" >> $GITHUB_OUTPUT
         else
           echo "build_step=build_standard" >> $GITHUB_OUTPUT
@@ -156,10 +199,16 @@ jobs:
         echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
         echo "| **Git Reference** | \`${{ github.event.inputs.commit_sha }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "| **Image Version** | \`${{ github.event.inputs.image_version }}\` |" >> $GITHUB_STEP_SUMMARY
-        echo "| **Platforms** | ${{ steps.build_result.outputs.platforms }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| **Build Platforms** | ${{ steps.build_result.outputs.platforms }} |" >> $GITHUB_STEP_SUMMARY
         echo "| **Build Type** | ${{ steps.build_result.outputs.build_type }} |" >> $GITHUB_STEP_SUMMARY
         echo "| **Push to Registry** | \`${{ github.event.inputs.push_to_registry }}\` |" >> $GITHUB_STEP_SUMMARY
         echo "| **Cache Enabled** | \`${{ github.event.inputs.cache_enabled }}\` |" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "| **Trigger Type** | Manual (workflow_dispatch) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "| **Trigger Type** | Automatic (${{ github.event_name }}) |" >> $GITHUB_STEP_SUMMARY
+        fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📦 Image Details" >> $GITHUB_STEP_SUMMARY
         echo "- **Registry**: \`${{ env.REGISTRY }}\`" >> $GITHUB_STEP_SUMMARY

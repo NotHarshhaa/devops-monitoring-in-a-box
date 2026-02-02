@@ -5,7 +5,6 @@ global:
     cluster: 'devops-monitoring'
     replica: 'prometheus-1'
   scrape_timeout: 10s
-  query_log_file: /var/log/prometheus/query.log
 
 rule_files:
   - "alert_rules.yml"
@@ -18,21 +17,6 @@ alerting:
           - alertmanager:9093
       timeout: 10s
       api_version: v2
-
-# Remote write configuration (optional)
-remote_write:
-  - url: "http://remote-storage-adapter:9201/write"
-    queue_config:
-      max_samples_per_send: 1000
-      batch_send_deadline: 5s
-      max_retries: 10
-      min_backoff: 30ms
-      max_backoff: 100ms
-
-# Remote read configuration (optional)
-remote_read:
-  - url: "http://remote-storage-adapter:9201/read"
-    read_recent: true
 
 scrape_configs:
   # Prometheus itself
@@ -101,109 +85,109 @@ scrape_configs:
     metrics_path: /metrics
     honor_labels: true
 
-  # Blackbox Exporter - Uptime monitoring
-  - job_name: 'blackbox'
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-        - http://prometheus:9090
-        - http://grafana:3000
-        - http://loki:3100
-        - http://alertmanager:9093
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter:9115
+  # Blackbox Exporter - Uptime monitoring (commented out - requires blackbox-exporter service)
+  # - job_name: 'blackbox'
+  #   metrics_path: /probe
+  #   params:
+  #     module: [http_2xx]
+  #   static_configs:
+  #     - targets:
+  #       - http://prometheus:9090
+  #       - http://grafana:3000
+  #       - http://loki:3100
+  #       - http://alertmanager:9093
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: blackbox-exporter:9115
 
-  # Service Discovery - Docker containers
-  - job_name: 'docker'
-    docker_sd_configs:
-      - host: unix:///var/run/docker.sock
-        refresh_interval: 15s
-        filters:
-          - name: label
-            values: ["prometheus.io/scrape=true"]
-    relabel_configs:
-      - source_labels: [__meta_docker_container_name]
-        target_label: container_name
-      - source_labels: [__meta_docker_container_label_prometheus_io_scrape]
-        target_label: __tmp_prometheus_scrape
-        regex: true
-      - source_labels: [__meta_docker_container_label_prometheus_io_path]
-        target_label: __metrics_path__
-        regex: (.+)
-      - source_labels: [__address__, __meta_docker_container_label_prometheus_io_port]
-        target_label: __address__
-        regex: ([^:]+)(?::\d+)?;(\d+)
-        replacement: $1:$2
-      - action: keep
-        source_labels: [__tmp_prometheus_scrape]
-        regex: true
+  # Service Discovery - Docker containers (optional - requires additional setup)
+  # - job_name: 'docker'
+  #   docker_sd_configs:
+  #     - host: unix:///var/run/docker.sock
+  #       refresh_interval: 15s
+  #       filters:
+  #         - name: label
+  #           values: ["prometheus.io/scrape=true"]
+  #   relabel_configs:
+  #     - source_labels: [__meta_docker_container_name]
+  #       target_label: container_name
+  #     - source_labels: [__meta_docker_container_label_prometheus_io_scrape]
+  #       target_label: __tmp_prometheus_scrape
+  #       regex: true
+  #     - source_labels: [__meta_docker_container_label_prometheus_io_path]
+  #       target_label: __metrics_path__
+  #       regex: (.+)
+  #     - source_labels: [__address__, __meta_docker_container_label_prometheus_io_port]
+  #       target_label: __address__
+  #       regex: ([^:]+)(?::\d+)?;(\d+)
+  #       replacement: $1:$2
+  #     - action: keep
+  #       source_labels: [__tmp_prometheus_scrape]
+  #       regex: true
 
-  # Kubernetes Service Discovery (if running in k8s)
-  - job_name: 'kubernetes-pods'
-    kubernetes_sd_configs:
-      - role: pod
-    relabel_configs:
-      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-        action: keep
-        regex: true
-      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-        action: replace
-        target_label: __metrics_path__
-        regex: (.+)
-      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-        action: replace
-        regex: ([^:]+)(?::\d+)?;(\d+)
-        replacement: $1:$2
-        target_label: __address__
-      - action: labelmap
-        regex: __meta_kubernetes_pod_label_(.+)
-      - source_labels: [__meta_kubernetes_namespace]
-        action: replace
-        target_label: kubernetes_namespace
-      - source_labels: [__meta_kubernetes_pod_name]
-        action: replace
-        target_label: kubernetes_pod_name
+  # Kubernetes Service Discovery (if running in k8s - requires additional setup)
+  # - job_name: 'kubernetes-pods'
+  #   kubernetes_sd_configs:
+  #     - role: pod
+  #   relabel_configs:
+  #     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+  #       action: keep
+  #       regex: true
+  #     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+  #       action: replace
+  #       target_label: __metrics_path__
+  #       regex: (.+)
+  #     - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+  #       action: replace
+  #       regex: ([^:]+)(?::\d+)?;(\d+)
+  #       replacement: $1:$2
+  #       target_label: __address__
+  #     - action: labelmap
+  #       regex: __meta_kubernetes_pod_label_(.+)
+  #     - source_labels: [__meta_kubernetes_namespace]
+  #       action: replace
+  #       target_label: kubernetes_namespace
+  #     - source_labels: [__meta_kubernetes_pod_name]
+  #       action: replace
+  #       target_label: kubernetes_pod_name
 
-  # Application metrics (if applications expose metrics)
-  - job_name: 'applications'
-    static_configs:
-      - targets: ['app1:8080', 'app2:8080']
-    scrape_interval: 30s
-    metrics_path: /metrics
-    honor_labels: true
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: '([^:]+):.*'
-        replacement: '${1}'
+  # Application metrics (example - requires actual applications)
+  # - job_name: 'applications'
+  #   static_configs:
+  #     - targets: ['app1:8080', 'app2:8080']
+  #   scrape_interval: 30s
+  #   metrics_path: /metrics
+  #   honor_labels: true
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: instance
+  #       regex: '([^:]+):.*'
+  #       replacement: '${1}'
 
-  # Database metrics (if using postgres_exporter, mysql_exporter, etc.)
-  - job_name: 'postgres'
-    static_configs:
-      - targets: ['postgres-exporter:9187']
-    scrape_interval: 30s
-    metrics_path: /metrics
-    honor_labels: true
+  # Database metrics (example - requires postgres-exporter)
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+  #   scrape_interval: 30s
+  #   metrics_path: /metrics
+  #   honor_labels: true
 
-  # Redis metrics (if using redis_exporter)
-  - job_name: 'redis'
-    static_configs:
-      - targets: ['redis-exporter:9121']
-    scrape_interval: 30s
-    metrics_path: /metrics
-    honor_labels: true
+  # Redis metrics (example - requires redis-exporter)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+  #   scrape_interval: 30s
+  #   metrics_path: /metrics
+  #   honor_labels: true
 
-  # Nginx metrics (if using nginx-prometheus-exporter)
-  - job_name: 'nginx'
-    static_configs:
-      - targets: ['nginx-exporter:9113']
-    scrape_interval: 30s
-    metrics_path: /metrics
-    honor_labels: true
+  # Nginx metrics (example - requires nginx-prometheus-exporter)
+  # - job_name: 'nginx'
+  #   static_configs:
+  #     - targets: ['nginx-exporter:9113']
+  #   scrape_interval: 30s
+  #   metrics_path: /metrics
+  #   honor_labels: true

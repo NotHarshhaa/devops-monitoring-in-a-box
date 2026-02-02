@@ -1,11 +1,11 @@
 global:
   resolve_timeout: 5m
-  smtp_smarthost: 'localhost:587'
-  smtp_from: 'alertmanager@devops-monitoring.local'
-  smtp_auth_username: 'alertmanager@devops-monitoring.local'
-  smtp_auth_password: 'password'
-  smtp_require_tls: true
-  slack_api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL'
+  smtp_smarthost: '${SMTP_HOST}:${SMTP_PORT}'
+  smtp_from: '${EMAIL_FROM}'
+  smtp_auth_username: '${SMTP_USER}'
+  smtp_auth_password: '${SMTP_PASS}'
+  smtp_require_tls: ${SMTP_SECURE:-true}
+  slack_api_url: '${SLACK_WEBHOOK_URL:-}'
   pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
   opsgenie_api_url: 'https://api.opsgenie.com/v2/alerts'
   victorops_api_url: 'https://alert.victorops.com/integrations/generic/20131114/alert'
@@ -92,7 +92,7 @@ receivers:
   # Critical alerts receiver
   - name: 'critical'
     slack_configs:
-      - channel: '#alerts-critical'
+      - channel: '${SLACK_CHANNEL:-#alerts-critical}'
         title: '🚨 CRITICAL ALERT'
         text: |
           {{ range .Alerts }}
@@ -113,7 +113,7 @@ receivers:
             url: 'http://prometheus:9090/alerts'
         color: 'danger'
     email_configs:
-      - to: 'admin@devops-monitoring.local'
+      - to: '${EMAIL_TO:-admin@devops-monitoring.local}'
         subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
         html: |
           <h2>Critical Alert</h2>
@@ -128,7 +128,7 @@ receivers:
           {{ end }}
         send_resolved: true
     pagerduty_configs:
-      - routing_key: 'YOUR_PAGERDUTY_ROUTING_KEY'
+      - routing_key: '${PAGERDUTY_ROUTING_KEY:-}'
         description: '{{ .GroupLabels.alertname }}'
         details:
           summary: '{{ .Annotations.summary }}'
@@ -141,7 +141,7 @@ receivers:
   # Warning alerts receiver
   - name: 'warning'
     slack_configs:
-      - channel: '#alerts-warning'
+      - channel: '${SLACK_CHANNEL:-#alerts-warning}'
         title: '⚠️ WARNING ALERT'
         text: |
           {{ range .Alerts }}
@@ -159,7 +159,7 @@ receivers:
             url: 'http://grafana:3000/d/alerts'
         color: 'warning'
     email_configs:
-      - to: 'team@devops-monitoring.local'
+      - to: '${EMAIL_TO:-team@devops-monitoring.local}'
         subject: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
         html: |
           <h2>Warning Alert</h2>
@@ -177,7 +177,7 @@ receivers:
   # System alerts receiver
   - name: 'system'
     slack_configs:
-      - channel: '#system-alerts'
+      - channel: '${SLACK_CHANNEL:-#system-alerts}'
         title: '🖥️ System Alert'
         text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
         send_resolved: true
@@ -189,7 +189,7 @@ receivers:
   # Application alerts receiver
   - name: 'application'
     slack_configs:
-      - channel: '#app-alerts'
+      - channel: '${SLACK_CHANNEL:-#app-alerts}'
         title: '📱 Application Alert'
         text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
         send_resolved: true
@@ -201,7 +201,7 @@ receivers:
   # Database alerts receiver
   - name: 'database'
     slack_configs:
-      - channel: '#database-alerts'
+      - channel: '${SLACK_CHANNEL:-#database-alerts}'
         title: '🗄️ Database Alert'
         text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
         send_resolved: true
@@ -213,7 +213,7 @@ receivers:
   # Container alerts receiver
   - name: 'containers'
     slack_configs:
-      - channel: '#container-alerts'
+      - channel: '${SLACK_CHANNEL:-#container-alerts}'
         title: '🐳 Container Alert'
         text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
         send_resolved: true
@@ -225,7 +225,7 @@ receivers:
   # Infrastructure alerts receiver
   - name: 'infrastructure'
     slack_configs:
-      - channel: '#infrastructure-alerts'
+      - channel: '${SLACK_CHANNEL:-#infrastructure-alerts}'
         title: '🏗️ Infrastructure Alert'
         text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ "\n" }}{{ .Annotations.description }}{{ "\n" }}{{ end }}'
         send_resolved: true
@@ -237,7 +237,7 @@ receivers:
   # Email-only receiver for low-priority alerts
   - name: 'email-only'
     email_configs:
-      - to: 'monitoring@devops-monitoring.local'
+      - to: '${EMAIL_TO:-monitoring@devops-monitoring.local}'
         subject: 'INFO: {{ .GroupLabels.alertname }}'
         html: |
           <h2>Information Alert</h2>
@@ -253,7 +253,7 @@ receivers:
   # Discord receiver (alternative to Slack)
   - name: 'discord'
     webhook_configs:
-      - url: 'https://discord.com/api/webhooks/YOUR_DISCORD_WEBHOOK_URL'
+      - url: '${DISCORD_WEBHOOK_URL:-}'
         send_resolved: true
         http_config:
           headers:
@@ -263,7 +263,7 @@ receivers:
   # Microsoft Teams receiver
   - name: 'teams'
     webhook_configs:
-      - url: 'https://outlook.office.com/webhook/YOUR_TEAMS_WEBHOOK_URL'
+      - url: '${TEAMS_WEBHOOK_URL:-}'
         send_resolved: true
         http_config:
           headers:
@@ -272,7 +272,7 @@ receivers:
   # OpsGenie receiver
   - name: 'opsgenie'
     opsgenie_configs:
-      - api_key: 'YOUR_OPSGENIE_API_KEY'
+      - api_key: '${OPSGENIE_API_KEY:-}'
         description: '{{ .GroupLabels.alertname }}'
         details:
           summary: '{{ .Annotations.summary }}'
@@ -286,8 +286,8 @@ receivers:
   # VictorOps receiver
   - name: 'victorops'
     victorops_configs:
-      - api_key: 'YOUR_VICTOROPS_API_KEY'
-        routing_key: 'YOUR_VICTOROPS_ROUTING_KEY'
+      - api_key: '${VICTOROPS_API_KEY:-}'
+        routing_key: '${VICTOROPS_ROUTING_KEY:-}'
         entity_display_name: '{{ .GroupLabels.alertname }}'
         state_message: '{{ .Annotations.summary }}'
         monitoring_tool: 'Prometheus'
