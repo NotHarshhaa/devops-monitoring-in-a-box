@@ -65,14 +65,26 @@ export class HttpClient {
         // Update connection cache on error
         serviceConfigManager.updateConnectionCache(this.serviceName, false);
         
-        // Log error details
+        // Log error details only for non-connection errors in development
         if (process.env.NODE_ENV === 'development') {
-          console.error(`[${this.serviceName}] Response error:`, {
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            data: error.response?.data,
-            message: error.message,
-          });
+          // Suppress connection errors when services aren't running
+          const isConnectionError = 
+            error.code === 'ECONNREFUSED' || 
+            error.code === 'ERR_NETWORK' ||
+            error.message?.includes('Network Error') ||
+            error.message?.includes('fetch failed') ||
+            error.message?.includes('connect ECONNREFUSED') ||
+            error.message?.includes('Unable to connect') ||
+            (error.response?.status === undefined && !error.response?.data);
+          
+          if (!isConnectionError) {
+            console.error(`[${this.serviceName}] Response error:`, {
+              status: error.response?.status,
+              statusText: error.response?.statusText,
+              data: error.response?.data,
+              message: error.message,
+            });
+          }
         }
         return Promise.reject(error);
       }
@@ -165,7 +177,20 @@ export class HttpClient {
    */
   private formatError(error: AxiosError): Error {
     if (!error.response) {
-      // Network error
+      // Network error - check if it's a connection error
+      const isConnectionError = 
+        error.code === 'ECONNREFUSED' || 
+        error.code === 'ERR_NETWORK' ||
+        error.message?.includes('Network Error') ||
+        error.message?.includes('fetch failed') ||
+        error.message?.includes('connect ECONNREFUSED');
+
+      if (isConnectionError) {
+        // For connection errors, return a simpler message that won't be logged to console
+        return new Error(`Unable to connect to ${this.serviceName}. Service may not be running.`);
+      }
+
+      // Other network errors
       return new Error(
         `Failed to connect to ${this.serviceName} at ${this.serviceConfig.url}. ` +
         `Please check if the service is running and accessible.`

@@ -6,7 +6,6 @@ alertmanager_data/
 
 # Logs
 *.log
-logs/
 
 # Environment files
 .env

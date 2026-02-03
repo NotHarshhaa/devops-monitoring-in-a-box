@@ -18,47 +18,49 @@ import {
   Monitor,
   Heart,
   ChevronLeft,
-  ChevronRight,
   Layout,
-  Plug
+  Plug,
+  AlertCircle,
+  CheckCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserMenu } from "@/components/user-menu"
+import { VersionBadge } from "@/components/version-badge"
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Templates', href: '/templates', icon: Layout },
-  { name: 'Services', href: '/services', icon: Server },
-  { name: 'Metrics', href: '/metrics', icon: BarChart3 },
-  { name: 'Logs', href: '/logs', icon: FileText },
-  { name: 'Alerts', href: '/alerts', icon: Bell },
-  { name: 'Plugins', href: '/plugins', icon: Plug },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Dashboard', href: '/dashboard', icon: Home, color: 'from-blue-500 to-indigo-600' },
+  { name: 'Templates', href: '/templates', icon: Layout, color: 'from-purple-500 to-pink-600' },
+  { name: 'Services', href: '/services', icon: Server, color: 'from-green-500 to-emerald-600' },
+  { name: 'Metrics', href: '/metrics', icon: BarChart3, color: 'from-orange-500 to-red-600' },
+  { name: 'Logs', href: '/logs', icon: FileText, color: 'from-indigo-500 to-blue-600' },
+  { name: 'Alerts', href: '/alerts', icon: Bell, color: 'from-red-500 to-pink-600' },
+  { name: 'Plugins', href: '/plugins', icon: Plug, color: 'from-yellow-500 to-orange-600' },
+  { name: 'Settings', href: '/settings', icon: Settings, color: 'from-gray-500 to-slate-600' },
 ]
 
 const serviceStatus = [
-  { name: 'Prometheus', status: 'healthy', icon: Database },
-  { name: 'Grafana', status: 'healthy', icon: BarChart3 },
-  { name: 'Loki', status: 'healthy', icon: FileText },
-  { name: 'Node Exporter', status: 'healthy', icon: Monitor },
+  { name: 'Prometheus', status: 'healthy', icon: Database, color: 'from-orange-500 to-red-600' },
+  { name: 'Grafana', status: 'healthy', icon: BarChart3, color: 'from-blue-500 to-indigo-600' },
+  { name: 'Loki', status: 'healthy', icon: FileText, color: 'from-indigo-500 to-blue-600' },
+  { name: 'Node Exporter', status: 'healthy', icon: Monitor, color: 'from-green-500 to-emerald-600' },
 ]
 
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'healthy':
-      return 'text-green-500';
+      return 'text-green-500 bg-green-100 dark:bg-green-900/20';
     case 'warning':
-      return 'text-yellow-500';
+      return 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/20';
     case 'error':
-      return 'text-red-500';
+      return 'text-red-500 bg-red-100 dark:bg-red-900/20';
     default:
-      return 'text-gray-500';
+      return 'text-gray-500 bg-gray-100 dark:bg-gray-900/20';
   }
 }
 
-// Memoized navigation item component for better performance
+// Modern navigation item matching page styles - optimized for performance
 const NavigationItem = memo(({ item, isActive, isCollapsed }: { 
   item: typeof navigation[0], 
   isActive: boolean, 
@@ -67,120 +69,137 @@ const NavigationItem = memo(({ item, isActive, isCollapsed }: {
   <Link
     href={item.href}
     className={cn(
-      "group relative flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 hover:scale-[1.02]",
-      isActive
-        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 shadow-md shadow-blue-500/10 dark:shadow-blue-400/20 border border-blue-200 dark:border-blue-700"
-        : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white hover:shadow-sm",
-      isCollapsed && "justify-center"
+      "group relative block transition-all duration-200",
+      isCollapsed ? "mx-2 mb-3" : "mb-3"
     )}
     title={isCollapsed ? item.name : undefined}
     aria-current={isActive ? "page" : undefined}
   >
-    <div className={cn(
-      "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
-      isActive 
-        ? "bg-blue-500 dark:bg-blue-600 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/30" 
-        : "bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800"
-    )}>
-      <item.icon className={cn(
-        "h-4 w-4 flex-shrink-0 transition-colors duration-200",
-        isActive 
-          ? "text-white" 
-          : "text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400",
-        !isCollapsed && "mr-0"
-      )} />
-    </div>
-    <AnimatePresence>
-      {!isCollapsed && (
-        <motion.span
-          initial={{ opacity: 0, width: 0 }}
-          animate={{ opacity: 1, width: "auto" }}
-          exit={{ opacity: 0, width: 0 }}
-          transition={{ duration: 0.2 }}
-          className="truncate overflow-hidden ml-3"
-        >
-          {item.name}
-        </motion.span>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl transition-all duration-200",
+        isActive
+          ? "shadow-lg shadow-blue-500/20 dark:shadow-blue-400/25"
+          : "shadow-md hover:shadow-lg"
       )}
-    </AnimatePresence>
-    {isActive && !isCollapsed && (
-      <motion.div
-        className="absolute left-0 w-1 h-10 bg-blue-500 dark:bg-blue-400 rounded-r-full shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20"
-        layoutId="activeNav"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{
-          type: "spring",
-          stiffness: 350,
-          damping: 30
-        }}
-      />
-    )}
+    >
+      {/* Background with gradient */}
+      <div className={cn(
+        "relative p-4 rounded-2xl transition-all duration-200",
+        isActive
+          ? `bg-gradient-to-r ${item.color} text-white`
+          : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+      )}>
+        {/* Active state gradient overlay */}
+        {isActive && (
+          <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" />
+        )}
+        
+        {/* Content */}
+        <div className={cn(
+          "relative flex items-center",
+          isCollapsed ? "justify-center" : "justify-between"
+        )}>
+          {/* Icon with gradient background */}
+          <div className={cn(
+            "flex items-center justify-center transition-all duration-200",
+            isActive
+              ? "w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl"
+              : "w-10 h-10 bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600 rounded-xl"
+          )}>
+            <item.icon className={cn(
+              "h-5 w-5 transition-colors duration-200",
+              isActive
+                ? "text-white"
+                : "text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
+            )} />
+          </div>
+          
+          {/* Text content */}
+          {!isCollapsed && (
+            <div className="flex-1 ml-4">
+              <h3 className={cn(
+                "font-semibold transition-colors duration-200",
+                isActive
+                  ? "text-white"
+                  : "text-gray-900 dark:text-white"
+              )}>
+                {item.name}
+              </h3>
+              {isActive && (
+                <div className="h-0.5 bg-white/30 rounded-full mt-1" />
+              )}
+            </div>
+          )}
+          
+          {/* Decorative element */}
+          {!isActive && (
+            <div className={cn(
+              "absolute top-2 right-2 w-2 h-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-r",
+              item.color
+            )} />
+          )}
+        </div>
+      </div>
+    </div>
   </Link>
 ))
 
 NavigationItem.displayName = "NavigationItem"
 
-// Memoized service status item component
+// Modern service status item - optimized for performance
 const ServiceStatusItem = memo(({ service, isCollapsed }: { 
   service: typeof serviceStatus[0], 
   isCollapsed: boolean 
 }) => (
   <div className={cn(
-    "group flex items-center p-3 rounded-xl transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-[1.02]",
-    isCollapsed ? "justify-center" : "justify-between"
+    "relative overflow-hidden rounded-2xl transition-all duration-200",
+    isCollapsed ? "mx-2 mb-3" : "mb-3"
   )}>
-    <div className="flex items-center space-x-3 min-w-0">
-      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800 transition-colors duration-200">
-        <service.icon className="h-4 w-4 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors duration-200" aria-hidden="true" />
-      </div>
-      <AnimatePresence>
-        {!isCollapsed && (
-          <motion.span
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: "auto" }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate overflow-hidden"
-          >
-            {service.name}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </div>
-    <AnimatePresence>
-      {!isCollapsed && (
-        <motion.div
-          initial={{ opacity: 0, width: 0 }}
-          animate={{ opacity: 1, width: "auto" }}
-          exit={{ opacity: 0, width: 0 }}
-          transition={{ duration: 0.2 }}
-          className="flex items-center space-x-2 flex-shrink-0 overflow-hidden"
-        >
-          <div className="flex items-center space-x-2">
-            <span 
-              className={cn(
-                "relative flex h-3 w-3 rounded-full shadow-lg",
-                service.status === 'healthy' ? "bg-green-500 shadow-green-500/25" : "bg-red-500 shadow-red-500/25"
-              )}
-              aria-label={`${service.name} status: ${service.status}`}
-            >
-              {service.status === 'healthy' && (
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-              )}
-            </span>
-            <span className={cn(
-              "text-xs font-medium px-2 py-1 rounded-full",
-              service.status === 'healthy' 
-                ? "text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/30" 
-                : "text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30"
-            )}>
-              {service.status === 'healthy' ? 'Healthy' : 'Error'}
-            </span>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
+      <div className={cn(
+        "flex items-center",
+        isCollapsed ? "justify-center" : "justify-between"
+      )}>
+        <div className="flex items-center space-x-3">
+          <div className={cn(
+            "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white",
+            service.color
+          )}>
+            <service.icon className="h-5 w-5" />
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          {!isCollapsed && (
+            <div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {service.name}
+              </p>
+              <div className="flex items-center space-x-1 mt-1">
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  getStatusColor(service.status).split(' ')[0]
+                )} />
+                <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                  {service.status}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {!isCollapsed && (
+          <div className={cn(
+            "w-8 h-8 rounded-lg flex items-center justify-center",
+            getStatusColor(service.status)
+          )}>
+            {service.status === 'healthy' ? (
+              <CheckCircle className="h-4 w-4" />
+            ) : (
+              <AlertCircle className="h-4 w-4" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   </div>
 ))
 
@@ -270,11 +289,8 @@ export const Sidebar = memo(() => {
 
   return (
     <>
-      {/* Mobile menu button */}
-      <div className={cn(
-        "lg:hidden fixed z-50 transition-all duration-300",
-        isOpen ? "top-4 right-4" : "top-4 left-4"
-      )}>
+      {/* Modern Mobile Menu Button - optimized */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button
           id="menu-button"
           variant="outline"
@@ -282,166 +298,148 @@ export const Sidebar = memo(() => {
           onClick={toggleSidebar}
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
-          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200/50 dark:border-gray-700 shadow-lg shadow-gray-900/10 dark:shadow-black/30 hover:scale-105 transition-all duration-200 h-10 w-10"
+          className="h-12 w-12 rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-gray-200/50 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-200"
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={isOpen ? "close" : "menu"}
-              initial={{ opacity: 0, rotate: -90 }}
-              animate={{ opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0, rotate: 90 }}
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              {isOpen ? <X size={22} className="text-gray-700 dark:text-gray-300" /> : <Menu size={22} className="text-gray-700 dark:text-gray-300" />}
+              {isOpen ? <X size={20} className="text-gray-700 dark:text-gray-300" /> : <Menu size={20} className="text-gray-700 dark:text-gray-300" />}
             </motion.div>
           </AnimatePresence>
         </Button>
       </div>
 
-      {/* Sidebar */}
+      {/* Modern Sidebar with Page-Style Design - optimized */}
       <motion.div
         id="sidebar"
         className={cn(
-          "bg-white/95 dark:bg-gray-900 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700 overflow-hidden transition-all duration-300 ease-in-out shadow-2xl shadow-gray-900/5 dark:shadow-black/30",
-          isDesktop 
-            ? "relative z-auto" 
-            : "fixed inset-y-0 left-0 z-40"
+          "fixed lg:relative top-0 left-0 h-screen bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700 overflow-hidden transition-all duration-300 ease-out z-40",
+          isDesktop ? "shadow-lg" : "shadow-xl"
         )}
-        initial={{ x: isDesktop ? 0 : -280 }}
+        initial={{ x: isDesktop ? 0 : -320 }}
         animate={{ 
-          x: isDesktop ? 0 : (isOpen ? 0 : -280)
+          x: isDesktop ? 0 : (isOpen ? 0 : -320)
         }}
         transition={{ 
-          type: "spring",
-          stiffness: 300,
-          damping: 30
+          type: "tween",
+          duration: 0.3,
+          ease: "easeOut"
         }}
         style={{ 
-          width: isDesktop ? (isCollapsed ? 80 : 280) : 280,
-          minWidth: isDesktop ? (isCollapsed ? 80 : 280) : 280,
-          maxWidth: isDesktop ? (isCollapsed ? 80 : 280) : 280
+          width: isDesktop ? (isCollapsed ? 80 : 320) : 320,
+          minWidth: isDesktop ? (isCollapsed ? 80 : 320) : 320,
+          maxWidth: isDesktop ? (isCollapsed ? 80 : 320) : 320
         }}
         role="navigation"
         aria-label="Main navigation"
       >
         <div className="flex flex-col h-full">
-          {/* Header */}
+          {/* Enhanced Header matching page styles - optimized */}
           <div className={cn(
-            "flex items-center border-b border-gray-200/60 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800",
-            isCollapsed ? "justify-center p-4" : "justify-between p-6"
+            "relative overflow-hidden border-b border-gray-200/50 dark:border-gray-700",
+            isCollapsed ? "p-4" : "p-6"
           )}>
-            {isCollapsed ? (
-              <div className="flex items-center justify-center">
-                <Button
-                  variant="ghost"
-                  size="icon"
+            {/* Gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 dark:from-blue-500/5 dark:via-indigo-500/3 dark:to-purple-500/5" />
+            
+            <div className="relative z-10">
+              {isCollapsed ? (
+                <button
                   onClick={expandSidebar}
-                  className="h-12 w-12 p-0 group hover:scale-105 transition-transform duration-200"
-                  aria-label="Expand sidebar"
+                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
                 >
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500 dark:bg-blue-600 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/30 group-hover:shadow-xl group-hover:shadow-blue-500/30 dark:group-hover:shadow-blue-400/40 transition-all duration-200">
-                    <Activity className="h-6 w-6 text-white" />
+                  <Activity className="h-7 w-7" />
+                </button>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg flex items-center justify-center">
+                      <Activity className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-bold text-gray-900 dark:text-white">DevOps Monitor</h1>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Infrastructure Dashboard</p>
+                    </div>
                   </div>
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500 dark:bg-blue-600 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/30">
-                    <Activity className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-lg font-bold text-gray-900 dark:text-white">DevOps Monitor</h1>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Monitoring in a Box</p>
+                  <div className="flex items-center space-x-2">
+                    {isDesktop && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleCollapse}
+                        className="h-10 w-10 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                        aria-label="Collapse sidebar"
+                      >
+                        <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      </Button>
+                    )}
+                    <ThemeToggle />
+                    <UserMenu />
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {isDesktop && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleCollapse}
-                  className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                  aria-label="Collapse sidebar"
-                >
-                      <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                    </Button>
-                  )}
-                  <ThemeToggle />
-                  <UserMenu />
-                </div>
-              </>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* Navigation */}
-          <nav className={cn(
-            "flex-1 space-y-1 overflow-y-auto",
-            isCollapsed ? "p-2" : "p-4"
-          )}>
-            {navigationItems}
-          </nav>
-
-          {/* Service Status */}
+          {/* Navigation with modern spacing - optimized for scroll */}
           <div className={cn(
-            "border-t border-gray-200/60 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800",
-            isCollapsed ? "p-2" : "p-4"
+            "flex-1 overflow-y-auto py-6",
+            isCollapsed ? "px-2" : "px-4"
           )}>
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.h3
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center"
-                >
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+            <div className="space-y-2">
+              {navigationItems}
+            </div>
+          </div>
+
+          {/* Enhanced Service Status Section - optimized */}
+          <div className={cn(
+            "border-t border-gray-200/50 dark:border-gray-700 bg-gradient-to-b from-gray-50/50 to-blue-50/30 dark:from-gray-800/50 dark:to-blue-900/20",
+            isCollapsed ? "p-4" : "p-6"
+          )}>
+            {!isCollapsed && (
+              <div className="mb-4">
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center">
+                  <div className="w-2 h-2 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full mr-2 shadow-lg shadow-green-500/25"></div>
                   Service Status
-                </motion.h3>
-              )}
-            </AnimatePresence>
+                </h3>
+              </div>
+            )}
             <div className="space-y-2">
               {serviceStatusItems}
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Enhanced Footer - optimized with version */}
           <div className={cn(
-            "border-t border-gray-200/60 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800 text-center",
-            isCollapsed ? "p-2" : "p-4"
+            "border-t border-gray-200/50 dark:border-gray-700 bg-gradient-to-b from-blue-50/30 to-gray-50/50 dark:from-blue-900/20 dark:to-gray-800/50 p-6 text-center",
+            isCollapsed ? "p-4" : ""
           )}>
-            <AnimatePresence>
-              {!isCollapsed ? (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center font-medium"
-                >
-                  Built with <Heart className="h-3 w-3 mx-1 text-red-500 animate-pulse" /> by 
-                  <span className="ml-1 font-bold text-blue-600 dark:text-blue-400">Harshhaa</span>
-                </motion.p>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex justify-center"
-                >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30">
-                    <Heart className="h-4 w-4 text-red-500 animate-pulse" />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {!isCollapsed ? (
+              <div className="space-y-4">
+                <VersionBadge variant="compact" className="mx-auto" />
+                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <span>Built with</span>
+                  <Heart className="h-4 w-4 text-red-500 animate-pulse" />
+                  <span>by Harshhaa</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-center space-y-2">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30 flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-red-500 animate-pulse" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile - optimized */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -449,6 +447,7 @@ export const Sidebar = memo(() => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={() => setIsOpen(false)}
           />
         )}

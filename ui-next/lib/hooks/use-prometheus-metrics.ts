@@ -9,8 +9,8 @@ export function useCPUUsage() {
     queryFn: () => prometheusAPI.getCPUUsage(),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts to prevent console spam
+    retryDelay: 2000,
   });
 }
 
@@ -21,8 +21,8 @@ export function useCPUUsageRange(start: number, end: number) {
     queryFn: () => prometheusAPI.getCPUUsageRange(start, end),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
     enabled: start > 0 && end > 0,
   });
 }
@@ -34,8 +34,8 @@ export function useMemoryUsage() {
     queryFn: () => prometheusAPI.getMemoryUsage(),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
   });
 }
 
@@ -46,8 +46,8 @@ export function useMemoryUsageRange(start: number, end: number) {
     queryFn: () => prometheusAPI.getMemoryUsageRange(start, end),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
     enabled: start > 0 && end > 0,
   });
 }
@@ -59,8 +59,8 @@ export function useDiskUsage() {
     queryFn: () => prometheusAPI.getDiskUsage(),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
   });
 }
 
@@ -71,8 +71,8 @@ export function useDiskUsageRange(start: number, end: number) {
     queryFn: () => prometheusAPI.getDiskUsageRange(start, end),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
     enabled: start > 0 && end > 0,
   });
 }
@@ -84,8 +84,8 @@ export function useNetworkTraffic() {
     queryFn: () => prometheusAPI.getNetworkTraffic(),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
   });
 }
 
@@ -96,8 +96,8 @@ export function useNetworkTrafficRange(start: number, end: number) {
     queryFn: () => prometheusAPI.getNetworkTrafficRange(start, end),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
     enabled: start > 0 && end > 0,
   });
 }
@@ -109,8 +109,8 @@ export function useSystemLoad() {
     queryFn: () => prometheusAPI.getSystemLoad(),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
   });
 }
 
@@ -121,8 +121,8 @@ export function useAllCurrentMetrics() {
     queryFn: () => prometheusAPI.getAllCurrentMetrics(),
     refetchInterval: config.prometheus.refreshInterval,
     staleTime: config.prometheus.refreshInterval,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 1, // Reduce retry attempts
+    retryDelay: 2000,
   });
 }
 

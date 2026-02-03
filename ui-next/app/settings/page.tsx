@@ -19,7 +19,8 @@ import {
   Download,
   Upload,
   Eye,
-  EyeOff
+  EyeOff,
+  Settings
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,641 +52,268 @@ export default function SettingsPage() {
   const [isAdvancedUser, setIsAdvancedUser] = React.useState(false)
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-6">
-      {/* Header */}
-      <div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20">
+      <div className="px-2 sm:px-4 py-3 sm:py-6 max-w-7xl mx-auto space-y-3 sm:space-y-6">
+        {/* Enhanced Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-            Configure your monitoring environment
-          </p>
-        </motion.div>
-      </div>
+          <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-700 text-white p-4 sm:p-8">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2 sm:space-y-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="p-2 sm:p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                      <Settings className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl sm:text-3xl lg:text-4xl font-bold">
+                        Settings
+                      </CardTitle>
+                      <CardDescription className="mt-1 sm:mt-2 text-emerald-100 text-sm sm:text-base">
+                        Configure your monitoring environment
+                      </CardDescription>
+                    </div>
+                  </div>
+                </div>
+                <div className="hidden sm:block">
+                  <Badge className="bg-white/20 text-white border-white/30 px-3 py-1.5 font-semibold text-sm">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Configuration
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Database className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                    5
+                  </div>
+                  <div className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300">Categories</div>
+                </motion.div>
 
-      {/* Settings Tabs */}
-      <Tabs defaultValue="general">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-10 sm:h-11 overflow-x-auto">
-          <TabsTrigger value="general" className="text-xs sm:text-sm">General</TabsTrigger>
-          <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
-          <TabsTrigger value="security" className="text-xs sm:text-sm">Security</TabsTrigger>
-          <TabsTrigger value="configuration" className="text-xs sm:text-sm">Configuration</TabsTrigger>
-          <TabsTrigger value="site" className="text-xs sm:text-sm">Site Config</TabsTrigger>
-        </TabsList>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">
+                    12
+                  </div>
+                  <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">Notifications</div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.3 }}
+                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-bold text-purple-600 dark:text-purple-400">
+                    8
+                  </div>
+                  <div className="text-xs sm:text-sm text-purple-700 dark:text-purple-300">Security</div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.4 }}
+                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl border border-orange-200 dark:border-orange-800"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Save className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-bold text-orange-600 dark:text-orange-400">
+                    24
+                  </div>
+                  <div className="text-xs sm:text-sm text-orange-700 dark:text-orange-300">Options</div>
+                </motion.div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Enhanced Settings Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <Card className="border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-900">
+            <CardContent className="p-4 sm:p-6">
+              <Tabs defaultValue="general" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-10 sm:h-11 overflow-x-auto bg-gradient-to-r from-gray-50 to-emerald-50 dark:from-gray-800 dark:to-emerald-900/20 border border-gray-200 dark:border-gray-700">
+                  <TabsTrigger value="general" className="text-xs sm:text-sm data-[state=active]:bg-emerald-600 data-[state=active]:text-white">General</TabsTrigger>
+                  <TabsTrigger value="notifications" className="text-xs sm:text-sm data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Notifications</TabsTrigger>
+                  <TabsTrigger value="security" className="text-xs sm:text-sm data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Security</TabsTrigger>
+                  <TabsTrigger value="configuration" className="text-xs sm:text-sm data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Configuration</TabsTrigger>
+                  <TabsTrigger value="site" className="text-xs sm:text-sm data-[state=active]:bg-emerald-600 data-[state=active]:text-white">Site Config</TabsTrigger>
+                </TabsList>
 
         {/* General Settings */}
-        <TabsContent value="general">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>General Settings</CardTitle>
-                <CardDescription>
-                  Configure basic system settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4 sm:space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="instance-name" className="text-sm font-medium">Instance Name</Label>
-                    <Input id="instance-name" defaultValue="DevOps Monitor" className="h-10 sm:h-11" />
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      The name of your monitoring instance
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="base-url" className="text-sm font-medium">Base URL</Label>
-                    <Input id="base-url" defaultValue="http://localhost:4000" className="h-10 sm:h-11" />
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      The base URL for generating links and webhooks
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Advanced Mode</Label>
-                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <p className="text-sm font-medium">Enable advanced features</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          Shows advanced configuration options
-                        </p>
-                      </div>
-                      <Switch
-                        checked={isAdvancedUser}
-                        onCheckedChange={setIsAdvancedUser}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Language</Label>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button variant="outline" className="gap-2 h-10 sm:h-11">
-                        <Globe className="h-4 w-4" />
-                        English
-                      </Button>
-                      <Badge variant="outline" className="h-10 sm:h-11 px-3">Default</Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col sm:flex-row justify-between gap-3 pt-6">
-                <Button variant="outline" className="gap-2 w-full sm:w-auto h-10 sm:h-11">
-                  <RotateCcw className="h-4 w-4" />
-                  Reset to Defaults
-                </Button>
-                <Button className="gap-2 w-full sm:w-auto h-10 sm:h-11">
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        </TabsContent>
-
-        {/* Appearance Settings */}
-        <TabsContent value="appearance">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Appearance</CardTitle>
-                <CardDescription>
-                  Customize the look and feel of the interface
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Theme</Label>
-                  <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                    <Button
-                      variant={theme === "light" ? "default" : "outline"}
-                      onClick={() => setTheme("light")}
-                      className="flex flex-col items-center justify-center gap-2 py-5 sm:py-6 h-auto"
-                    >
-                      <Sun className="h-5 w-5 sm:h-6 sm:w-6" />
-                      <span className="text-sm">Light</span>
-                    </Button>
-                    <Button
-                      variant={theme === "dark" ? "default" : "outline"}
-                      onClick={() => setTheme("dark")}
-                      className="flex flex-col items-center justify-center gap-2 py-5 sm:py-6 h-auto"
-                    >
-                      <Moon className="h-5 w-5 sm:h-6 sm:w-6" />
-                      <span className="text-sm">Dark</span>
-                    </Button>
-                    <Button
-                      variant={theme === "system" ? "default" : "outline"}
-                      onClick={() => setTheme("system")}
-                      className="flex flex-col items-center justify-center gap-2 py-5 sm:py-6 h-auto"
-                    >
-                      <Globe className="h-5 w-5 sm:h-6 sm:w-6" />
-                      <span className="text-sm">System</span>
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Dashboard Layout</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" className="h-auto flex flex-col items-center justify-center gap-2 py-6">
-                      <div className="w-16 h-12 border border-border rounded-md flex flex-col overflow-hidden">
-                        <div className="h-2 bg-primary/20"></div>
-                        <div className="flex flex-1">
-                          <div className="w-1/3 bg-primary/10"></div>
-                          <div className="w-2/3 p-1">
-                            <div className="h-1.5 w-full bg-muted mb-1 rounded-sm"></div>
-                            <div className="h-1.5 w-2/3 bg-muted rounded-sm"></div>
+                <TabsContent value="general" className="mt-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-900">
+                      <CardHeader className="bg-gradient-to-r from-gray-50 to-emerald-50 dark:from-gray-800 dark:to-emerald-900/20 p-4 sm:p-6">
+                        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                          <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+                            <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                           </div>
-                        </div>
-                      </div>
-                      <span>Standard</span>
-                    </Button>
-                    <Button variant="outline" className="h-auto flex flex-col items-center justify-center gap-2 py-6">
-                      <div className="w-16 h-12 border border-border rounded-md flex flex-col overflow-hidden">
-                        <div className="h-2 bg-primary/20"></div>
-                        <div className="flex flex-1">
-                          <div className="w-1/4 bg-primary/10"></div>
-                          <div className="w-3/4 p-1">
-                            <div className="grid grid-cols-2 gap-1 h-full">
-                              <div className="bg-muted rounded-sm"></div>
-                              <div className="bg-muted rounded-sm"></div>
-                              <div className="bg-muted rounded-sm"></div>
-                              <div className="bg-muted rounded-sm"></div>
+                          General Settings
+                        </CardTitle>
+                        <CardDescription className="mt-1 text-gray-600 dark:text-gray-400">
+                          Configure basic system settings
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-4 sm:p-6 space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="instance-name" className="text-sm font-medium text-gray-700 dark:text-gray-300">Instance Name</Label>
+                            <Input id="instance-name" defaultValue="DevOps Monitor" className="h-10 sm:h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600" />
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                              The name of your monitoring instance
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="base-url" className="text-sm font-medium text-gray-700 dark:text-gray-300">Base URL</Label>
+                            <Input id="base-url" defaultValue="http://localhost:4000" className="h-10 sm:h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600" />
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                              The base URL for generating links and webhooks
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Advanced Mode</Label>
+                            <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-emerald-50 dark:from-gray-800 dark:to-emerald-900/20">
+                              <div className="space-y-0.5 min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">Enable advanced features</p>
+                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                  Shows advanced configuration options
+                                </p>
+                              </div>
+                              <Switch
+                                checked={isAdvancedUser}
+                                onCheckedChange={setIsAdvancedUser}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Language</Label>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Button variant="outline" className="gap-2 h-10 sm:h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <Globe className="h-4 w-4" />
+                                English
+                              </Button>
+                              <Badge variant="outline" className="h-10 sm:h-11 px-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300">Default</Badge>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <span>Compact</span>
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Animation Settings</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Enable animations</span>
-                      <Switch defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Reduce motion</span>
-                      <Switch />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" className="gap-2">
-                  <RotateCcw className="h-4 w-4" />
-                  Reset to Defaults
-                </Button>
-                <Button className="gap-2">
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        </TabsContent>
-
-        {/* Notifications Settings */}
-        <TabsContent value="notifications">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Notifications</CardTitle>
-                <CardDescription>
-                  Configure how and when you receive alerts
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>General Settings</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <p className="text-sm font-medium">Enable alert notifications</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          Receive notifications for all alerts
-                        </p>
-                      </div>
-                      <Switch
-                        checked={alertNotifications}
-                        onCheckedChange={setAlertNotifications}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Notification Channels</Label>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium">Email Notifications</p>
-                          <Badge variant="outline" className="text-xs">Primary</Badge>
-                        </div>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          Send alert notifications to admin@example.com
-                        </p>
-                      </div>
-                      <Switch
-                        checked={emailNotifications}
-                        onCheckedChange={setEmailNotifications}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <p className="text-sm font-medium">Slack Notifications</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          Send alerts to #monitoring channel
-                        </p>
-                      </div>
-                      <Switch
-                        checked={slackNotifications}
-                        onCheckedChange={setSlackNotifications}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <p className="text-sm font-medium">Webhook (Not configured)</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          Set up a webhook to receive alerts
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm" className="h-9 flex-shrink-0">
-                        Configure
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Alert Severity Thresholds</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span className="text-sm">Critical</span>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <span className="text-sm">Warning</span>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                        <span className="text-sm">Info</span>
-                      </div>
-                      <Switch defaultChecked={false} />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" className="gap-2">
-                  <Bell className="h-4 w-4" />
-                  Test Notifications
-                </Button>
-                <Button className="gap-2">
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        </TabsContent>
-
-        {/* Data Settings */}
-        <TabsContent value="data">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Data Management</CardTitle>
-                <CardDescription>
-                  Configure data retention and backup settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="data-retention" className="text-sm font-medium">Data Retention</Label>
-                  <div className="flex gap-3 sm:gap-4 items-center">
-                    <Input
-                      id="data-retention"
-                      value={dataRetentionDays}
-                      onChange={(e) => setDataRetentionDays(e.target.value)}
-                      className="max-w-[100px] sm:max-w-[120px] h-10 sm:h-11"
-                    />
-                    <span className="text-sm sm:text-base">days</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    How long to keep historical metric data (7-365 days)
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="backup-frequency" className="text-sm font-medium">Backup Frequency</Label>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    <Button
-                      type="button"
-                      variant={backupFrequency === "daily" ? "default" : "outline"}
-                      onClick={() => setBackupFrequency("daily")}
-                      className="h-10 sm:h-11 text-sm"
-                    >
-                      Daily
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={backupFrequency === "weekly" ? "default" : "outline"}
-                      onClick={() => setBackupFrequency("weekly")}
-                      className="h-10 sm:h-11 text-sm"
-                    >
-                      Weekly
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={backupFrequency === "monthly" ? "default" : "outline"}
-                      onClick={() => setBackupFrequency("monthly")}
-                      className="h-10 sm:h-11 text-sm"
-                    >
-                      Monthly
-                    </Button>
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    How often to create automatic backups
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Database Statistics</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex flex-col items-center">
-                          <Database className="h-8 w-8 text-primary mb-2" />
-                          <p className="text-sm font-medium">Database Size</p>
-                          <p className="text-xl font-bold">1.2 GB</p>
-                        </div>
                       </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex flex-col items-center">
-                          <Server className="h-8 w-8 text-primary mb-2" />
-                          <p className="text-sm font-medium">Total Metrics</p>
-                          <p className="text-xl font-bold">543,281</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex flex-col items-center">
-                          <RefreshCw className="h-8 w-8 text-primary mb-2" />
-                          <p className="text-sm font-medium">Last Backup</p>
-                          <p className="text-xl font-bold">2 days ago</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Backup & Restore</Label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button variant="outline" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      Export Data
-                    </Button>
-                    <Button variant="outline" className="gap-2">
-                      <Upload className="h-4 w-4" />
-                      Import Data
-                    </Button>
-                    <Button variant="outline" className="gap-2">
-                      <RefreshCw className="h-4 w-4" />
-                      Create Backup
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" className="gap-2 text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                  Clear All Data
-                </Button>
-                <Button className="gap-2">
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        </TabsContent>
-
-        {/* Security Settings */}
-        <TabsContent value="security">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Security</CardTitle>
-                <CardDescription>
-                  Manage authentication and security settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>Authentication</Label>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between gap-4 p-3 sm:p-4 rounded-lg border bg-muted/50">
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <p className="text-sm font-medium">Basic Authentication</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          Username and password login
-                        </p>
-                      </div>
-                      <Badge className="flex-shrink-0">Active</Badge>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="username" className="text-sm font-medium">Username</Label>
-                      <Input id="username" defaultValue="admin" className="h-10 sm:h-11" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={passwordVisible ? "text" : "password"}
-                          defaultValue="••••••••••••"
-                          className="h-10 sm:h-11 pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                          onClick={() => setPasswordVisible(!passwordVisible)}
-                        >
-                          {passwordVisible ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">
-                            {passwordVisible ? "Hide password" : "Show password"}
-                          </span>
+                      <CardFooter className="flex flex-col sm:flex-row justify-between gap-3 pt-6 bg-gradient-to-r from-gray-50 to-emerald-50 dark:from-gray-800 dark:to-emerald-900/20 p-4 sm:p-6">
+                        <Button variant="outline" className="gap-2 w-full sm:w-auto h-10 sm:h-11 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <RotateCcw className="h-4 w-4" />
+                          Reset to Defaults
                         </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                        <Button className="gap-2 w-full sm:w-auto h-10 sm:h-11 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white">
+                          <Save className="h-4 w-4" />
+                          Save Changes
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                </TabsContent>
 
-                <div className="space-y-2">
-                  <Label>API Keys</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 border rounded-md">
-                      <div>
-                        <p className="text-sm font-medium">Read-only API Key</p>
-                        <p className="text-sm text-muted-foreground">
-                          Created on Jul 1, 2023
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Show</Button>
-                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">Revoke</Button>
-                      </div>
-                    </div>
-                    <Button variant="outline" className="gap-2">
-                      <Shield className="h-4 w-4" />
-                      Generate New API Key
-                    </Button>
-                  </div>
-                </div>
+                {/* Notifications Settings */}
+                <TabsContent value="notifications" className="mt-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <NotificationSettings />
+                  </motion.div>
+                </TabsContent>
 
-                <div className="space-y-2">
-                  <Label>Access Control</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-sm font-medium">IP Allowlist</p>
-                        <p className="text-sm text-muted-foreground">
-                          Restrict access to specific IP addresses
-                        </p>
-                      </div>
-                      <Switch defaultChecked={false} />
-                    </div>
+                {/* Security Settings */}
+                <TabsContent value="security" className="mt-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-900">
+                      <CardHeader className="bg-gradient-to-r from-gray-50 to-emerald-50 dark:from-gray-800 dark:to-emerald-900/20 p-4 sm:p-6">
+                        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                          <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                            <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                          </div>
+                          Security
+                        </CardTitle>
+                        <CardDescription className="mt-1 text-gray-600 dark:text-gray-400">
+                          Manage authentication and security settings
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="text-center py-8">
+                          <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600 dark:text-gray-400">Security settings configuration</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </TabsContent>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-sm font-medium">HTTPS Enforcement</p>
-                        <p className="text-sm text-muted-foreground">
-                          Force all connections over HTTPS
-                        </p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
+                {/* Configuration Settings */}
+                <TabsContent value="configuration" className="mt-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ConfigLoader />
+                  </motion.div>
+                </TabsContent>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-sm font-medium">Session Timeout</p>
-                        <p className="text-sm text-muted-foreground">
-                          Automatically log out after 1 hour of inactivity
-                        </p>
-                      </div>
-                      <Select defaultValue="60">
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="15">15 min</SelectItem>
-                          <SelectItem value="30">30 min</SelectItem>
-                          <SelectItem value="60">1 hour</SelectItem>
-                          <SelectItem value="120">2 hours</SelectItem>
-                          <SelectItem value="240">4 hours</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" className="gap-2">
-                  <Lock className="h-4 w-4" />
-                  Security Audit
-                </Button>
-                <Button className="gap-2">
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        </TabsContent>
-
-        {/* Notification Settings */}
-        <TabsContent value="notifications">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <NotificationSettings />
-          </motion.div>
-        </TabsContent>
-
-        {/* Configuration Settings */}
-        <TabsContent value="configuration">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ConfigLoader />
-          </motion.div>
-        </TabsContent>
-
-        {/* Site Configuration */}
-        <TabsContent value="site">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <SiteConfigManager />
-          </motion.div>
-        </TabsContent>
-      </Tabs>
+                {/* Site Configuration */}
+                <TabsContent value="site" className="mt-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <SiteConfigManager />
+                  </motion.div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   )
 }

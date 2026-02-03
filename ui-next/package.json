@@ -1,6 +1,6 @@
 {
   "name": "devops-monitoring-ui",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Modern UI layer for DevOps Monitoring in a Box",
   "private": true,
   "scripts": {
