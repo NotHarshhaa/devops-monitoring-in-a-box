@@ -7,6 +7,8 @@ import { SessionProvider } from "@/components/session-provider";
 import { Sidebar } from "@/components/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { DEFAULT_SITE_CONFIG } from "@/lib/config/site-config";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-simple";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -49,15 +51,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <SessionProvider>
+        <SessionProvider session={session}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

@@ -5,14 +5,14 @@ const notificationService = new NotificationService()
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { channel: string } }
+  { params }: { params: Promise<{ channel: string }> }
 ) {
   try {
-    const { channel } = params
+    const { channel } = await params
     const result = await notificationService.testNotification(channel)
     return NextResponse.json({ success: true, result })
   } catch (error) {
-    console.error(`Failed to test ${params.channel} notification:`, error)
+    console.error(`Failed to test notification:`, error)
     return NextResponse.json(
       { 
         success: false, 
