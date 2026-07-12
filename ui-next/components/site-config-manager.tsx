@@ -95,7 +95,7 @@ export function SiteConfigManager() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Site Configuration</h2>
           <p className="text-muted-foreground">
-            Manage your site's SEO, branding, and general settings
+            Manage your site&apos;s SEO, branding, and general settings
           </p>
         </div>
         <div className="flex gap-2">
@@ -139,7 +139,7 @@ export function SiteConfigManager() {
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
               <CardDescription>
-                Configure your site's basic information and contact details
+                Configure your site&apos;s basic information and contact details
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -252,7 +252,7 @@ export function SiteConfigManager() {
             <CardHeader>
               <CardTitle>Branding & Visual Identity</CardTitle>
               <CardDescription>
-                Customize your site's visual appearance and branding
+                Customize your site&apos;s visual appearance and branding
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

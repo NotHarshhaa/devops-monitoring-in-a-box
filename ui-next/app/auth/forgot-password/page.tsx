@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="text-sm sm:text-base text-muted-foreground dark:text-gray-400 mb-6"
               >
-                We've sent a password reset link to your email address.
+                We&apos;ve sent a password reset link to your email address.
               </motion.p>
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
@@ -186,7 +186,7 @@ export default function ForgotPasswordPage() {
                 <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <AlertDescription className="text-sm">
                   <div className="space-y-1 text-xs sm:text-sm">
-                    <p className="text-gray-700 dark:text-gray-300">This is a demo. In production, you'll receive an actual reset email.</p>
+                    <p className="text-gray-700 dark:text-gray-300">This is a demo. In production, you&apos;ll receive an actual reset email.</p>
                     <p className="text-gray-600 dark:text-gray-400 italic text-xs">For demo purposes, any email will work.</p>
                   </div>
                 </AlertDescription>
