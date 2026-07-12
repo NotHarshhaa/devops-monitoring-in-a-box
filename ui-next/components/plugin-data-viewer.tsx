@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -46,17 +46,14 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
   const [error, setError] = useState<string | null>(null)
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
 
-  const plugin = pluginManager.registry.getPlugin(instance.pluginId)
-  if (!plugin) {
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>Plugin not found</AlertDescription>
-      </Alert>
-    )
-  }
-
-  const supportedDataTypes = plugin.metadata.supportedDataTypes
+  const plugin = useMemo(
+    () => pluginManager.registry.getPlugin(instance.pluginId),
+    [instance.pluginId, pluginManager]
+  )
+  const supportedDataTypes = useMemo(
+    () => plugin?.metadata.supportedDataTypes ?? [],
+    [plugin]
+  )
 
   useEffect(() => {
     if (supportedDataTypes.length > 0 && !supportedDataTypes.includes(selectedDataType)) {
@@ -64,7 +61,12 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
     }
   }, [supportedDataTypes, selectedDataType])
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!plugin) {
+      setError('Plugin not found')
+      return
+    }
+
     if (!instance.enabled) {
       setError('Plugin instance is disabled')
       return
@@ -97,7 +99,7 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [instance.enabled, instance.instanceId, instance.pluginId, plugin, pluginManager, selectedDataType, timeRange])
 
   const renderData = async () => {
     if (data.length === 0) return null
@@ -129,7 +131,16 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
 
   useEffect(() => {
     fetchData()
-  }, [selectedDataType, timeRange])
+  }, [fetchData])
+
+  if (!plugin) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>Plugin not found</AlertDescription>
+      </Alert>
+    )
+  }
 
   const handleTimeRangeChange = (range: string) => {
     const now = new Date()

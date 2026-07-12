@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
@@ -9,8 +8,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { DEFAULT_SITE_CONFIG } from "@/lib/config/site-config";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-simple";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: DEFAULT_SITE_CONFIG.seo.title,
@@ -60,7 +57,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <SessionProvider session={session}>
           <ThemeProvider
             attribute="class"

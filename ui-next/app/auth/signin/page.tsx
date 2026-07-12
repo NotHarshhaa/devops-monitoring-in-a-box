@@ -434,7 +434,7 @@ function SignInForm() {
                   transition={{ duration: 0.5, delay: 0.7 }}
                   className="text-center text-sm text-muted-foreground dark:text-gray-400"
                 >
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link href="/auth/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
                     Sign up
                   </Link>
