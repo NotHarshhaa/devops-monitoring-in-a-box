@@ -3,105 +3,91 @@ import { prometheusAPI } from '../prometheus-api';
 import { config } from '../config';
 import { pollingInterval } from './polling';
 
-const prometheusPolling = {
-  refetchInterval: pollingInterval(config.prometheus.refreshInterval),
-  staleTime: config.prometheus.refreshInterval,
-  retry: 0,
-  refetchOnWindowFocus: false,
-};
+type MetricPoint = { time: number; value: number };
+type NetworkPoint = { time: number; inbound: number; outbound: number };
+
+const refreshMs = config.prometheus.refreshInterval;
+
+function usePrometheusQuery<T>(
+  queryKey: readonly unknown[],
+  queryFn: () => Promise<T>,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey,
+    queryFn,
+    refetchInterval: pollingInterval(refreshMs),
+    staleTime: refreshMs,
+    retry: 0,
+    refetchOnWindowFocus: false,
+    enabled: options?.enabled,
+  });
+}
 
 // Hook for current CPU usage
 export function useCPUUsage() {
-  return useQuery({
-    queryKey: ['cpu-usage'],
-    queryFn: () => prometheusAPI.getCPUUsage(),
-    ...prometheusPolling,
-  });
+  return usePrometheusQuery(['cpu-usage'], () => prometheusAPI.getCPUUsage());
 }
 
 // Hook for CPU usage over time range
 export function useCPUUsageRange(start: number, end: number) {
-  return useQuery({
-    queryKey: ['cpu-usage-range', start, end],
-    queryFn: () => prometheusAPI.getCPUUsageRange(start, end),
-    ...prometheusPolling,
-    enabled: start > 0 && end > 0,
-  });
+  return usePrometheusQuery<MetricPoint[]>(
+    ['cpu-usage-range', start, end],
+    () => prometheusAPI.getCPUUsageRange(start, end),
+    { enabled: start > 0 && end > 0 }
+  );
 }
 
 // Hook for current memory usage
 export function useMemoryUsage() {
-  return useQuery({
-    queryKey: ['memory-usage'],
-    queryFn: () => prometheusAPI.getMemoryUsage(),
-    ...prometheusPolling,
-  });
+  return usePrometheusQuery(['memory-usage'], () => prometheusAPI.getMemoryUsage());
 }
 
 // Hook for memory usage over time range
 export function useMemoryUsageRange(start: number, end: number) {
-  return useQuery({
-    queryKey: ['memory-usage-range', start, end],
-    queryFn: () => prometheusAPI.getMemoryUsageRange(start, end),
-    ...prometheusPolling,
-    enabled: start > 0 && end > 0,
-  });
+  return usePrometheusQuery<MetricPoint[]>(
+    ['memory-usage-range', start, end],
+    () => prometheusAPI.getMemoryUsageRange(start, end),
+    { enabled: start > 0 && end > 0 }
+  );
 }
 
 // Hook for current disk usage
 export function useDiskUsage() {
-  return useQuery({
-    queryKey: ['disk-usage'],
-    queryFn: () => prometheusAPI.getDiskUsage(),
-    ...prometheusPolling,
-  });
+  return usePrometheusQuery(['disk-usage'], () => prometheusAPI.getDiskUsage());
 }
 
 // Hook for disk usage over time range
 export function useDiskUsageRange(start: number, end: number) {
-  return useQuery({
-    queryKey: ['disk-usage-range', start, end],
-    queryFn: () => prometheusAPI.getDiskUsageRange(start, end),
-    ...prometheusPolling,
-    enabled: start > 0 && end > 0,
-  });
+  return usePrometheusQuery<MetricPoint[]>(
+    ['disk-usage-range', start, end],
+    () => prometheusAPI.getDiskUsageRange(start, end),
+    { enabled: start > 0 && end > 0 }
+  );
 }
 
 // Hook for current network traffic
 export function useNetworkTraffic() {
-  return useQuery({
-    queryKey: ['network-traffic'],
-    queryFn: () => prometheusAPI.getNetworkTraffic(),
-    ...prometheusPolling,
-  });
+  return usePrometheusQuery(['network-traffic'], () => prometheusAPI.getNetworkTraffic());
 }
 
 // Hook for network traffic over time range
 export function useNetworkTrafficRange(start: number, end: number) {
-  return useQuery({
-    queryKey: ['network-traffic-range', start, end],
-    queryFn: () => prometheusAPI.getNetworkTrafficRange(start, end),
-    ...prometheusPolling,
-    enabled: start > 0 && end > 0,
-  });
+  return usePrometheusQuery<NetworkPoint[]>(
+    ['network-traffic-range', start, end],
+    () => prometheusAPI.getNetworkTrafficRange(start, end),
+    { enabled: start > 0 && end > 0 }
+  );
 }
 
 // Hook for system load
 export function useSystemLoad() {
-  return useQuery({
-    queryKey: ['system-load'],
-    queryFn: () => prometheusAPI.getSystemLoad(),
-    ...prometheusPolling,
-  });
+  return usePrometheusQuery(['system-load'], () => prometheusAPI.getSystemLoad());
 }
 
 // Hook for all current metrics at once
 export function useAllCurrentMetrics() {
-  return useQuery({
-    queryKey: ['all-current-metrics'],
-    queryFn: () => prometheusAPI.getAllCurrentMetrics(),
-    ...prometheusPolling,
-  });
+  return usePrometheusQuery(['all-current-metrics'], () => prometheusAPI.getAllCurrentMetrics());
 }
 
 // Utility function to get time range based on selection

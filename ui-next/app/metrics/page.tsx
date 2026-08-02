@@ -88,12 +88,12 @@ export default function MetricsPage() {
   }
 
   const systemResourceData = prepareChartData(
-    allMetricsRange.cpuRange.data || [],
-    allMetricsRange.memoryRange.data || [],
-    allMetricsRange.diskRange.data || []
+    allMetricsRange.cpuRange.data ?? [],
+    allMetricsRange.memoryRange.data ?? [],
+    allMetricsRange.diskRange.data ?? []
   )
 
-  const networkTrafficData = allMetricsRange.networkRange.data || []
+  const networkTrafficData = allMetricsRange.networkRange.data ?? []
 
   return (
     <div className="space-y-4 sm:space-y-6">
