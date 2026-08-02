@@ -170,7 +170,7 @@ export function MetricsChart({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className={cn("relative overflow-hidden border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950", className)}>
+        <Card className={cn("relative overflow-hidden border-border bg-muted border-border bg-muted", className)}>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
@@ -208,7 +208,7 @@ export function MetricsChart({
           </CardHeader>
           <CardContent>
             <motion.div 
-              className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400" 
+              className="flex items-center justify-center gap-2 text-foreground" 
               style={{ height }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

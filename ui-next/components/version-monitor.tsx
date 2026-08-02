@@ -91,13 +91,13 @@ export function VersionMonitor({
     
     switch (status.status) {
       case 'success':
-        return <CheckCircle className="h-5 w-5 text-green-500" />
+        return <CheckCircle className="h-5 w-5 text-foreground" />
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-orange-500" />
+        return <AlertTriangle className="h-5 w-5 text-foreground" />
       case 'error':
-        return <XCircle className="h-5 w-5 text-red-500" />
+        return <XCircle className="h-5 w-5 text-foreground" />
       default:
-        return <Info className="h-5 w-5 text-blue-500" />
+        return <Info className="h-5 w-5 text-foreground" />
     }
   }
 
@@ -152,21 +152,21 @@ export function VersionMonitor({
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800"
+        className="p-6 border border-border"
       >
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Package className="h-6 w-6 text-blue-600" />
+            <h2 className="text-2xl font-bold text-muted-foreground dark:text-foreground flex items-center gap-2">
+              <Package className="h-6 w-6 text-foreground" />
               Component Versions
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-muted-foreground dark:text-muted-foreground mt-1">
               Monitor current and latest versions of monitoring components
             </p>
           </div>
           <div className="flex items-center gap-3">
             {useDemoData && (
-              <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+              <Badge variant="outline" className="text-xs bg-muted text-foreground border-border">
                 Demo Data
               </Badge>
             )}
@@ -189,15 +189,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <div className="p-2 bg-muted rounded-lg">
+                <CheckCircle className="h-5 w-5 text-foreground" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{upToDateCount}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Up to Date</div>
+                <div className="text-2xl font-bold text-foreground">{upToDateCount}</div>
+                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Up to Date</div>
               </div>
             </div>
           </motion.div>
@@ -206,15 +206,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 bg-muted rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-foreground" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{updateAvailableCount}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Updates Available</div>
+                <div className="text-2xl font-bold text-foreground">{updateAvailableCount}</div>
+                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Updates Available</div>
               </div>
             </div>
           </motion.div>
@@ -223,15 +223,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.3 }}
-            className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <div className="p-2 bg-muted rounded-lg">
+                <XCircle className="h-5 w-5 text-foreground" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{errorCount}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Errors</div>
+                <div className="text-2xl font-bold text-foreground">{errorCount}</div>
+                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Errors</div>
               </div>
             </div>
           </motion.div>
@@ -240,15 +240,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.4 }}
-            className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 bg-muted rounded-lg">
+                <Package className="h-5 w-5 text-foreground" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{versions.length}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Total Components</div>
+                <div className="text-2xl font-bold text-foreground">{versions.length}</div>
+                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Total Components</div>
               </div>
             </div>
           </motion.div>
@@ -261,7 +261,7 @@ export function VersionMonitor({
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+          className="flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground"
         >
           <Clock className="h-4 w-4" />
           <span>Last updated: {formatDate(lastRefresh.toISOString())}</span>
@@ -281,17 +281,17 @@ export function VersionMonitor({
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
               className="h-full"
             >
-              <Card className="h-full hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-900 overflow-hidden">
-                <CardHeader className="pb-2 sm:pb-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-3 sm:p-6">
+              <Card className="h-full transition-all duration-300 border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+                <CardHeader className="pb-2 sm:pb-4 p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 rounded-xl shadow-lg">
-                        <div className="text-white">
+                      <div className="p-2 sm:p-3">
+                        <div className="text-foreground">
                           {getComponentIcon(component.name)}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white truncate">{component.name}</CardTitle>
+                        <CardTitle className="text-sm sm:text-lg font-semibold text-muted-foreground dark:text-foreground truncate">{component.name}</CardTitle>
                         <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2">
                           {getStatusIcon(component)}
                           {getStatusBadge(component)}
@@ -304,12 +304,12 @@ export function VersionMonitor({
                   {/* Version Progress */}
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Update Progress</span>
-                      <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">{getUpdateProgress(component)}%</span>
+                      <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Update Progress</span>
+                      <span className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{getUpdateProgress(component)}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-3 overflow-hidden">
+                    <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-3 overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500 ease-out"
+                        className="h-full rounded-full transition-all duration-500 ease-out"
                         style={{ width: `${getUpdateProgress(component)}%` }}
                       ></div>
                     </div>
@@ -317,21 +317,21 @@ export function VersionMonitor({
 
                   {/* Version Information */}
                   <div className="space-y-2 sm:space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-2 sm:p-4 bg-muted dark:bg-muted border border-border dark:border-border">
                       <div className="flex items-center gap-1 sm:gap-2">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Current Version</span>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Current Version</span>
                       </div>
-                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600">
+                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-card dark:bg-card border-border dark:border-border">
                         v{component.currentVersion}
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between p-2 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-2 sm:p-4 bg-muted dark:bg-muted border border-border dark:border-border">
                       <div className="flex items-center gap-1 sm:gap-2">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Latest Version</span>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Latest Version</span>
                       </div>
-                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600">
+                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-card dark:bg-card border-border dark:border-border">
                         v{component.latestVersion}
                       </Badge>
                     </div>
@@ -342,18 +342,18 @@ export function VersionMonitor({
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-2 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30 rounded-xl border border-orange-200 dark:border-orange-800"
+                      className="p-2 sm:p-4 border border-border"
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="p-1.5 sm:p-2 bg-orange-500 rounded-lg">
-                          <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                        <div className="p-1.5 sm:p-2 bg-muted rounded-lg">
+                          <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="text-xs sm:text-sm font-semibold text-orange-800 dark:text-orange-200">
+                          <span className="text-xs sm:text-sm font-semibold text-foreground">
                             <span className="hidden sm:inline">Update Available</span>
                             <span className="sm:hidden">Update</span>
                           </span>
-                          <p className="text-xs text-orange-700 dark:text-orange-300 mt-0.5 sm:mt-1 truncate">
+                          <p className="text-xs text-foreground mt-0.5 sm:mt-1 truncate">
                             v{component.currentVersion} → v{component.latestVersion}
                           </p>
                         </div>
@@ -367,7 +367,7 @@ export function VersionMonitor({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 gap-1 sm:gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm"
+                        className="flex-1 gap-1 sm:gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm"
                         onClick={() => window.open(component.downloadUrl, '_blank')}
                       >
                         <Download className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -379,7 +379,7 @@ export function VersionMonitor({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 gap-1 sm:gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm"
+                        className="flex-1 gap-1 sm:gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm"
                         onClick={() => {
                           navigator.clipboard.writeText(component.dockerImage!)
                           toast({
@@ -397,14 +397,14 @@ export function VersionMonitor({
 
                   {/* Additional Details */}
                   {showDetails && (
-                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                    <div className="pt-4 border-t border-border dark:border-border space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Status</span>
-                        <span className="text-xs font-bold capitalize text-gray-900 dark:text-white">{component.status}</span>
+                        <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Status</span>
+                        <span className="text-xs font-bold capitalize text-muted-foreground dark:text-foreground">{component.status}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Last Checked</span>
-                        <span className="text-xs font-bold text-gray-900 dark:text-white">{formatDate(component.lastChecked)}</span>
+                        <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Last Checked</span>
+                        <span className="text-xs font-bold text-muted-foreground dark:text-foreground">{formatDate(component.lastChecked)}</span>
                       </div>
                     </div>
                   )}

@@ -33,6 +33,18 @@ export class PrometheusAPI {
     });
   }
 
+  /**
+   * Pick a query_range step that stays under Prometheus' ~11k points/series
+   * limit for the selected window (30d @ 1m would otherwise fail).
+   */
+  private resolveStep(start: number, end: number): string {
+    const rangeSeconds = Math.max(end - start, 60);
+    if (rangeSeconds <= 6 * 3600) return '1m';
+    if (rangeSeconds <= 24 * 3600) return '2m';
+    if (rangeSeconds <= 7 * 24 * 3600) return '15m';
+    return '1h';
+  }
+
   private async query<T>(query: string, time?: number): Promise<T> {
     const params: Record<string, string> = { query };
     if (time) {
@@ -42,12 +54,12 @@ export class PrometheusAPI {
     return this.httpClient.get<T>('/api/v1/query', { params });
   }
 
-  private async queryRange<T>(query: string, start: number, end: number, step: string): Promise<T> {
+  private async queryRange<T>(query: string, start: number, end: number, step?: string): Promise<T> {
     const params = {
       query,
       start: start.toString(),
       end: end.toString(),
-      step,
+      step: step ?? this.resolveStep(start, end),
     };
 
     return this.httpClient.get<T>('/api/v1/query_range', { params });
@@ -69,8 +81,7 @@ export class PrometheusAPI {
     const response = await this.queryRange<PrometheusRangeResponse>(
       '100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)',
       start,
-      end,
-      '1m'
+      end
     );
 
     if (response.data.result.length > 0) {
@@ -98,8 +109,7 @@ export class PrometheusAPI {
     const response = await this.queryRange<PrometheusRangeResponse>(
       '(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100',
       start,
-      end,
-      '1m'
+      end
     );
 
     if (response.data.result.length > 0) {
@@ -127,8 +137,7 @@ export class PrometheusAPI {
     const response = await this.queryRange<PrometheusRangeResponse>(
       '(1 - (node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"})) * 100',
       start,
-      end,
-      '1m'
+      end
     );
 
     if (response.data.result.length > 0) {
@@ -140,15 +149,16 @@ export class PrometheusAPI {
     return [];
   }
 
-  // Network Traffic
+  // Network Traffic (MB/s). Sum non-loopback interfaces so charts get one series.
+  private static readonly NETWORK_RECEIVE_QUERY =
+    'sum(rate(node_network_receive_bytes_total{device!~"lo|veth.*|br-.*|docker.*|virbr.*"}[5m])) / 1024 / 1024';
+  private static readonly NETWORK_TRANSMIT_QUERY =
+    'sum(rate(node_network_transmit_bytes_total{device!~"lo|veth.*|br-.*|docker.*|virbr.*"}[5m])) / 1024 / 1024';
+
   async getNetworkTraffic(): Promise<{ inbound: number; outbound: number }> {
     const [inboundResponse, outboundResponse] = await Promise.all([
-      this.query<PrometheusQueryResponse>(
-        'rate(node_network_receive_bytes_total[5m]) / 1024 / 1024'
-      ),
-      this.query<PrometheusQueryResponse>(
-        'rate(node_network_transmit_bytes_total[5m]) / 1024 / 1024'
-      ),
+      this.query<PrometheusQueryResponse>(PrometheusAPI.NETWORK_RECEIVE_QUERY),
+      this.query<PrometheusQueryResponse>(PrometheusAPI.NETWORK_TRANSMIT_QUERY),
     ]);
 
     const inbound = inboundResponse.data.result.length > 0 
@@ -164,16 +174,14 @@ export class PrometheusAPI {
   async getNetworkTrafficRange(start: number, end: number): Promise<Array<{ time: number; inbound: number; outbound: number }>> {
     const [inboundResponse, outboundResponse] = await Promise.all([
       this.queryRange<PrometheusRangeResponse>(
-        'rate(node_network_receive_bytes_total[5m]) / 1024 / 1024',
+        PrometheusAPI.NETWORK_RECEIVE_QUERY,
         start,
-        end,
-        '1m'
+        end
       ),
       this.queryRange<PrometheusRangeResponse>(
-        'rate(node_network_transmit_bytes_total[5m]) / 1024 / 1024',
+        PrometheusAPI.NETWORK_TRANSMIT_QUERY,
         start,
-        end,
-        '1m'
+        end
       ),
     ]);
 

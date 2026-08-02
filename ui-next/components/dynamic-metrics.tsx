@@ -54,8 +54,8 @@ export function DynamicMetrics({
     return (
       <ClientOnly fallback={
         <div className={cn("space-y-6", className)}>
-          <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-            <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-6">
+          <Card className="border-border bg-muted">
+            <CardContent className="flex items-center gap-2 text-foreground p-6">
               <AlertCircle className="h-6 w-6" />
               <span>Failed to load metrics configuration</span>
             </CardContent>
@@ -63,8 +63,8 @@ export function DynamicMetrics({
         </div>
       }>
         <div className={cn("space-y-6", className)}>
-          <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-            <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-6">
+          <Card className="border-border bg-muted">
+            <CardContent className="flex items-center gap-2 text-foreground p-6">
               <AlertCircle className="h-6 w-6" />
               <span>Failed to load metrics configuration: {error}</span>
             </CardContent>
@@ -163,7 +163,7 @@ export function DynamicMetrics({
           dataKeys={[
             {
               key: 'value',
-              color: metric.color || '#3b82f6',
+              color: metric.color || '#525252',
               name: metric.name,
             }
           ]}
@@ -327,15 +327,15 @@ export function MetricsConfigSummary() {
   if (error) {
     return (
       <ClientOnly fallback={
-        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-          <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-4">
+        <Card className="border-border bg-muted">
+          <CardContent className="flex items-center gap-2 text-foreground p-4">
             <AlertCircle className="h-5 w-5" />
             <span className="text-sm">Configuration error</span>
           </CardContent>
         </Card>
       }>
-        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
-          <CardContent className="flex items-center gap-2 text-red-600 dark:text-red-400 p-4">
+        <Card className="border-border bg-muted">
+          <CardContent className="flex items-center gap-2 text-foreground p-4">
             <AlertCircle className="h-5 w-5" />
             <span className="text-sm">Configuration error: {error}</span>
           </CardContent>
@@ -352,10 +352,10 @@ export function MetricsConfigSummary() {
   const realTimeMetrics = metrics.filter(m => (m as any).realTime).length;
 
   const getHealthStatus = () => {
-    if (error) return { status: 'error', color: 'text-red-600', bg: 'bg-red-100', message: 'Configuration Error' };
-    if (enabledMetrics === 0) return { status: 'warning', color: 'text-yellow-600', bg: 'bg-yellow-100', message: 'No Metrics Enabled' };
-    if (enabledMetrics < totalMetrics * 0.5) return { status: 'warning', color: 'text-yellow-600', bg: 'bg-yellow-100', message: 'Partially Configured' };
-    return { status: 'healthy', color: 'text-green-600', bg: 'bg-green-100', message: 'Well Configured' };
+    if (error) return { status: 'error', color: 'text-foreground', bg: 'bg-muted', message: 'Configuration Error' };
+    if (enabledMetrics === 0) return { status: 'warning', color: 'text-foreground', bg: 'bg-muted', message: 'No Metrics Enabled' };
+    if (enabledMetrics < totalMetrics * 0.5) return { status: 'warning', color: 'text-foreground', bg: 'bg-muted', message: 'Partially Configured' };
+    return { status: 'healthy', color: 'text-foreground', bg: 'bg-muted', message: 'Well Configured' };
   };
 
   const healthStatus = getHealthStatus();
@@ -384,28 +384,24 @@ export function MetricsConfigSummary() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 text-white p-3 sm:p-6">
+        <Card className="border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+          <CardHeader className="text-foreground p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                  <div className="p-2 sm:p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                    <Settings className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <div className="p-2 sm:p-3 bg-card">
+                    <Settings className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <span className="hidden sm:inline">Metrics Configuration</span>
                   <span className="sm:hidden">Metrics Config</span>
                 </CardTitle>
-                <CardDescription className="mt-1 sm:mt-2 text-blue-100 text-xs sm:text-sm">
+                <CardDescription className="mt-1 sm:mt-2 text-foreground text-xs sm:text-sm">
                   <span className="hidden sm:inline">Current metrics configuration and health status</span>
                   <span className="sm:hidden">Configuration & health</span>
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                <Badge className={`${
-                  healthStatus.status === 'healthy' ? 'bg-green-500 text-white' :
-                  healthStatus.status === 'warning' ? 'bg-yellow-500 text-white' :
-                  'bg-red-500 text-white'
-                } border-0 px-2 py-1 sm:px-3 sm:py-1 font-semibold text-xs sm:text-sm`}>
+                <Badge className={`${ healthStatus.status === 'healthy' ? 'bg-foreground text-background' : 'bg-muted text-foreground' } border border-border px-2 py-1 sm:px-3 sm:py-1 font-semibold text-xs sm:text-sm`}>
                   {healthStatus.message}
                 </Badge>
               </div>
@@ -418,24 +414,24 @@ export function MetricsConfigSummary() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-3 sm:p-6 border border-blue-200 dark:border-blue-700 text-center hover:shadow-lg transition-shadow"
+                className="p-3 sm:p-6 border border-border text-center transition-shadow"
               >
-                <div className="text-xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1 sm:mb-2">{totalMetrics}</div>
-                <div className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200">Total Metrics</div>
+                <div className="text-xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">{totalMetrics}</div>
+                <div className="text-xs sm:text-sm font-medium text-foreground">Total Metrics</div>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
-                className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-3 sm:p-6 border border-green-200 dark:border-green-700 text-center hover:shadow-lg transition-shadow"
+                className="p-3 sm:p-6 border border-border text-center transition-shadow"
               >
-                <div className="text-xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-1 sm:mb-2">{enabledMetrics}</div>
-                <div className="text-xs sm:text-sm font-medium text-green-800 dark:text-green-200">Enabled</div>
+                <div className="text-xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">{enabledMetrics}</div>
+                <div className="text-xs sm:text-sm font-medium text-foreground">Enabled</div>
                 <div className="mt-2 sm:mt-3">
-                  <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-1.5 sm:h-2">
+                  <div className="w-full bg-muted rounded-full h-1.5 sm:h-2">
                     <div 
-                      className="bg-green-600 h-1.5 sm:h-2 rounded-full transition-all duration-500"
+                      className="bg-muted h-1.5 sm:h-2 rounded-full transition-all duration-500"
                       style={{ width: `${totalMetrics > 0 ? (enabledMetrics / totalMetrics) * 100 : 0}%` }}
                     ></div>
                   </div>
@@ -446,20 +442,20 @@ export function MetricsConfigSummary() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
-                className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl p-3 sm:p-6 border border-purple-200 dark:border-purple-700 text-center hover:shadow-lg transition-shadow"
+                className="p-3 sm:p-6 border border-border text-center transition-shadow"
               >
-                <div className="text-xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1 sm:mb-2">{groups.length}</div>
-                <div className="text-xs sm:text-sm font-medium text-purple-800 dark:text-purple-200">Groups</div>
+                <div className="text-xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">{groups.length}</div>
+                <div className="text-xs sm:text-sm font-medium text-foreground">Groups</div>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.4 }}
-                className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-3 sm:p-6 border border-orange-200 dark:border-orange-700 text-center hover:shadow-lg transition-shadow"
+                className="p-3 sm:p-6 border border-border text-center transition-shadow"
               >
-                <div className="text-xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1 sm:mb-2">{metricsWithCharts}</div>
-                <div className="text-xs sm:text-sm font-medium text-orange-800 dark:text-orange-200">With Charts</div>
+                <div className="text-xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">{metricsWithCharts}</div>
+                <div className="text-xs sm:text-sm font-medium text-foreground">With Charts</div>
               </motion.div>
             </div>
 
@@ -469,15 +465,15 @@ export function MetricsConfigSummary() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.5 }}
-                className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 rounded-xl p-3 sm:p-5 border border-indigo-200 dark:border-indigo-700 hover:shadow-lg transition-shadow"
+                className="p-3 sm:p-5 border border-border transition-shadow"
               >
                 <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="p-2 sm:p-3 bg-indigo-500 rounded-xl shadow-lg">
-                    <Activity className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <div className="p-2 sm:p-3 bg-muted">
+                    <Activity className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <div>
-                    <div className="text-lg sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">{realTimeMetrics}</div>
-                    <div className="text-sm font-medium text-indigo-800 dark:text-indigo-200">Real-time Metrics</div>
+                    <div className="text-lg sm:text-2xl font-bold text-foreground">{realTimeMetrics}</div>
+                    <div className="text-sm font-medium text-foreground">Real-time Metrics</div>
                   </div>
                 </div>
               </motion.div>
@@ -486,15 +482,15 @@ export function MetricsConfigSummary() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.6 }}
-                className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30 rounded-xl p-3 sm:p-5 border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-shadow"
+                className="p-3 sm:p-5 border border-border transition-shadow"
               >
                 <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="p-2 sm:p-3 bg-orange-500 rounded-xl shadow-lg">
-                    <AlertTriangle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <div className="p-2 sm:p-3 bg-muted">
+                    <AlertTriangle className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <div>
-                    <div className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">{metricsWithThresholds}</div>
-                    <div className="text-xs sm:text-sm font-medium text-orange-800 dark:text-orange-200">With Thresholds</div>
+                    <div className="text-lg sm:text-2xl font-bold text-foreground">{metricsWithThresholds}</div>
+                    <div className="text-xs sm:text-sm font-medium text-foreground">With Thresholds</div>
                   </div>
                 </div>
               </motion.div>
@@ -503,17 +499,17 @@ export function MetricsConfigSummary() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.7 }}
-                className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl p-3 sm:p-5 border border-green-200 dark:border-green-700 hover:shadow-lg transition-shadow"
+                className="p-3 sm:p-5 border border-border transition-shadow"
               >
                 <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="p-2 sm:p-3 bg-green-500 rounded-xl shadow-lg">
-                    <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <div className="p-2 sm:p-3 bg-muted">
+                    <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <div>
-                    <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                    <div className="text-lg sm:text-2xl font-bold text-foreground">
                       {Math.round((enabledMetrics / totalMetrics) * 100) || 0}%
                     </div>
-                    <div className="text-xs sm:text-sm font-medium text-green-800 dark:text-green-200">Configuration Health</div>
+                    <div className="text-xs sm:text-sm font-medium text-foreground">Configuration Health</div>
                   </div>
                 </div>
               </motion.div>
@@ -525,15 +521,15 @@ export function MetricsConfigSummary() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.8 }}
-                className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 sm:p-6 border border-gray-200 dark:border-gray-700"
+                className="bg-muted dark:bg-muted p-3 sm:p-6 border border-border dark:border-border"
               >
                 <div className="flex items-center justify-between mb-3 sm:mb-6">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></div>
+                  <h3 className="text-lg sm:text-xl font-bold text-muted-foreground dark:text-foreground flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
                     <span className="hidden sm:inline">Metric Groups</span>
                     <span className="sm:hidden">Groups</span>
                   </h3>
-                  <Badge variant="outline" className="px-3 py-1 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600">
+                  <Badge variant="outline" className="px-3 py-1 bg-card dark:bg-card border-border dark:border-border">
                     {groups.length} groups
                   </Badge>
                 </div>
@@ -545,13 +541,13 @@ export function MetricsConfigSummary() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.2, delay: 0.9 + index * 0.1 }}
                       whileHover={{ scale: 1.02, y: -2 }}
-                      className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-600 flex items-center justify-between hover:shadow-lg transition-all cursor-pointer"
+                      className="bg-card dark:bg-card p-4 border border-border dark:border-border flex items-center justify-between transition-all cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">{group}</span>
+                        <div className="w-3 h-3 rounded-full"></div>
+                        <span className="font-semibold text-muted-foreground dark:text-muted-foreground">{group}</span>
                       </div>
-                      <Badge variant="secondary" className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                      <Badge variant="secondary" className="px-2 py-1 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground">
                         {metricsByGroup[group].length}
                       </Badge>
                     </motion.div>
@@ -565,17 +561,17 @@ export function MetricsConfigSummary() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 1.0 }}
-              className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
+              className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-border dark:border-border"
             >
-              <Button variant="outline" className="gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
                 <Settings className="h-4 w-4" />
                 Configure Metrics
               </Button>
-              <Button variant="outline" className="gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
                 <Download className="h-4 w-4" />
                 Export Configuration
               </Button>
-              <Button variant="outline" className="gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
                 <RefreshCw className="h-4 w-4" />
                 Refresh Status
               </Button>

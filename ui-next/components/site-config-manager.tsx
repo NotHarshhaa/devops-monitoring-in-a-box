@@ -305,7 +305,7 @@ export function SiteConfigManager() {
                     <Input
                       id="primary-color"
                       type="color"
-                      value={formData.branding?.colors?.primary || '#3b82f6'}
+                      value={formData.branding?.colors?.primary || '#525252'}
                       onChange={(e) => handleNestedInputChange('branding', 'colors', 'primary', e.target.value)}
                     />
                   </div>
@@ -314,7 +314,7 @@ export function SiteConfigManager() {
                     <Input
                       id="secondary-color"
                       type="color"
-                      value={formData.branding?.colors?.secondary || '#10b981'}
+                      value={formData.branding?.colors?.secondary || '#737373'}
                       onChange={(e) => handleNestedInputChange('branding', 'colors', 'secondary', e.target.value)}
                     />
                   </div>
@@ -323,7 +323,7 @@ export function SiteConfigManager() {
                     <Input
                       id="accent-color"
                       type="color"
-                      value={formData.branding?.colors?.accent || '#f59e0b'}
+                      value={formData.branding?.colors?.accent || '#a3a3a3'}
                       onChange={(e) => handleNestedInputChange('branding', 'colors', 'accent', e.target.value)}
                     />
                   </div>

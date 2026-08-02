@@ -1,16 +1,18 @@
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-simple";
-import { LandingPage } from "@/components/landing-page";
+import { redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-simple'
+import { LandingPage } from '@/components/landing-page'
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
-  
+  // Avoid blocking the landing page forever if auth/session is slow.
+  const session = await Promise.race([
+    getServerSession(authOptions),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500))
+  ])
+
   if (session) {
-    // User is authenticated, redirect to dashboard
-    redirect("/dashboard");
+    redirect('/dashboard')
   }
 
-  // Show landing page for unauthenticated users
-  return <LandingPage />;
+  return <LandingPage />
 }

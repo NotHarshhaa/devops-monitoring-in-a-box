@@ -1,40 +1,70 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import { Monitor, Moon, Sun } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+const options = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'system', label: 'System', icon: Monitor },
+  { value: 'dark', label: 'Dark', icon: Moon }
+] as const
 
-export function ThemeToggle() {
-  const { setTheme, theme } = useTheme()
+export function ThemeToggle({ className }: { className?: string }) {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div
+        className={cn(
+          'inline-flex h-9 min-w-[6.75rem] border border-border bg-muted/40',
+          className
+        )}
+        aria-hidden
+      />
+    )
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div
+      role="group"
+      aria-label="Theme"
+      className={cn(
+        'inline-flex h-9 items-stretch border border-border bg-background shadow-sm',
+        className
+      )}
+    >
+      {options.map(({ value, label, icon: Icon }) => {
+        const active = theme === value
+        return (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setTheme(value)}
+            aria-label={`${label} theme`}
+            aria-pressed={active}
+            title={label}
+            className={cn(
+              'flex items-center justify-center gap-1.5 px-2.5 transition-colors sm:px-3',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-inset',
+              active
+                ? 'bg-foreground text-background'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            <Icon className="size-3.5 shrink-0" strokeWidth={2} />
+            <span className="hidden text-[11px] font-medium tracking-wide sm:inline">
+              {label}
+            </span>
+          </button>
+        )
+      })}
+    </div>
   )
 }

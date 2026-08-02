@@ -66,7 +66,40 @@ const PROBE_TARGETS: readonly ProbeTarget[] = [
   },
 ];
 
-const PROBE_TIMEOUT_MS = 5000;
+/** Keep probes snappy when upstreams are down — 5s made every poll feel hung. */
+const PROBE_TIMEOUT_MS = 1500;
+
+/** Reuse a fresh report briefly so the Services page / overlapping callers don't stampede. */
+const HEALTH_CACHE_TTL_MS = 10_000;
+
+/** Sent on outbound probes so a misconfigured Grafana URL cannot recurse into us. */
+export const HEALTH_PROBE_HEADER = 'x-health-probe';
+
+let cachedReport: { expiresAt: number; report: HealthReport } | null = null;
+let inFlight: Promise<HealthReport> | null = null;
+
+function ourListenPort(): string {
+  return process.env.PORT || '3000';
+}
+
+/**
+ * True when a probe URL would hit this dashboard's own `/api/health`.
+ * Common local-dev footgun: Grafana defaults to localhost:3000 while `next dev`
+ * also binds :3000, which used to recurse until every request timed out at 5s.
+ */
+export function isSelfHealthUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const port = parsed.port || (parsed.protocol === 'https:' ? '443' : '80');
+    const host = parsed.hostname.toLowerCase();
+    const isLoopback =
+      host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1';
+    const path = parsed.pathname.replace(/\/+$/, '') || '/';
+    return isLoopback && port === ourListenPort() && path === '/api/health';
+  } catch {
+    return false;
+  }
+}
 
 async function probe(target: ProbeTarget): Promise<ServiceProbe | null> {
   let config;
@@ -101,10 +134,23 @@ async function probe(target: ProbeTarget): Promise<ServiceProbe | null> {
   const url = `${config.url.replace(/\/+$/, '')}${endpoint}`;
   const startedAt = Date.now();
 
+  if (isSelfHealthUrl(url)) {
+    return {
+      ...base,
+      status: 'down',
+      responseTime: 0,
+      error:
+        `Health URL points at this dashboard (${url}). ` +
+        `Set GRAFANA_URL to the real Grafana address (compose maps it to host port 3000; ` +
+        `local next dev often uses the same port).`,
+    };
+  }
+
   try {
     const response = await fetch(url, {
       method: 'GET',
       cache: 'no-store',
+      headers: { [HEALTH_PROBE_HEADER]: '1' },
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
     });
 
@@ -159,8 +205,7 @@ export function summarize(services: readonly ServiceProbe[]): {
   };
 }
 
-/** Probe every configured service in parallel. */
-export async function collectHealth(): Promise<HealthReport> {
+async function collectHealthUncached(): Promise<HealthReport> {
   const results = await Promise.all(PROBE_TARGETS.map(probe));
   const services = results.filter((r): r is ServiceProbe => r !== null);
   const { upstreamStatus, summary } = summarize(services);
@@ -174,6 +219,30 @@ export async function collectHealth(): Promise<HealthReport> {
     services,
     summary,
   };
+}
+
+/** Probe every configured service in parallel (deduped + short-lived cache). */
+export async function collectHealth(options?: { force?: boolean }): Promise<HealthReport> {
+  const now = Date.now();
+
+  if (!options?.force && cachedReport && cachedReport.expiresAt > now) {
+    return cachedReport.report;
+  }
+
+  if (!options?.force && inFlight) {
+    return inFlight;
+  }
+
+  inFlight = collectHealthUncached()
+    .then((report) => {
+      cachedReport = { report, expiresAt: Date.now() + HEALTH_CACHE_TTL_MS };
+      return report;
+    })
+    .finally(() => {
+      inFlight = null;
+    });
+
+  return inFlight;
 }
 
 /**
@@ -193,4 +262,4 @@ export function redactHealthReport(report: HealthReport): HealthReport {
   };
 }
 
-export { PROBE_TARGETS };
+export { PROBE_TARGETS, PROBE_TIMEOUT_MS, HEALTH_CACHE_TTL_MS };

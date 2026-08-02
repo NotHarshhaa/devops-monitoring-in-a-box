@@ -37,24 +37,24 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "up":
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-foreground" />
       case "down":
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
+        return <AlertTriangle className="h-4 w-4 text-foreground" />
       case "checking":
-        return <Loader2 className="h-4 w-4 text-yellow-500 animate-spin" />
+        return <Loader2 className="h-4 w-4 text-foreground animate-spin" />
       default:
-        return <AlertTriangle className="h-4 w-4 text-gray-500" />
+        return <AlertTriangle className="h-4 w-4 text-muted-foreground" />
     }
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "up":
-        return <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">Up</Badge>
+        return <Badge className="text-foreground border border-border">Up</Badge>
       case "down":
-        return <Badge className="bg-gradient-to-r from-red-500 to-rose-600 text-white border-0">Down</Badge>
+        return <Badge className="text-foreground border border-border">Down</Badge>
       case "checking":
-        return <Badge className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white border-0">Checking</Badge>
+        return <Badge className="text-foreground border border-border">Checking</Badge>
       default:
         return <Badge variant="outline">Unknown</Badge>
     }
@@ -74,18 +74,18 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
       whileHover={{ y: -4, scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="h-full flex flex-col border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-900 hover:shadow-xl transition-all duration-300 overflow-hidden group">
-        <CardHeader className="pb-3 p-4 sm:p-6 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20">
+      <Card className="h-full flex flex-col border border-border dark:border-border bg-card dark:bg-card transition-all duration-300 overflow-hidden group">
+        <CardHeader className="pb-3 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-3">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <Server className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              <div className="p-2 sm:p-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <Server className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-base sm:text-lg truncate text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <CardTitle className="text-base sm:text-lg truncate text-muted-foreground dark:text-foreground transition-colors">
                   {service.name}
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-1 line-clamp-2 text-gray-600 dark:text-gray-400">
+                <CardDescription className="text-xs sm:text-sm mt-1 line-clamp-2 text-muted-foreground dark:text-muted-foreground">
                   {service.description}
                 </CardDescription>
               </div>
@@ -97,32 +97,32 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
         </CardHeader>
         <CardContent className="flex-1 p-4 sm:p-6">
           <Tabs defaultValue="overview">
-            <TabsList className="mb-4 h-9 sm:h-10 w-full grid grid-cols-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 rounded-lg text-xs sm:text-sm font-medium">Overview</TabsTrigger>
-              <TabsTrigger value="details" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 rounded-lg text-xs sm:text-sm font-medium">Details</TabsTrigger>
+            <TabsList className="mb-4 h-9 sm:h-10 w-full grid grid-cols-2 bg-muted dark:bg-muted p-1">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-xs sm:text-sm font-medium">Overview</TabsTrigger>
+              <TabsTrigger value="details" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-xs sm:text-sm font-medium">Details</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Status</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Status</p>
                   <div className="flex items-center gap-2">
                     {getStatusIcon(service.status)}
-                    <p className="text-xs sm:text-sm font-medium capitalize text-gray-900 dark:text-white">{service.status}</p>
+                    <p className="text-xs sm:text-sm font-medium capitalize text-muted-foreground dark:text-foreground">{service.status}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Port</p>
-                  <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">{getPortFromUrl(service.url)}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Port</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-foreground">{getPortFromUrl(service.url)}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Response Time</p>
-                  <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Response Time</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-foreground">
                     {service.responseTime ? healthAPI.formatResponseTime(service.responseTime) : 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Last Checked</p>
-                  <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Last Checked</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-foreground">
                     {new Date(service.lastChecked).toLocaleTimeString()}
                   </p>
                 </div>
@@ -130,17 +130,17 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
             </TabsContent>
             <TabsContent value="details" className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Endpoint</p>
-                <p className="text-xs sm:text-sm font-mono bg-gray-100 dark:bg-gray-800 p-2 sm:p-3 rounded-lg break-all text-gray-900 dark:text-white">{service.endpoint}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground font-medium">Endpoint</p>
+                <p className="text-xs sm:text-sm font-mono bg-muted dark:bg-muted p-2 sm:p-3 rounded-lg break-all text-muted-foreground dark:text-foreground">{service.endpoint}</p>
               </div>
               <div className="space-y-2">
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">URL</p>
-                <p className="text-xs sm:text-sm font-mono bg-gray-100 dark:bg-gray-800 p-2 sm:p-3 rounded-lg break-all text-gray-900 dark:text-white">{service.url}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground font-medium">URL</p>
+                <p className="text-xs sm:text-sm font-mono bg-muted dark:bg-muted p-2 sm:p-3 rounded-lg break-all text-muted-foreground dark:text-foreground">{service.url}</p>
               </div>
               {service.error && (
                 <div className="space-y-2">
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Error</p>
-                  <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 sm:p-3 rounded-lg break-words">{service.error}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground font-medium">Error</p>
+                  <p className="text-xs sm:text-sm text-foreground bg-muted p-2 sm:p-3 rounded-lg break-words">{service.error}</p>
                 </div>
               )}
             </TabsContent>
@@ -150,7 +150,7 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1.5 w-full sm:w-auto h-9 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-900/20"
+            className="gap-1.5 w-full sm:w-auto h-9"
             onClick={() => onOpenExternal(service.url)}
           >
             <ExternalLink className="h-3.5 w-3.5" />
@@ -160,7 +160,7 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1.5 w-full sm:w-auto h-9 hover:bg-green-50 hover:border-green-300 dark:hover:bg-green-900/20"
+            className="gap-1.5 w-full sm:w-auto h-9"
             onClick={onRefresh}
           >
             <RefreshCw className="h-3.5 w-3.5" />
@@ -186,15 +186,15 @@ interface QuickLinksProps {
 
 const QuickLinks: React.FC<QuickLinksProps> = ({ quickLinks, onOpenExternal }) => {
   return (
-    <Card className="border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-900 hover:shadow-xl transition-all duration-300">
-      <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 sm:p-6">
-        <CardTitle className="flex items-center gap-2 sm:gap-3 text-gray-900 dark:text-white">
-          <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
-            <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+    <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="flex items-center gap-2 sm:gap-3 text-muted-foreground dark:text-foreground">
+          <div className="p-2">
+            <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
           </div>
           <span className="text-lg sm:text-xl">Quick Links</span>
         </CardTitle>
-        <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+        <CardDescription className="text-sm sm:text-base text-muted-foreground dark:text-muted-foreground">
           Quick access to external monitoring services
         </CardDescription>
       </CardHeader>
@@ -210,15 +210,15 @@ const QuickLinks: React.FC<QuickLinksProps> = ({ quickLinks, onOpenExternal }) =
             >
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3 h-auto p-3 sm:p-4 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-900/20 group"
+                className="w-full justify-start gap-3 h-auto p-3 sm:p-4 group"
                 onClick={() => onOpenExternal(link.url)}
               >
                 <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300">{link.icon}</span>
                 <div className="text-left flex-1 min-w-0">
-                  <div className="font-medium text-sm sm:text-base text-gray-900 dark:text-white truncate">{link.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{link.description}</div>
+                  <div className="font-medium text-sm sm:text-base text-muted-foreground dark:text-foreground truncate">{link.name}</div>
+                  <div className="text-xs text-muted-foreground dark:text-muted-foreground truncate">{link.description}</div>
                 </div>
-                <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-purple-600 transition-colors flex-shrink-0" />
+                <ExternalLink className="h-4 w-4 text-muted-foreground transition-colors flex-shrink-0" />
               </Button>
             </motion.div>
           ))}
@@ -251,7 +251,7 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-900 dark:to-green-900/20">
+    <div className="space-y-4 sm:space-y-6">
       <div className="px-2 sm:px-4 py-3 sm:py-6 max-w-7xl mx-auto space-y-3 sm:space-y-6">
         {/* Enhanced Header */}
         <motion.div
@@ -259,26 +259,26 @@ export default function ServicesPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-700 dark:via-emerald-700 dark:to-teal-700 text-white p-4 sm:p-8">
+          <Card className="border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+            <CardHeader className="text-foreground p-4 sm:p-8">
               <div className="flex items-center justify-between">
                 <div className="space-y-2 sm:space-y-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 sm:p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                      <Shield className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
+                    <div className="p-2 sm:p-3 bg-card">
+                      <Shield className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
                     </div>
                     <div>
                       <CardTitle className="text-xl sm:text-3xl lg:text-4xl font-bold">
                         Service Health
                       </CardTitle>
-                      <CardDescription className="mt-1 sm:mt-2 text-green-100 text-sm sm:text-base">
+                      <CardDescription className="mt-1 sm:mt-2 text-foreground text-sm sm:text-base">
                         Monitor and manage your DevOps services health status
                       </CardDescription>
                     </div>
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <Badge className="bg-white/20 text-white border-white/30 px-3 py-1.5 font-semibold text-sm">
+                  <Badge className="bg-card text-foreground border-border px-3 py-1.5 font-semibold text-sm">
                     <Activity className="h-3 w-3 mr-1" />
                     Real-time
                   </Badge>
@@ -291,58 +291,58 @@ export default function ServicesPage() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800"
+                  className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Server className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Server className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
-                  <div className="text-lg sm:text-xl font-bold text-green-600 dark:text-green-400">
+                  <div className="text-lg sm:text-xl font-bold text-foreground">
                     {healthData?.services.filter(s => s.status === 'up').length || 0}
                   </div>
-                  <div className="text-xs sm:text-sm text-green-700 dark:text-green-300">Services Up</div>
+                  <div className="text-xs sm:text-sm text-foreground">Services Up</div>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.2 }}
-                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl border border-blue-200 dark:border-blue-800"
+                  className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
-                  <div className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">
+                  <div className="text-lg sm:text-xl font-bold text-foreground">
                     {healthData?.services.length || 0}
                   </div>
-                  <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">Total Services</div>
+                  <div className="text-xs sm:text-sm text-foreground">Total Services</div>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.3 }}
-                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800"
+                  className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
-                  <div className="text-lg sm:text-xl font-bold text-purple-600 dark:text-purple-400">
+                  <div className="text-lg sm:text-xl font-bold text-foreground">
                     {healthData?.services.filter(s => s.responseTime && s.responseTime < 100).length || 0}
                   </div>
-                  <div className="text-xs sm:text-sm text-purple-700 dark:text-purple-300">Fast Response</div>
+                  <div className="text-xs sm:text-sm text-foreground">Fast Response</div>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.4 }}
-                  className="text-center p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl border border-orange-200 dark:border-orange-800"
+                  className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
-                  <div className="text-lg sm:text-xl font-bold text-orange-600 dark:text-orange-400">24/7</div>
-                  <div className="text-xs sm:text-sm text-orange-700 dark:text-orange-300">Monitoring</div>
+                  <div className="text-lg sm:text-xl font-bold text-foreground">24/7</div>
+                  <div className="text-xs sm:text-sm text-foreground">Monitoring</div>
                 </motion.div>
               </div>
             </CardContent>
@@ -359,7 +359,7 @@ export default function ServicesPage() {
           <Button 
             variant="outline" 
             size="sm"
-            className="gap-2 h-9 sm:h-10 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="gap-2 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted"
             onClick={refresh}
             disabled={loading}
           >
@@ -380,13 +380,13 @@ export default function ServicesPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Tabs defaultValue="health" className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-2 h-10 sm:h-11 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-              <TabsTrigger value="health" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 rounded-lg text-sm font-medium gap-2">
+            <TabsList className="grid w-full grid-cols-2 h-10 sm:h-11 bg-muted dark:bg-muted p-1">
+              <TabsTrigger value="health" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-sm font-medium gap-2">
                 <Shield className="h-4 w-4" />
                 <span className="hidden sm:inline">Service Health</span>
                 <span className="sm:hidden">Health</span>
               </TabsTrigger>
-              <TabsTrigger value="versions" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 rounded-lg text-sm font-medium gap-2">
+              <TabsTrigger value="versions" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-sm font-medium gap-2">
                 <Database className="h-4 w-4" />
                 <span className="hidden sm:inline">Component Versions</span>
                 <span className="sm:hidden">Versions</span>
@@ -402,7 +402,7 @@ export default function ServicesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <Card className="border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-900 overflow-hidden">
+                  <Card className="border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3 sm:gap-4">
@@ -410,18 +410,18 @@ export default function ServicesPage() {
                             {healthAPI.getOverallStatusIcon(healthData.overallStatus)}
                           </div>
                           <div className="min-w-0">
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Overall Status</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-muted-foreground dark:text-foreground">Overall Status</h2>
                             <p className={`text-base sm:text-lg font-medium ${healthAPI.getOverallStatusColor(healthData.overallStatus)}`}>
                               {healthData.overallStatus.charAt(0).toUpperCase() + healthData.overallStatus.slice(1)}
                             </p>
                           </div>
                         </div>
                         <div className="text-left sm:text-right w-full sm:w-auto">
-                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Last Updated</p>
+                          <p className="text-sm font-medium text-muted-foreground dark:text-foreground">
                             {healthData.lastUpdated.toLocaleTimeString()}
                           </p>
-                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
                             {healthData.services.filter(s => s.status === 'up').length} of {healthData.services.length} services up
                           </p>
                         </div>
@@ -438,13 +438,13 @@ export default function ServicesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <Card className="border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
+                  <Card className="border-border bg-muted">
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <AlertTriangle className="h-5 w-5 text-foreground flex-shrink-0 mt-0.5" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm sm:text-base font-medium text-red-700 dark:text-red-400 mb-1">Error</p>
-                          <p className="text-sm text-red-600 dark:text-red-500 break-words">
+                          <p className="text-sm sm:text-base font-medium text-foreground mb-1">Error</p>
+                          <p className="text-sm text-foreground break-words">
                             {error}
                           </p>
                         </div>
@@ -459,12 +459,12 @@ export default function ServicesPage() {
                 <div className="lg:col-span-2 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-2">Service Health Status</h2>
-                      <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
+                      <h2 className="text-xl sm:text-2xl font-semibold text-muted-foreground dark:text-foreground mb-2">Service Health Status</h2>
+                      <p className="text-sm sm:text-base text-muted-foreground dark:text-muted-foreground">
                         Real-time health monitoring of all monitoring services
                       </p>
                     </div>
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                    <Badge className="bg-muted text-foreground">
                       <Activity className="h-3 w-3 mr-1" />
                       Live
                     </Badge>
@@ -473,8 +473,8 @@ export default function ServicesPage() {
                   {loading && !healthData ? (
                     <div className="flex items-center justify-center py-12 sm:py-16">
                       <div className="text-center">
-                        <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin mx-auto mb-4 text-green-600" />
-                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Checking service health...</p>
+                        <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin mx-auto mb-4 text-foreground" />
+                        <p className="text-sm sm:text-base text-muted-foreground dark:text-muted-foreground">Checking service health...</p>
                       </div>
                     </div>
                   ) : healthData ? (
@@ -495,10 +495,10 @@ export default function ServicesPage() {
                       ))}
                     </div>
                   ) : (
-                    <Card className="border border-gray-200 dark:border-gray-700">
+                    <Card className="border border-border dark:border-border">
                       <CardContent className="p-8 sm:p-12 text-center">
-                        <AlertTriangle className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No health data available</p>
+                        <AlertTriangle className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-sm sm:text-base text-muted-foreground dark:text-muted-foreground">No health data available</p>
                       </CardContent>
                     </Card>
                   )}

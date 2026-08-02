@@ -22,11 +22,11 @@ function AuthErrorContent() {
   const errorMessage = error ? errorMessages[error] || errorMessages.Default : errorMessages.Default
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center bg-muted py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-red-600">Authentication Error</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Authentication Error</CardTitle>
             <CardDescription>
               There was a problem signing you in
             </CardDescription>
@@ -69,11 +69,11 @@ function AuthErrorContent() {
 export default function AuthError() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-center bg-muted py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-red-600">Loading...</CardTitle>
+              <CardTitle className="text-2xl font-bold text-foreground">Loading...</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center">Please wait while we load the error details...</div>

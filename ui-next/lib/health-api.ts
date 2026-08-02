@@ -231,11 +231,11 @@ export class HealthAPI {
   getStatusColor(status: 'up' | 'down' | 'checking'): string {
     switch (status) {
       case 'up':
-        return 'text-green-600';
+        return 'text-foreground';
       case 'down':
-        return 'text-red-600';
+        return 'text-foreground';
       case 'checking':
-        return 'text-yellow-600';
+        return 'text-foreground';
       default:
         return 'text-gray-600';
     }
@@ -247,11 +247,11 @@ export class HealthAPI {
   getOverallStatusColor(status: 'healthy' | 'degraded' | 'unhealthy'): string {
     switch (status) {
       case 'healthy':
-        return 'text-green-600';
+        return 'text-foreground';
       case 'degraded':
-        return 'text-yellow-600';
+        return 'text-foreground';
       case 'unhealthy':
-        return 'text-red-600';
+        return 'text-foreground';
       default:
         return 'text-gray-600';
     }

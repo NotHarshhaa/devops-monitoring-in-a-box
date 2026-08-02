@@ -151,19 +151,19 @@ export default function PluginManagerComponent() {
   const getCategoryColor = (category: PluginCategory) => {
     switch (category) {
       case PluginCategory.CLOUD_PROVIDER:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+        return 'bg-muted text-foreground bg-muted text-foreground'
       case PluginCategory.CI_CD:
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+        return 'bg-muted text-foreground bg-muted text-foreground'
       case PluginCategory.MONITORING:
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+        return 'bg-muted text-foreground bg-muted text-foreground'
       case PluginCategory.LOGGING:
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+        return 'bg-muted text-foreground bg-muted text-foreground'
       case PluginCategory.ALERTING:
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+        return 'bg-muted text-foreground bg-muted text-foreground'
       case PluginCategory.INFRASTRUCTURE:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+        return 'bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground'
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+        return 'bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground'
     }
   }
 

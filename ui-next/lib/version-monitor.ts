@@ -264,7 +264,7 @@ export class VersionMonitorService {
       return {
         status: 'error',
         message: 'Service unavailable',
-        color: 'text-red-500'
+        color: 'text-foreground'
       }
     }
 
@@ -272,7 +272,7 @@ export class VersionMonitorService {
       return {
         status: 'warning',
         message: 'Version unknown',
-        color: 'text-yellow-500'
+        color: 'text-foreground'
       }
     }
 
@@ -280,7 +280,7 @@ export class VersionMonitorService {
       return {
         status: 'warning',
         message: 'Update available',
-        color: 'text-orange-500'
+        color: 'text-foreground'
       }
     }
 
@@ -288,14 +288,14 @@ export class VersionMonitorService {
       return {
         status: 'success',
         message: 'Up to date',
-        color: 'text-green-500'
+        color: 'text-foreground'
       }
     }
 
     return {
       status: 'info',
       message: 'Version checked',
-      color: 'text-blue-500'
+      color: 'text-foreground'
     }
   }
 

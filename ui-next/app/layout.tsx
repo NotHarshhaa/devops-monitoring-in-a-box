@@ -1,16 +1,18 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { QueryProvider } from "@/components/query-provider";
-import { SessionProvider } from "@/components/session-provider";
-import { Sidebar } from "@/components/sidebar";
-import { Toaster } from "@/components/ui/toaster";
-import { DEFAULT_SITE_CONFIG } from "@/lib/config/site-config";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-simple";
+import type { Metadata } from 'next'
+import { Instrument_Sans } from 'next/font/google'
+import './globals.css'
+import { ThemeProvider } from '@/components/theme-provider'
+import { QueryProvider } from '@/components/query-provider'
+import { SessionProvider } from '@/components/session-provider'
+import { AppShell } from '@/components/app-shell'
+import { Toaster } from '@/components/_custom/toaster'
+import { DEFAULT_SITE_CONFIG } from '@/lib/config/site-config'
+import { cn } from '@/lib/utils'
 
-const inter = Inter({ subsets: ["latin"] });
+const instrumentSans = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-instrument-sans'
+})
 
 export const metadata: Metadata = {
   title: DEFAULT_SITE_CONFIG.seo.title,
@@ -29,9 +31,9 @@ export const metadata: Metadata = {
         url: DEFAULT_SITE_CONFIG.seo.og.image,
         width: 1200,
         height: 630,
-        alt: DEFAULT_SITE_CONFIG.seo.og.title,
-      },
-    ],
+        alt: DEFAULT_SITE_CONFIG.seo.og.title
+      }
+    ]
   },
   twitter: {
     card: DEFAULT_SITE_CONFIG.seo.twitter.card as any,
@@ -39,29 +41,31 @@ export const metadata: Metadata = {
     creator: DEFAULT_SITE_CONFIG.seo.twitter.creator,
     title: DEFAULT_SITE_CONFIG.seo.twitter.title,
     description: DEFAULT_SITE_CONFIG.seo.twitter.description,
-    images: [DEFAULT_SITE_CONFIG.seo.twitter.image],
+    images: [DEFAULT_SITE_CONFIG.seo.twitter.image]
   },
   icons: {
     icon: DEFAULT_SITE_CONFIG.branding.logo.favicon,
-    apple: DEFAULT_SITE_CONFIG.branding.logo.apple_touch_icon,
+    apple: DEFAULT_SITE_CONFIG.branding.logo.apple_touch_icon
   },
   metadataBase: new URL(DEFAULT_SITE_CONFIG.url),
   alternates: {
-    canonical: DEFAULT_SITE_CONFIG.seo.canonical,
-  },
-};
+    canonical: DEFAULT_SITE_CONFIG.seo.canonical
+  }
+}
 
-export default async function RootLayout({
-  children,
+export default function RootLayout({
+  children
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions);
-
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <SessionProvider session={session}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn('min-h-screen font-sans antialiased', instrumentSans.variable)}
+    >
+      <body className="font-sans antialiased">
+        <SessionProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -69,19 +73,12 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <QueryProvider>
-              <div className="flex h-screen bg-background overflow-hidden">
-                <Sidebar />
-                <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8 min-w-0 main-content transition-all duration-300 ease-in-out">
-                  <div className="max-w-[1920px] mx-auto">
-                    {children}
-                  </div>
-                </main>
-              </div>
+              <AppShell>{children}</AppShell>
               <Toaster />
             </QueryProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>
     </html>
-  );
+  )
 }

@@ -74,26 +74,17 @@ export class HttpClient {
       async (error: AxiosError) => {
         // Update connection cache on error
         serviceConfigManager.updateConnectionCache(this.serviceName, false);
-        
+
         // Log error details only for non-connection errors in development
         if (process.env.NODE_ENV === 'development') {
-          // Suppress connection errors when services aren't running
-          const isConnectionError = 
-            error.code === 'ECONNREFUSED' || 
-            error.code === 'ERR_NETWORK' ||
-            error.message?.includes('Network Error') ||
-            error.message?.includes('fetch failed') ||
-            error.message?.includes('connect ECONNREFUSED') ||
-            error.message?.includes('Unable to connect') ||
-            (error.response?.status === undefined && !error.response?.data);
-          
-          if (!isConnectionError) {
-            console.error(`[${this.serviceName}] Response error:`, {
-              status: error.response?.status,
-              statusText: error.response?.statusText,
-              data: error.response?.data,
-              message: error.message,
-            });
+          if (!this.isSoftConnectivityError(error)) {
+            const data = error.response?.data as { error?: string; errorType?: string } | undefined;
+            // Single string so Next.js overlay doesn't render an empty `{}`
+            console.error(
+              `[${this.serviceName}] Response error: ` +
+                `${error.response?.status ?? 'no-status'} ${error.response?.statusText ?? ''}`.trim() +
+                ` — ${data?.error || data?.errorType || error.message || 'unknown error'}`
+            );
           }
         }
         return Promise.reject(error);
@@ -102,10 +93,49 @@ export class HttpClient {
   }
 
   /**
+   * True when the upstream is down/unreachable (or the browser cannot reach
+   * the proxy). Includes proxied 502/503/504 bodies from our API route so
+   * those don't spam the console as "response errors".
+   */
+  private isSoftConnectivityError(error: AxiosError): boolean {
+    if (
+      error.code === 'ECONNREFUSED' ||
+      error.code === 'ERR_NETWORK' ||
+      error.code === 'ECONNABORTED' ||
+      error.code === 'ERR_CANCELED' ||
+      error.message?.includes('Network Error') ||
+      error.message?.includes('fetch failed') ||
+      error.message?.includes('connect ECONNREFUSED') ||
+      error.message?.includes('Unable to connect')
+    ) {
+      return true;
+    }
+
+    const status = error.response?.status;
+    const data = error.response?.data as { errorType?: string } | undefined;
+    if (
+      (status === 502 || status === 503 || status === 504) &&
+      (data?.errorType === 'upstream_unreachable' ||
+        data?.errorType === 'timeout' ||
+        data?.errorType === 'service_disabled')
+    ) {
+      return true;
+    }
+
+    // No HTTP response at all → treat as connectivity
+    return status === undefined && !error.response?.data;
+  }
+
+  /**
    * Check if error should be retried
    */
   private shouldRetry(error: AxiosError, attempt: number, maxRetries: number): boolean {
     if (attempt >= maxRetries) {
+      return false;
+    }
+
+    // Don't hammer a down stack (proxy 502 upstream_unreachable, etc.)
+    if (this.isSoftConnectivityError(error)) {
       return false;
     }
 
@@ -186,21 +216,15 @@ export class HttpClient {
    * Format error for better error messages
    */
   private formatError(error: AxiosError): Error {
+    if (this.isSoftConnectivityError(error)) {
+      const data = error.response?.data as { error?: string } | undefined;
+      return new Error(
+        data?.error ||
+          `Unable to connect to ${this.serviceName}. Service may not be running.`
+      );
+    }
+
     if (!error.response) {
-      // Network error - check if it's a connection error
-      const isConnectionError = 
-        error.code === 'ECONNREFUSED' || 
-        error.code === 'ERR_NETWORK' ||
-        error.message?.includes('Network Error') ||
-        error.message?.includes('fetch failed') ||
-        error.message?.includes('connect ECONNREFUSED');
-
-      if (isConnectionError) {
-        // For connection errors, return a simpler message that won't be logged to console
-        return new Error(`Unable to connect to ${this.serviceName}. Service may not be running.`);
-      }
-
-      // Other network errors
       return new Error(
         `Failed to connect to ${this.serviceName} at ${this.baseURL}. ` +
         `Please check if the service is running and accessible.`

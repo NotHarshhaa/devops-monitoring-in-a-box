@@ -105,14 +105,14 @@ export function useAlertmanagerAlerts(): UseAlertmanagerAlertsReturn {
     return { firing, suppressed, total };
   }, [alerts]);
 
-  // Fetch alerts on mount
+  // Fetch alerts on mount + auto-refresh every 30s
   useEffect(() => {
     fetchAlerts();
-  }, [fetchAlerts]);
 
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
     const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
       fetchAlerts();
     }, 30000);
 

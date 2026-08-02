@@ -96,10 +96,10 @@ const trafficData = [
 ]
 
 const serviceDistribution = [
-  { name: "API", value: 35, color: "#3b82f6" },
-  { name: "Database", value: 25, color: "#10b981" },
-  { name: "Cache", value: 20, color: "#f59e0b" },
-  { name: "Storage", value: 15, color: "#8b5cf6" },
+  { name: "API", value: 35, color: "#525252" },
+  { name: "Database", value: 25, color: "#737373" },
+  { name: "Cache", value: 20, color: "#a3a3a3" },
+  { name: "Storage", value: 15, color: "#404040" },
   { name: "Other", value: 5, color: "#6b7280" },
 ]
 
@@ -162,48 +162,51 @@ function StatCard({
       whileHover={{ y: -4, scale: 1.02, transition: { duration: 0.2 } }}
       className="h-full"
     >
-      <Card className="h-full hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden group">
-        <CardContent className="p-3 sm:p-6">
-          <div className="flex items-start justify-between mb-2 sm:mb-4">
-            <div className={`p-2 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${iconBgColor.replace('bg-', 'from-').replace('dark:', 'dark:to-')} flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+      <Card className="h-full border-border bg-card">
+        <CardContent className="p-4 sm:p-5">
+          <div className="mb-3 flex items-start justify-between gap-2 sm:mb-4">
+            <div className={`flex size-9 shrink-0 items-center justify-center border border-border bg-background sm:size-10 ${iconBgColor}`}>
               <div className={iconColor}>{icon}</div>
             </div>
-            <div className={`flex items-center text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full border ${
-              isPositive 
-                ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700' 
-                : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700'
-            }`}>
-              {isPositive ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-              <span className="hidden sm:inline">{trendValue}</span>
-              <span className="sm:hidden">{trendValue.replace('+', '').replace('-', '')}</span>
+            <div
+              className={`flex items-center border px-2 py-1 text-[11px] font-semibold ${ isPositive ? 'border-border text-foreground' : 'border-destructive/40 text-destructive' }`}
+            >
+              {isPositive ? (
+                <ArrowUpRight className="mr-1 size-3" />
+              ) : (
+                <ArrowDownRight className="mr-1 size-3" />
+              )}
+              <span>{trendValue}</span>
             </div>
           </div>
-          
+
           <div className="space-y-2 sm:space-y-3">
             <div>
-              <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">{title}</p>
-              <p className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+              <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                {title}
+              </p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+                {value}
+              </p>
             </div>
-            
+
             {description && (
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">{description}</p>
+              <p className="text-xs text-muted-foreground sm:text-sm">{description}</p>
             )}
-            
+
             {progress !== undefined && (
-              <div className="space-y-1 sm:space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Usage</span>
-                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{progress}%</span>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Usage</span>
+                  <span className="text-[11px] font-medium">{progress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-3 overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ease-out ${
-                      progress > 80 ? 'bg-red-500' : 
-                      progress > 60 ? 'bg-yellow-500' : 
-                      'bg-green-500'
+                <div className="h-1.5 w-full overflow-hidden border border-border bg-muted">
+                  <div
+                    className={`h-full transition-all duration-500 ${
+                      progress > 80 ? 'bg-foreground' : 'bg-muted-foreground'
                     }`}
                     style={{ width: `${progress}%` }}
-                  ></div>
+                  />
                 </div>
               </div>
             )}
@@ -232,18 +235,7 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
   }
 
   const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
-      case "error":
-        return "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800"
-      case "warning":
-        return "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800"
-      case "info":
-        return "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800"
-      default:
-        return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700"
-    }
+    return 'border-border bg-muted text-foreground'
   }
 
   const getSeverityBadge = (severity: string) => {
@@ -268,7 +260,7 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
       transition={{ duration: 0.3 }}
       whileHover={{ x: 4 }}
     >
-      <div className={`p-2 sm:p-3 rounded-lg border ${getSeverityColor(alert.severity)} hover:shadow-md transition-all duration-200`}>
+      <div className={`p-2 sm:p-3 rounded-lg border ${getSeverityColor(alert.severity)} transition-all duration-200`}>
         <div className="flex items-start gap-2 sm:gap-3">
           <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${getSeverityColor(alert.severity)}`}>
             {getSeverityIcon(alert.severity)}
@@ -292,38 +284,14 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
 
 // Enhanced Service Status Card with mobile-responsive design
 function ServiceStatusCard({ service }: { service: typeof services[0] }) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "healthy":
-        return "bg-green-500"
-      case "warning":
-        return "bg-yellow-500"
-      case "error":
-        return "bg-red-500"
-      default:
-        return "bg-gray-500"
-    }
-  }
-
-  const getStatusGradient = (status: string) => {
-    switch (status) {
-      case "healthy":
-        return "from-green-500 to-emerald-600"
-      case "warning":
-        return "from-yellow-500 to-orange-600"
-      case "error":
-        return "from-red-500 to-rose-600"
-      default:
-        return "from-gray-500 to-slate-600"
-    }
-  }
+  const getStatusColor = (_status: string) => 'bg-foreground'
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "healthy":
-        return <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-700 text-xs">Healthy</Badge>
+        return <Badge className="bg-muted text-foreground border-border text-xs">Healthy</Badge>
       case "warning":
-        return <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-700 text-xs">Warning</Badge>
+        return <Badge className="bg-muted text-foreground border-border text-xs">Warning</Badge>
       case "error":
         return <Badge variant="destructive" className="text-xs">Error</Badge>
       default:
@@ -347,7 +315,7 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
       transition={{ duration: 0.2 }}
       className="h-full"
     >
-      <Card className="hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+      <Card className="border-border bg-card overflow-hidden">
         <CardContent className="p-3 sm:p-5">
           {/* Service Header */}
           <div className="flex items-center justify-between mb-2 sm:mb-4">
@@ -357,13 +325,13 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
                 <span className={`relative inline-flex rounded-full h-2 w-2 sm:h-3 sm:w-3 ${getStatusColor(service.status)}`}></span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`p-1.5 sm:p-2 rounded-lg bg-gradient-to-r ${getStatusGradient(service.status)}`}>
-                  <div className="text-white">
+                <div className={`p-1.5 sm:p-2 border border-border bg-background`}>
+                  <div className="text-foreground">
                     {getServiceIcon(service.name)}
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">{service.name}</h3>
+                  <h3 className="font-semibold text-muted-foreground dark:text-foreground text-sm sm:text-base">{service.name}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     {getStatusBadge(service.status)}
                   </div>
@@ -375,16 +343,16 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
           {/* Service Metrics */}
           <div className="space-y-2 sm:space-y-3">
             {/* Uptime */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
-                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Uptime</span>
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Uptime</span>
               </div>
               <div className="text-right">
-                <div className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">{service.uptime}%</div>
-                <div className="w-12 sm:w-16 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mt-1">
+                <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{service.uptime}%</div>
+                <div className="w-12 sm:w-16 h-1 bg-muted dark:bg-muted rounded-full mt-1">
                   <div 
-                    className="h-full bg-green-500 rounded-full"
+                    className="h-full bg-muted rounded-full"
                     style={{ width: `${service.uptime}%` }}
                   ></div>
                 </div>
@@ -392,47 +360,47 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
             </div>
 
             {/* Response Time */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Response</span>
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Response</span>
               </div>
               <div className="text-right">
-                <div className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">{service.responseTime}ms</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
+                <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{service.responseTime}ms</div>
+                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">
                   {service.responseTime < 50 ? 'Excellent' : service.responseTime < 100 ? 'Good' : 'Slow'}
                 </div>
               </div>
             </div>
 
             {/* Requests */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-500 rounded-full"></div>
-                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Requests</span>
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Requests</span>
               </div>
               <div className="text-right">
-                <div className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">{service.requests.toLocaleString()}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Last 24h</div>
+                <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{service.requests.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">Last 24h</div>
               </div>
             </div>
 
             {/* Status */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
                 <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${getStatusColor(service.status)}`}></div>
-                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Status</span>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Status</span>
               </div>
               <div className="text-right">
-                <div className="text-xs sm:text-sm font-bold capitalize text-gray-900 dark:text-white">{service.status}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Real-time</div>
+                <div className="text-xs sm:text-sm font-bold capitalize text-muted-foreground dark:text-foreground">{service.status}</div>
+                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">Real-time</div>
               </div>
             </div>
           </div>
 
           {/* Action Button */}
-          <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-200 dark:border-gray-700">
-            <Button variant="outline" size="sm" className="w-full gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm">
+          <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border dark:border-border">
+            <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
               <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">View Details</span>
               <span className="sm:hidden">Details</span>
@@ -449,45 +417,34 @@ export default function DashboardPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState("24h");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-3 sm:space-y-6">
-        {/* Enhanced Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl shadow-sm border p-3 sm:p-6"
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col gap-3 border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div>
-              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                {dashboardConfig?.title || 'Dashboard'}
+              <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+                {dashboardConfig?.title || 'Overview'}
               </h1>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-                Real-time monitoring and performance metrics
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Real-time metrics, services, and alerts
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <VersionBadge variant="compact" />
-              <div className="flex items-center gap-2">
                 <select 
                   value={selectedTimeRange} 
                   onChange={(e) => setSelectedTimeRange(e.target.value)}
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="h-9 border border-border bg-background px-3 text-xs sm:text-sm"
                 >
                   <option value="1h">Last Hour</option>
                   <option value="24h">Last 24 Hours</option>
                   <option value="7d">Last 7 Days</option>
                   <option value="30d">Last 30 Days</option>
                 </select>
-                <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                  <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                <Button variant="outline" size="sm" className="gap-2">
+                  <RefreshCw className="size-3.5" />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
-              </div>
             </div>
-          </div>
-        </motion.div>
+        </div>
 
         {/* Key Metrics Grid */}
         <motion.div
@@ -502,8 +459,8 @@ export default function DashboardPage() {
               trend="up"
               trendValue="+5%"
               icon={<Cpu className="h-5 w-5 sm:h-6 sm:w-6" />}
-              iconColor="text-blue-600"
-              iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+              iconColor="text-foreground"
+              iconBgColor=""
               description="Average"
               progress={systemMetrics.cpu}
             />
@@ -513,8 +470,8 @@ export default function DashboardPage() {
               trend="down"
               trendValue="-3%"
               icon={<Database className="h-5 w-5 sm:h-6 sm:w-6" />}
-              iconColor="text-green-600"
-              iconBgColor="bg-green-100 dark:bg-green-900/30"
+              iconColor="text-foreground"
+              iconBgColor=""
               description="8GB/12GB"
               progress={systemMetrics.memory}
             />
@@ -524,8 +481,8 @@ export default function DashboardPage() {
               trend="up"
               trendValue="+2%"
               icon={<HardDrive className="h-5 w-5 sm:h-6 sm:w-6" />}
-              iconColor="text-purple-600"
-              iconBgColor="bg-purple-100 dark:bg-purple-900/30"
+              iconColor="text-foreground"
+              iconBgColor=""
               description="120GB/500GB"
               progress={systemMetrics.disk}
             />
@@ -535,8 +492,8 @@ export default function DashboardPage() {
               trend="up"
               trendValue="+12%"
               icon={<Wifi className="h-5 w-5 sm:h-6 sm:w-6" />}
-              iconColor="text-orange-600"
-              iconBgColor="bg-orange-100 dark:bg-orange-900/30"
+              iconColor="text-foreground"
+              iconBgColor=""
               description="Total"
             />
           </div>
@@ -550,23 +507,23 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden h-full">
-              <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 dark:from-green-700 dark:to-teal-700 text-white p-3 sm:p-6">
+            <Card className="h-full border-border bg-card overflow-hidden">
+              <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="p-1.5 sm:p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                        <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                        <Activity className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Performance Trends</span>
                       <span className="sm:hidden">Performance</span>
                     </CardTitle>
-                    <CardDescription className="mt-1 sm:mt-2 text-green-100 text-xs sm:text-sm">
+                    <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
                       <span className="hidden sm:inline">System metrics over time</span>
                       <span className="sm:hidden">Metrics over time</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20 text-xs sm:text-sm">
+                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
                     <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">View Details</span>
                   </Button>
@@ -581,42 +538,42 @@ export default function DashboardPage() {
                       <YAxis tick={{ fontSize: 10 }} />
                       <Tooltip />
                       <Legend />
-                      <Area type="monotone" dataKey="cpu" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                      <Area type="monotone" dataKey="memory" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                      <Area type="monotone" dataKey="network" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="cpu" stackId="1" stroke="#525252" fill="#525252" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="memory" stackId="1" stroke="#737373" fill="#737373" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="network" stackId="1" stroke="#a3a3a3" fill="#a3a3a3" fillOpacity={0.6} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-3 sm:mt-4 grid grid-cols-3 gap-2 sm:gap-4">
-                  <div className="p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200">CPU</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <span className="text-xs sm:text-sm font-medium text-foreground">CPU</span>
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">
+                    <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
                       {systemMetrics.cpu}%
                     </div>
-                    <div className="text-xs text-blue-700 dark:text-blue-300 hidden sm:block">Current</div>
+                    <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
-                  <div className="p-2 sm:p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-xs sm:text-sm font-medium text-green-800 dark:text-green-200">Memory</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <span className="text-xs sm:text-sm font-medium text-foreground">Memory</span>
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-green-600 dark:text-green-400 mt-1">
+                    <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
                       {systemMetrics.memory}%
                     </div>
-                    <div className="text-xs text-green-700 dark:text-green-300 hidden sm:block">Current</div>
+                    <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
-                  <div className="p-2 sm:p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-orange-500 rounded-full"></div>
-                      <span className="text-xs sm:text-sm font-medium text-orange-800 dark:text-orange-200">Network</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <span className="text-xs sm:text-sm font-medium text-foreground">Network</span>
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-orange-600 dark:text-orange-400 mt-1">
+                    <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
                       {systemMetrics.network}MB/s
                     </div>
-                    <div className="text-xs text-orange-700 dark:text-orange-300 hidden sm:block">Current</div>
+                    <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
                 </div>
               </CardContent>
@@ -629,23 +586,23 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden h-full">
-              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 text-white p-3 sm:p-6">
+            <Card className="h-full border-border bg-card overflow-hidden">
+              <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="p-1.5 sm:p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                        <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                        <BarChart3 className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Traffic & Errors</span>
                       <span className="sm:hidden">Traffic</span>
                     </CardTitle>
-                    <CardDescription className="mt-1 sm:mt-2 text-purple-100 text-xs sm:text-sm">
+                    <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
                       <span className="hidden sm:inline">Weekly request volume and error rates</span>
                       <span className="sm:hidden">Weekly requests & errors</span>
                     </CardDescription>
                   </div>
-                  <Badge className="bg-white/20 text-white border-white/30 px-2 py-1 sm:px-3 sm:py-1 font-semibold text-xs sm:text-sm">
+                  <Badge className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
                     7 days
                   </Badge>
                 </div>
@@ -659,27 +616,27 @@ export default function DashboardPage() {
                       <YAxis tick={{ fontSize: 10 }} />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="requests" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-                      <Bar dataKey="errors" fill="#ef4444" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="requests" fill="#525252" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="errors" fill="#262626" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-4">
-                  <div className="p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-xs sm:text-sm font-medium text-blue-800 dark:text-blue-200">Total Requests</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <span className="text-xs sm:text-sm font-medium text-foreground">Total Requests</span>
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">
+                    <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
                       {trafficData.reduce((sum, day) => sum + day.requests, 0).toLocaleString()}
                     </div>
                   </div>
-                  <div className="p-2 sm:p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full"></div>
-                      <span className="text-xs sm:text-sm font-medium text-red-800 dark:text-red-200">Total Errors</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <span className="text-xs sm:text-sm font-medium text-foreground">Total Errors</span>
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400 mt-1">
+                    <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
                       {trafficData.reduce((sum, day) => sum + day.errors, 0).toLocaleString()}
                     </div>
                   </div>
@@ -698,23 +655,23 @@ export default function DashboardPage() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="lg:col-span-2"
           >
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 text-white p-3 sm:p-6">
+            <Card className="border-border bg-card overflow-hidden">
+              <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="p-1.5 sm:p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                        <Server className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                        <Server className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Services Status</span>
                       <span className="sm:hidden">Services</span>
                     </CardTitle>
-                    <CardDescription className="mt-1 sm:mt-2 text-blue-100 text-xs sm:text-sm">
+                    <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
                       <span className="hidden sm:inline">Real-time service health monitoring</span>
                       <span className="sm:hidden">Service health</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20 text-xs sm:text-sm">
+                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
                     <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Configure</span>
                   </Button>
@@ -736,23 +693,23 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden h-full">
-              <CardHeader className="bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-700 dark:to-red-700 text-white p-3 sm:p-6">
+            <Card className="h-full border-border bg-card overflow-hidden">
+              <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="p-1.5 sm:p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                        <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                        <Bell className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Recent Alerts</span>
                       <span className="sm:hidden">Alerts</span>
                     </CardTitle>
-                    <CardDescription className="mt-1 sm:mt-2 text-orange-100 text-xs sm:text-sm">
+                    <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
                       <span className="hidden sm:inline">Latest system notifications</span>
                       <span className="sm:hidden">System notifications</span>
                     </CardDescription>
                   </div>
-                  <Badge className="bg-white/20 text-white border-white/30 px-2 py-1 sm:px-3 sm:py-1 font-semibold text-xs sm:text-sm">
+                  <Badge className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
                     {recentAlerts.length} active
                   </Badge>
                 </div>
@@ -763,8 +720,8 @@ export default function DashboardPage() {
                     <AlertCard key={alert.id} alert={alert} />
                   ))}
                 </div>
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <Button variant="outline" size="sm" className="w-full gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm">
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border dark:border-border">
+                  <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
                     <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">View All Alerts</span>
                     <span className="sm:hidden">All Alerts</span>
@@ -783,23 +740,23 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-700 dark:to-blue-700 text-white p-3 sm:p-6">
+            <Card className="border-border bg-card overflow-hidden">
+              <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="p-1.5 sm:p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                        <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                        <BarChart3 className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Dynamic Metrics</span>
                       <span className="sm:hidden">Metrics</span>
                     </CardTitle>
-                    <CardDescription className="mt-1 sm:mt-2 text-cyan-100 text-xs sm:text-sm">
+                    <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
                       <span className="hidden sm:inline">Real-time system performance metrics</span>
                       <span className="sm:hidden">Real-time metrics</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20 text-xs sm:text-sm">
+                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
                     <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Configure</span>
                   </Button>
@@ -835,23 +792,23 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white p-3 sm:p-6">
+            <Card className="border-border bg-card overflow-hidden">
+              <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="p-1.5 sm:p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                        <PieChart className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                        <PieChart className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Service Distribution</span>
                       <span className="sm:hidden">Distribution</span>
                     </CardTitle>
-                    <CardDescription className="mt-1 sm:mt-2 text-indigo-100 text-xs sm:text-sm">
+                    <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
                       <span className="hidden sm:inline">Resource allocation across services</span>
                       <span className="sm:hidden">Resource allocation</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20 text-xs sm:text-sm">
+                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
                     <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Filter</span>
                   </Button>
@@ -871,7 +828,7 @@ export default function DashboardPage() {
                           return `${displayName} ${(percent * 100).toFixed(0)}%`
                         }}
                         outerRadius={typeof window !== 'undefined' && window.innerWidth < 640 ? 60 : 80}
-                        fill="#8884d8"
+                        fill="#737373"
                         dataKey="value"
                       >
                         {serviceDistribution.map((entry, index) => (
@@ -890,13 +847,13 @@ export default function DashboardPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.2, delay: 0.8 + index * 0.1 }}
                       whileHover={{ scale: 1.02 }}
-                      className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+                      className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border transition-shadow"
                     >
                       <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" style={{ backgroundColor: service.color }}></div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{service.name}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{service.value}% allocation</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 sm:hidden">{service.value}%</div>
+                        <div className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground truncate">{service.name}</div>
+                        <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">{service.value}% allocation</div>
+                        <div className="text-xs text-muted-foreground dark:text-muted-foreground sm:hidden">{service.value}%</div>
                       </div>
                     </motion.div>
                   ))}
@@ -913,7 +870,7 @@ export default function DashboardPage() {
           transition={{ duration: 0.5, delay: 0.8 }}
         >
           <Suspense fallback={
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
+            <Card className="border-border bg-card overflow-hidden">
               <CardContent className="p-3 sm:p-6">
                 <Skeleton className="h-24 sm:h-32 w-full" />
               </CardContent>
@@ -930,7 +887,7 @@ export default function DashboardPage() {
           transition={{ duration: 0.5, delay: 0.9 }}
         >
           <Suspense fallback={
-            <Card className="border border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-900 overflow-hidden">
+            <Card className="border-border bg-card overflow-hidden">
               <CardContent className="p-3 sm:p-6">
                 <Skeleton className="h-24 sm:h-32 w-full" />
               </CardContent>
@@ -942,7 +899,6 @@ export default function DashboardPage() {
             />
           </Suspense>
         </motion.div>
-      </div>
     </div>
   )
 }

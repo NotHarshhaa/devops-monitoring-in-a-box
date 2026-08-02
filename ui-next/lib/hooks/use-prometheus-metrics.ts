@@ -1,16 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { prometheusAPI } from '../prometheus-api';
 import { config } from '../config';
+import { pollingInterval } from './polling';
+
+const prometheusPolling = {
+  refetchInterval: pollingInterval(config.prometheus.refreshInterval),
+  staleTime: config.prometheus.refreshInterval,
+  retry: 0,
+  refetchOnWindowFocus: false,
+};
 
 // Hook for current CPU usage
 export function useCPUUsage() {
   return useQuery({
     queryKey: ['cpu-usage'],
     queryFn: () => prometheusAPI.getCPUUsage(),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts to prevent console spam
-    retryDelay: 2000,
+    ...prometheusPolling,
   });
 }
 
@@ -19,10 +24,7 @@ export function useCPUUsageRange(start: number, end: number) {
   return useQuery({
     queryKey: ['cpu-usage-range', start, end],
     queryFn: () => prometheusAPI.getCPUUsageRange(start, end),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
     enabled: start > 0 && end > 0,
   });
 }
@@ -32,10 +34,7 @@ export function useMemoryUsage() {
   return useQuery({
     queryKey: ['memory-usage'],
     queryFn: () => prometheusAPI.getMemoryUsage(),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
   });
 }
 
@@ -44,10 +43,7 @@ export function useMemoryUsageRange(start: number, end: number) {
   return useQuery({
     queryKey: ['memory-usage-range', start, end],
     queryFn: () => prometheusAPI.getMemoryUsageRange(start, end),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
     enabled: start > 0 && end > 0,
   });
 }
@@ -57,10 +53,7 @@ export function useDiskUsage() {
   return useQuery({
     queryKey: ['disk-usage'],
     queryFn: () => prometheusAPI.getDiskUsage(),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
   });
 }
 
@@ -69,10 +62,7 @@ export function useDiskUsageRange(start: number, end: number) {
   return useQuery({
     queryKey: ['disk-usage-range', start, end],
     queryFn: () => prometheusAPI.getDiskUsageRange(start, end),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
     enabled: start > 0 && end > 0,
   });
 }
@@ -82,10 +72,7 @@ export function useNetworkTraffic() {
   return useQuery({
     queryKey: ['network-traffic'],
     queryFn: () => prometheusAPI.getNetworkTraffic(),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
   });
 }
 
@@ -94,10 +81,7 @@ export function useNetworkTrafficRange(start: number, end: number) {
   return useQuery({
     queryKey: ['network-traffic-range', start, end],
     queryFn: () => prometheusAPI.getNetworkTrafficRange(start, end),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
     enabled: start > 0 && end > 0,
   });
 }
@@ -107,10 +91,7 @@ export function useSystemLoad() {
   return useQuery({
     queryKey: ['system-load'],
     queryFn: () => prometheusAPI.getSystemLoad(),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
   });
 }
 
@@ -119,10 +100,7 @@ export function useAllCurrentMetrics() {
   return useQuery({
     queryKey: ['all-current-metrics'],
     queryFn: () => prometheusAPI.getAllCurrentMetrics(),
-    refetchInterval: config.prometheus.refreshInterval,
-    staleTime: config.prometheus.refreshInterval,
-    retry: 1, // Reduce retry attempts
-    retryDelay: 2000,
+    ...prometheusPolling,
   });
 }
 

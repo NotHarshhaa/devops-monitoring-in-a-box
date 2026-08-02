@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
 import {
+  isSelfHealthUrl,
   redactHealthReport,
   summarize,
   type HealthReport,
@@ -19,6 +20,31 @@ function probeStub(name: string, status: ServiceProbe['status']): ServiceProbe {
     error: status === 'down' ? 'Connection refused' : undefined,
   };
 }
+
+describe('isSelfHealthUrl', () => {
+  const originalPort = process.env.PORT;
+
+  afterEach(() => {
+    if (originalPort === undefined) {
+      delete process.env.PORT;
+    } else {
+      process.env.PORT = originalPort;
+    }
+  });
+
+  it('detects the dashboard probing itself on the listen port', () => {
+    process.env.PORT = '3000';
+    expect(isSelfHealthUrl('http://localhost:3000/api/health')).toBe(true);
+    expect(isSelfHealthUrl('http://127.0.0.1:3000/api/health')).toBe(true);
+  });
+
+  it('allows Grafana on a different port or host', () => {
+    process.env.PORT = '3000';
+    expect(isSelfHealthUrl('http://localhost:3001/api/health')).toBe(false);
+    expect(isSelfHealthUrl('http://grafana:3000/api/health')).toBe(false);
+    expect(isSelfHealthUrl('http://localhost:9090/-/healthy')).toBe(false);
+  });
+});
 
 describe('summarize', () => {
   it('is healthy when everything is up', () => {

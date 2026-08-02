@@ -99,10 +99,10 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800'
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800'
-      case 'advanced': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'beginner': return 'bg-muted text-foreground'
+      case 'intermediate': return 'bg-muted text-foreground'
+      case 'advanced': return 'bg-muted text-foreground'
+      default: return 'bg-muted text-muted-foreground'
     }
   }
 
@@ -218,7 +218,7 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className="h-full hover:shadow-lg transition-shadow">
+                <Card className="h-full transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">

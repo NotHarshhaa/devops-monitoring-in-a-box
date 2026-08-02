@@ -115,7 +115,7 @@ export default function PluginConfigurationComponent({
             <div key={key} className="space-y-2">
               <Label htmlFor={key} className="flex items-center gap-2">
                 {property.description}
-                {isRequired && <span className="text-red-500">*</span>}
+                {isRequired && <span className="text-foreground">*</span>}
               </Label>
               <Input
                 id={key}
@@ -132,7 +132,7 @@ export default function PluginConfigurationComponent({
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
               {property.description}
-              {isRequired && <span className="text-red-500">*</span>}
+              {isRequired && <span className="text-foreground">*</span>}
             </Label>
             <Input
               id={key}
@@ -152,7 +152,7 @@ export default function PluginConfigurationComponent({
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
               {property.description}
-              {isRequired && <span className="text-red-500">*</span>}
+              {isRequired && <span className="text-foreground">*</span>}
             </Label>
             <Input
               id={key}
@@ -172,7 +172,7 @@ export default function PluginConfigurationComponent({
           <div key={key} className="flex items-center justify-between">
             <Label htmlFor={key} className="flex items-center gap-2">
               {property.description}
-              {isRequired && <span className="text-red-500">*</span>}
+              {isRequired && <span className="text-foreground">*</span>}
             </Label>
             <Switch
               id={key}
@@ -187,7 +187,7 @@ export default function PluginConfigurationComponent({
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
               {property.description}
-              {isRequired && <span className="text-red-500">*</span>}
+              {isRequired && <span className="text-foreground">*</span>}
             </Label>
             <Textarea
               id={key}
@@ -204,7 +204,7 @@ export default function PluginConfigurationComponent({
           <div key={key} className="space-y-2">
             <Label htmlFor={key} className="flex items-center gap-2">
               {property.description}
-              {isRequired && <span className="text-red-500">*</span>}
+              {isRequired && <span className="text-foreground">*</span>}
             </Label>
             <Input
               id={key}
@@ -227,7 +227,7 @@ export default function PluginConfigurationComponent({
       <div key={key} className="space-y-2">
         <Label htmlFor={`cred-${key}`} className="flex items-center gap-2">
           {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-          <span className="text-red-500">*</span>
+          <span className="text-foreground">*</span>
         </Label>
         <div className="relative">
           <Input

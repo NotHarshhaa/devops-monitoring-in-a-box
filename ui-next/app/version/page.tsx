@@ -8,9 +8,9 @@ import Link from "next/link"
 
 export default function VersionPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="border-b border-gray-200/50 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
+      <div className="border-b border-border dark:border-border bg-card dark:bg-card">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/dashboard">
@@ -50,11 +50,11 @@ export default function VersionPage() {
           transition={{ delay: 0.5 }}
           className="mt-12 text-center"
         >
-          <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="p-8 border border-border dark:border-border">
+            <h3 className="text-lg font-semibold text-muted-foreground dark:text-foreground mb-4">
               Enjoying the New UI?
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-muted-foreground dark:text-muted-foreground mb-6">
               Version 2.5.0 represents a complete overhaul of our monitoring dashboard,
               bringing modern design, better performance, and an enhanced user experience.
             </p>
@@ -68,8 +68,8 @@ export default function VersionPage() {
                 Support the Project
               </Button>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
-              Made with <Heart className="w-4 h-4 inline text-red-500 mx-1" /> by the DevOps Monitor Team
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-6">
+              Made with <Heart className="w-4 h-4 inline text-foreground mx-1" /> by the DevOps Monitor Team
             </p>
           </div>
         </motion.div>

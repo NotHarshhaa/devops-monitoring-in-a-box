@@ -294,22 +294,20 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "p-4 rounded-lg border",
+              className={cn("p-4 rounded-lg border",
                 validationResult.valid
-                  ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
-                  : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950"
+                  ? "border-border bg-muted border-border bg-muted"
+                  : "border-border bg-muted border-border bg-muted"
               )}
             >
               <div className="flex items-center gap-2 mb-2">
                 {validationResult.valid ? (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-foreground" />
                 ) : (
-                  <AlertCircle className="h-5 w-5 text-red-600" />
+                  <AlertCircle className="h-5 w-5 text-foreground" />
                 )}
-                <span className={cn(
-                  "font-medium",
-                  validationResult.valid ? "text-green-800 dark:text-green-200" : "text-red-800 dark:text-red-200"
+                <span className={cn("font-medium",
+                  validationResult.valid ? "text-foreground text-foreground" : "text-foreground text-foreground"
                 )}>
                   {validationResult.valid ? 'Configuration Valid' : 'Configuration Invalid'}
                 </span>
@@ -317,8 +315,8 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
               
               {validationResult.errors.length > 0 && (
                 <div className="mb-2">
-                  <div className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">Errors:</div>
-                  <ul className="text-sm text-red-700 dark:text-red-300 list-disc list-inside">
+                  <div className="text-sm font-medium text-foreground mb-1">Errors:</div>
+                  <ul className="text-sm text-foreground list-disc list-inside">
                     {validationResult.errors.map((error, index) => (
                       <li key={index}>{error}</li>
                     ))}
@@ -328,8 +326,8 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
               
               {validationResult.warnings.length > 0 && (
                 <div>
-                  <div className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-1">Warnings:</div>
-                  <ul className="text-sm text-yellow-700 dark:text-yellow-300 list-disc list-inside">
+                  <div className="text-sm font-medium text-foreground mb-1">Warnings:</div>
+                  <ul className="text-sm text-foreground list-disc list-inside">
                     {validationResult.warnings.map((warning, index) => (
                       <li key={index}>{warning}</li>
                     ))}
@@ -360,13 +358,13 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950"
+              className="p-4 rounded-lg border border-border bg-muted"
             >
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                <span className="text-red-800 dark:text-red-200 font-medium">Error</span>
+                <AlertCircle className="h-5 w-5 text-foreground" />
+                <span className="text-foreground font-medium">Error</span>
               </div>
-              <p className="text-red-700 dark:text-red-300 text-sm mt-1">{error}</p>
+              <p className="text-foreground text-sm mt-1">{error}</p>
             </motion.div>
           )}
         </CardContent>
