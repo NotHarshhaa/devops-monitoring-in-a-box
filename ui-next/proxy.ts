@@ -1,5 +1,6 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
+import { getAuthSecret } from "@/lib/auth-secret"
 
 export default withAuth(
   function middleware(req) {
@@ -42,6 +43,7 @@ export default withAuth(
     return null
   },
   {
+    secret: getAuthSecret(),
     callbacks: {
       authorized: ({ token, req }) => {
         // Allow access to public routes

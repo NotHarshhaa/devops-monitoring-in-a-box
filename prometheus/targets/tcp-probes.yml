@@ -1,0 +1,23 @@
+# TCP uptime probe targets (host:port).
+#
+# Use this for services that do not speak HTTP: databases, brokers, caches,
+# SMTP, and so on. Prometheus picks up changes automatically.
+
+# - targets:
+#     - postgres:5432
+#   labels:
+#     module: tcp_connect
+#     env: production
+#     team: data
+#     tier: internal
+
+# - targets:
+#     - smtp.example.com:465
+#   labels:
+#     module: tcp_connect_tls
+#     env: production
+#     team: platform
+#     tier: external
+
+# Explicit empty list so the file is unambiguous while no probes are defined.
+[]

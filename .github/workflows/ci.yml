@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ui:
+    name: UI (lint, types, tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui-next
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: ui-next/package-lock.json
+
+      # `npm ci` runs the postinstall hook, which generates the Prisma client
+      # that the build depends on.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Production build
+        run: npm run build
+        env:
+          # The build must not depend on real secrets, but NextAuth needs a
+          # value present so nothing falls back to a random one.
+          NEXTAUTH_SECRET: ci-build-only-secret
+          NEXTAUTH_URL: http://localhost:4000
+
+  monitoring-config:
+    name: Validate monitoring configuration
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Alertmanager reads the webhook credential from a file rather than from
+      # tracked configuration. This disposable CI value exercises that path.
+      - name: Prepare Alertmanager webhook credential
+        run: printf '%s' 'ci-alertmanager-token' > alertmanager/webhook_token
+
+      - name: Check Prometheus config and rules
+        run: |
+          docker run --rm \
+            -v "$PWD/prometheus:/etc/prometheus:ro" \
+            --entrypoint promtool \
+            prom/prometheus:v2.45.0 \
+            check config /etc/prometheus/prometheus.yml
+
+      - name: Check Prometheus rule files individually
+        run: |
+          for file in prometheus/alert_rules.yml prometheus/recording_rules.yml prometheus/probe_rules.yml; do
+            echo "Checking $file"
+            docker run --rm \
+              -v "$PWD/prometheus:/etc/prometheus:ro" \
+              --entrypoint promtool \
+              prom/prometheus:v2.45.0 \
+              check rules "/etc/prometheus/$(basename "$file")"
+          done
+
+      - name: Check Alertmanager config
+        run: |
+          docker run --rm \
+            -v "$PWD/alertmanager:/etc/alertmanager:ro" \
+            --entrypoint amtool \
+            prom/alertmanager:v0.25.0 \
+            check-config /etc/alertmanager/config.yml
+
+      - name: Check Blackbox Exporter config
+        run: |
+          docker run --rm \
+            -v "$PWD/exporters/blackbox/config.yml:/etc/blackbox_exporter/config.yml:ro" \
+            prom/blackbox-exporter:v0.24.0 \
+            --config.file=/etc/blackbox_exporter/config.yml \
+            --config.check
+
+      - name: Parse remaining YAML configuration
+        run: |
+          python3 - <<'PY'
+          import sys, glob
+          import yaml
+          paths = [
+              "exporters/blackbox/config.yml",
+              "loki/config.yml",
+              "loki/promtail-config.yml",
+              *glob.glob("prometheus/targets/*.yml"),
+          ]
+          failed = False
+          for path in paths:
+              try:
+                  with open(path) as handle:
+                      yaml.safe_load(handle)
+                  print(f"ok   {path}")
+              except Exception as exc:
+                  failed = True
+                  print(f"FAIL {path}: {exc}")
+          sys.exit(1 if failed else 0)
+          PY
+
+      - name: Validate Docker Compose files
+        env:
+          # Compose now requires NEXTAUTH_SECRET to be set rather than
+          # defaulting to a shared, publicly known value.
+          NEXTAUTH_SECRET: ci-validation-only
+          ALERT_WEBHOOK_TOKEN: ci-alertmanager-token
+        run: |
+          docker compose -f docker-compose.yml config >/dev/null
+          docker compose -f docker-compose.dev.yml config >/dev/null
+          echo "Compose configuration is valid"

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { serviceConfigManager } from './service-config';
+import { serviceConfigManager, isBrowser } from './service-config';
 
 export interface ServiceHealth {
   name: string;
@@ -18,153 +17,76 @@ export interface HealthCheckResult {
   lastUpdated: Date;
 }
 
+/** Shape returned by GET /api/health. */
+interface HealthApiResponse {
+  upstreamStatus: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  services: Array<{
+    key: string;
+    name: string;
+    description: string;
+    status: 'up' | 'down' | 'disabled';
+    responseTime: number;
+    url?: string;
+    publicUrl?: string;
+    endpoint?: string;
+    error?: string;
+  }>;
+}
+
+/**
+ * Client-side view of stack health.
+ *
+ * Probing happens on the server (see `lib/server/health.ts`) and is exposed via
+ * `/api/health`. The browser cannot probe the services itself: in Docker the
+ * upstream hostnames are container-internal, and the requests would be
+ * cross-origin.
+ */
 export class HealthAPI {
-  private services: Array<{
-    name: string;
-    url: string;
-    endpoint: string;
-    description: string;
-  }> = [];
-
-  constructor() {
-    // Initialize services from centralized configuration
-    const configs = serviceConfigManager.getAllConfigs();
-    
-    this.services = [
-      {
-        name: 'Prometheus',
-        url: configs.prometheus.url,
-        endpoint: configs.prometheus.healthCheckEndpoint || '/api/v1/status/config',
-        description: 'Metrics collection and storage'
-      },
-      {
-        name: 'Grafana',
-        url: configs.grafana.url,
-        endpoint: configs.grafana.healthCheckEndpoint || '/api/health',
-        description: 'Visualization and dashboards'
-      },
-      {
-        name: 'Loki',
-        url: configs.loki.url,
-        endpoint: configs.loki.healthCheckEndpoint || '/ready',
-        description: 'Log aggregation system'
-      },
-      {
-        name: 'Alertmanager',
-        url: configs.alertmanager.url,
-        endpoint: configs.alertmanager.healthCheckEndpoint || '/api/v2/status',
-        description: 'Alert routing and management'
-      },
-    ];
-
-    // Add optional services if enabled
-    if (configs.nodeExporter?.enabled) {
-      this.services.push({
-        name: 'Node Exporter',
-        url: configs.nodeExporter.url,
-        endpoint: configs.nodeExporter.healthCheckEndpoint || '/metrics',
-        description: 'System metrics collection'
-      });
+  private async fetchReport(): Promise<HealthApiResponse> {
+    if (!isBrowser()) {
+      throw new Error(
+        'HealthAPI is browser-only; call collectHealth() from lib/server/health on the server.'
+      );
     }
 
-    if (configs.cadvisor?.enabled) {
-      this.services.push({
-        name: 'cAdvisor',
-        url: configs.cadvisor.url,
-        endpoint: configs.cadvisor.healthCheckEndpoint || '/healthz',
-        description: 'Container metrics collection'
-      });
+    const response = await fetch('/api/health', {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Health check failed with HTTP ${response.status}`);
     }
-  }
 
-  private async checkServiceHealth(service: {
-    name: string;
-    url: string;
-    endpoint: string;
-    description: string;
-  }): Promise<ServiceHealth> {
-    const startTime = Date.now();
-    const healthUrl = `${service.url}${service.endpoint}`;
-
-    try {
-      const response = await axios.get(healthUrl, {
-        timeout: 5000, // 5 second timeout
-        validateStatus: (status) => status < 500, // Accept 2xx, 3xx, 4xx as "up"
-      });
-
-      const responseTime = Date.now() - startTime;
-
-      return {
-        name: service.name,
-        url: service.url,
-        status: 'up',
-        responseTime,
-        lastChecked: new Date(),
-        endpoint: service.endpoint,
-        description: service.description
-      };
-    } catch (error) {
-      const responseTime = Date.now() - startTime;
-      let errorMessage = 'Unknown error';
-
-      if (axios.isAxiosError(error)) {
-        if (error.code === 'ECONNREFUSED') {
-          errorMessage = 'Connection refused - service may be down';
-        } else if (error.code === 'ETIMEDOUT') {
-          errorMessage = 'Request timeout - service may be slow or down';
-        } else if (error.response) {
-          errorMessage = `HTTP ${error.response.status}: ${error.response.statusText}`;
-        } else {
-          errorMessage = error.message;
-        }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      return {
-        name: service.name,
-        url: service.url,
-        status: 'down',
-        responseTime,
-        lastChecked: new Date(),
-        error: errorMessage,
-        endpoint: service.endpoint,
-        description: service.description
-      };
-    }
+    return (await response.json()) as HealthApiResponse;
   }
 
   /**
    * Check health of all services
    */
   async checkAllServices(): Promise<HealthCheckResult> {
-    const startTime = Date.now();
-    
-    // Check all services in parallel
-    const healthPromises = this.services.map(service => 
-      this.checkServiceHealth(service)
-    );
+    const report = await this.fetchReport();
+    const lastUpdated = report.timestamp ? new Date(report.timestamp) : new Date();
 
-    const services = await Promise.all(healthPromises);
-    const lastUpdated = new Date();
-
-    // Determine overall status
-    const upServices = services.filter(s => s.status === 'up').length;
-    const totalServices = services.length;
-    
-    let overallStatus: 'healthy' | 'degraded' | 'unhealthy';
-    if (upServices === totalServices) {
-      overallStatus = 'healthy';
-    } else if (upServices >= totalServices * 0.5) {
-      overallStatus = 'degraded';
-    } else {
-      overallStatus = 'unhealthy';
-    }
+    const services: ServiceHealth[] = (report.services ?? [])
+      // "disabled" has no equivalent in the UI model and is not actionable.
+      .filter((service) => service.status !== 'disabled')
+      .map((service) => ({
+        name: service.name,
+        url: service.publicUrl || service.url || '',
+        status: service.status === 'up' ? 'up' : 'down',
+        responseTime: service.responseTime,
+        lastChecked: lastUpdated,
+        error: service.error,
+        endpoint: service.endpoint ?? '',
+        description: service.description,
+      }));
 
     return {
       services,
-      overallStatus,
-      lastUpdated
+      overallStatus: report.upstreamStatus ?? 'unhealthy',
+      lastUpdated,
     };
   }
 
@@ -172,12 +94,14 @@ export class HealthAPI {
    * Check health of a specific service
    */
   async checkService(serviceName: string): Promise<ServiceHealth> {
-    const service = this.services.find(s => s.name === serviceName);
+    const { services } = await this.checkAllServices();
+    const service = services.find((s) => s.name === serviceName);
+
     if (!service) {
       throw new Error(`Service ${serviceName} not found`);
     }
 
-    return this.checkServiceHealth(service);
+    return service;
   }
 
   /**
@@ -186,20 +110,24 @@ export class HealthAPI {
   getServiceUrls(): Record<string, string> {
     const configs = serviceConfigManager.getAllConfigs();
     const urls: Record<string, string> = {
-      'Prometheus': configs.prometheus.url,
-      'Grafana': configs.grafana.url,
-      'Loki': configs.loki.url,
-      'Alertmanager': configs.alertmanager.url,
+      'Prometheus': configs.prometheus.publicUrl,
+      'Grafana': configs.grafana.publicUrl,
+      'Loki': configs.loki.publicUrl,
+      'Alertmanager': configs.alertmanager.publicUrl,
     };
-    
+
     if (configs.nodeExporter?.enabled) {
-      urls['Node Exporter'] = configs.nodeExporter.url;
+      urls['Node Exporter'] = configs.nodeExporter.publicUrl;
     }
-    
+
     if (configs.cadvisor?.enabled) {
-      urls['cAdvisor'] = configs.cadvisor.url;
+      urls['cAdvisor'] = configs.cadvisor.publicUrl;
     }
-    
+
+    if (configs.blackbox?.enabled) {
+      urls['Blackbox Exporter'] = configs.blackbox.publicUrl;
+    }
+
     return urls;
   }
 
@@ -216,48 +144,57 @@ export class HealthAPI {
     const links = [
       {
         name: 'Grafana',
-        url: configs.grafana.url,
+        url: configs.grafana.publicUrl,
         description: 'Open Grafana dashboards',
         icon: '📊'
       },
       {
         name: 'Prometheus',
-        url: configs.prometheus.url,
+        url: configs.prometheus.publicUrl,
         description: 'Open Prometheus query interface',
         icon: '🔍'
       },
       {
         name: 'Alertmanager',
-        url: configs.alertmanager.url,
+        url: configs.alertmanager.publicUrl,
         description: 'Open Alertmanager web UI',
         icon: '🚨'
       },
       {
         name: 'Loki',
-        url: configs.loki.url,
+        url: configs.loki.publicUrl,
         description: 'Open Loki query interface',
         icon: '📝'
       }
     ];
-    
+
     if (configs.nodeExporter?.enabled) {
       links.push({
         name: 'Node Exporter',
-        url: configs.nodeExporter.url,
+        url: configs.nodeExporter.publicUrl,
         description: 'Open Node Exporter metrics',
         icon: '📈'
       });
     }
-    
+
     if (configs.cadvisor?.enabled) {
       links.push({
         name: 'cAdvisor',
-        url: configs.cadvisor.url,
+        url: configs.cadvisor.publicUrl,
         description: 'Open cAdvisor container metrics',
         icon: '🐳'
       });
     }
-    
+
+    if (configs.blackbox?.enabled) {
+      links.push({
+        name: 'Blackbox Exporter',
+        url: configs.blackbox.publicUrl,
+        description: 'Open Blackbox Exporter probe status',
+        icon: '🛰️'
+      });
+    }
+
     return links;
   }
 

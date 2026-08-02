@@ -44,26 +44,10 @@ const nextConfig = {
     SITE_URL: process.env.SITE_URL || 'http://localhost:4000',
     SITE_DESCRIPTION: process.env.SITE_DESCRIPTION || 'Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting.',
   },
-  // Only apply rewrites in development
-  async rewrites() {
-    if (process.env.NODE_ENV === 'development') {
-      return [
-        {
-          source: '/api/prometheus/:path*',
-          destination: 'http://localhost:9090/api/v1/:path*',
-        },
-        {
-          source: '/api/loki/:path*',
-          destination: 'http://localhost:3100/loki/api/v1/:path*',
-        },
-        {
-          source: '/api/alertmanager/:path*',
-          destination: 'http://localhost:9093/api/v2/:path*',
-        },
-      ];
-    }
-    return [];
-  },
+  // Monitoring backends are reached through the authenticated route handler at
+  // app/api/proxy/[service]/[...path], which works identically in development
+  // and production. The previous dev-only rewrites here were unreachable (no
+  // code called /api/prometheus/*) and silently disappeared in production.
 };
 
 module.exports = nextConfig;

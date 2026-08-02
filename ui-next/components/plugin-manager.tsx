@@ -44,10 +44,6 @@ export default function PluginManagerComponent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadPlugins()
-  }, [])
-
   const loadPlugins = async () => {
     setIsLoading(true)
     try {
@@ -63,6 +59,11 @@ export default function PluginManagerComponent() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadPlugins()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleInstallPlugin = async (pluginId: string) => {
     setIsLoading(true)

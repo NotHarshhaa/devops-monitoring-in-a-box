@@ -9,6 +9,7 @@ global:
 rule_files:
   - "alert_rules.yml"
   - "recording_rules.yml"
+  - "probe_rules.yml"
 
 alerting:
   alertmanagers:
@@ -85,24 +86,94 @@ scrape_configs:
     metrics_path: /metrics
     honor_labels: true
 
-  # Blackbox Exporter - Uptime monitoring (commented out - requires blackbox-exporter service)
-  # - job_name: 'blackbox'
-  #   metrics_path: /probe
-  #   params:
-  #     module: [http_2xx]
-  #   static_configs:
-  #     - targets:
-  #       - http://prometheus:9090
-  #       - http://grafana:3000
-  #       - http://loki:3100
-  #       - http://alertmanager:9093
-  #   relabel_configs:
-  #     - source_labels: [__address__]
-  #       target_label: __param_target
-  #     - source_labels: [__param_target]
-  #       target_label: instance
-  #     - target_label: __address__
-  #       replacement: blackbox-exporter:9115
+  # Blackbox Exporter's own metrics
+  - job_name: 'blackbox-exporter'
+    static_configs:
+      - targets: ['blackbox-exporter:9115']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Uptime probes for the monitoring stack itself.
+  # Every target is probed through the blackbox exporter, so probe_success
+  # reflects reachability from inside the monitoring network.
+  - job_name: 'blackbox-stack'
+    metrics_path: /probe
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://prometheus:9090/-/healthy
+          - http://loki:3100/ready
+          - http://alertmanager:9093/-/healthy
+          - http://grafana:3000/api/health
+          - http://devops-monitor-ui:3000/api/health
+        labels:
+          tier: internal
+          env: monitoring
+    relabel_configs:
+      # Move the probe target into the module parameter...
+      - source_labels: [__address__]
+        target_label: __param_target
+      # ...keep it as a readable instance label...
+      - source_labels: [__param_target]
+        target_label: instance
+      # ...and point the actual scrape at the exporter.
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # User-defined HTTP/HTTPS uptime probes.
+  # Add endpoints to prometheus/targets/http-probes.yml - no restart required.
+  # A per-target `module` label selects the blackbox module.
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    params:
+      module: [http_2xx]
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/http-probes.yml
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      # Honour an optional per-target module override.
+      - source_labels: [module]
+        target_label: __param_module
+        regex: (.+)
+      - regex: module
+        action: labeldrop
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # User-defined TCP uptime probes (host:port).
+  - job_name: 'blackbox-tcp'
+    metrics_path: /probe
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    params:
+      module: [tcp_connect]
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/tcp-probes.yml
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [module]
+        target_label: __param_module
+        regex: (.+)
+      - regex: module
+        action: labeldrop
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
 
   # Service Discovery - Docker containers (optional - requires additional setup)
   # - job_name: 'docker'

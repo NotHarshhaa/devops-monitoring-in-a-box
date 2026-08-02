@@ -47,16 +47,12 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
 
   const plugin = pluginManager.registry.getPlugin(instance.pluginId)
-  if (!plugin) {
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>Plugin not found</AlertDescription>
-      </Alert>
-    )
-  }
 
-  const supportedDataTypes = plugin.metadata.supportedDataTypes
+  // NOTE: every hook below must run unconditionally. The "plugin not found"
+  // early return used to sit here, above the effects, so the number of hooks
+  // changed as soon as the plugin resolved - which makes React throw
+  // "Rendered more hooks than during the previous render".
+  const supportedDataTypes = plugin?.metadata.supportedDataTypes ?? []
 
   useEffect(() => {
     if (supportedDataTypes.length > 0 && !supportedDataTypes.includes(selectedDataType)) {
@@ -65,6 +61,10 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
   }, [supportedDataTypes, selectedDataType])
 
   const fetchData = async () => {
+    if (!plugin) {
+      return
+    }
+
     if (!instance.enabled) {
       setError('Plugin instance is disabled')
       return
@@ -129,7 +129,18 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataType, timeRange])
+
+  // Safe to bail out now that all hooks have run.
+  if (!plugin) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>Plugin not found</AlertDescription>
+      </Alert>
+    )
+  }
 
   const handleTimeRangeChange = (range: string) => {
     const now = new Date()

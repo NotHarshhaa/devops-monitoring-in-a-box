@@ -1,21 +1,63 @@
 global:
   resolve_timeout: 5m
 
+# Route every alert to the dashboard's webhook receiver, which fans it out to
+# the channels configured in the UI (Slack / Teams / Discord / email / custom
+# webhooks).
 route:
-  group_by: ['alertname']
-  group_wait: 10s
-  group_interval: 10s
-  repeat_interval: 1h
-  receiver: 'web.hook'
+  group_by: ['alertname', 'severity', 'instance']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'devops-monitor-ui'
+
+  routes:
+    # Page critical alerts quickly instead of waiting for the default grouping.
+    - matchers:
+        - severity = "critical"
+      receiver: 'devops-monitor-ui'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+      continue: false
+
+    # Informational alerts are batched much more aggressively.
+    - matchers:
+        - severity =~ "info|none"
+      receiver: 'devops-monitor-ui'
+      group_wait: 5m
+      group_interval: 30m
+      repeat_interval: 24h
 
 receivers:
-  - name: 'web.hook'
+  - name: 'devops-monitor-ui'
     webhook_configs:
-      - url: 'http://localhost:9093'
+      # Docker Compose service name and container port of the dashboard.
+      # Outside Compose, change this to the dashboard's reachable address.
+      - url: 'http://devops-monitor-ui:3000/api/notifications/webhook'
+        send_resolved: true
+        max_alerts: 100
+
+        # `scripts/setup-env.sh` and `devops-monitor.ps1 init-env` generate
+        # this file from ALERT_WEBHOOK_TOKEN. It is mounted read-only by both
+        # Compose files, so Alertmanager and the dashboard authenticate each
+        # other without placing the secret in this tracked configuration.
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /etc/alertmanager/webhook_token
 
 inhibit_rules:
-  - source_match:
-      severity: 'critical'
-    target_match:
-      severity: 'warning'
-    equal: ['alertname', 'dev', 'instance']
+  # A critical alert makes the matching warning redundant.
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
+    equal: ['alertname', 'instance']
+
+  # If a target is unreachable, suppress the noisy symptom alerts for it.
+  - source_matchers:
+      - alertname =~ "EndpointDown|PrometheusTargetDown"
+    target_matchers:
+      - severity =~ "warning|info"
+    equal: ['instance']

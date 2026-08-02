@@ -1,0 +1,108 @@
+# Blackbox Exporter probe modules.
+#
+# Each module defines HOW to probe; the targets themselves live in
+# prometheus/prometheus.yml and prometheus/targets/*.yml so endpoints can be
+# added without touching this file.
+#
+# Reference: https://github.com/prometheus/blackbox_exporter/blob/master/CONFIGURATION.md
+
+modules:
+  # Plain HTTP/HTTPS availability check. Any 2xx counts as up.
+  http_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: []  # defaults to 2xx
+      method: GET
+      follow_redirects: true
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # For endpoints that legitimately answer 401/403 when unauthenticated:
+  # still proves the service is listening and routing.
+  http_2xx_or_auth:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 204, 301, 302, 401, 403]
+      method: GET
+      follow_redirects: false
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # POST-based health endpoints.
+  http_post_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      method: POST
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # HTTPS with certificate expiry reporting. probe_ssl_earliest_cert_expiry
+  # feeds the certificate expiry alerts.
+  https_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      method: GET
+      follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # Verify a response body actually contains an expected marker, which catches
+  # "200 OK but serving an error page" situations.
+  http_2xx_body_match:
+    prober: http
+    timeout: 10s
+    http:
+      method: GET
+      fail_if_body_not_matches_regexp:
+        - "(?i)(ok|healthy|success|ready)"
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # Raw TCP connect check, for databases, brokers and other non-HTTP services.
+  tcp_connect:
+    prober: tcp
+    timeout: 10s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # TCP with TLS, also reports certificate expiry.
+  tcp_connect_tls:
+    prober: tcp
+    timeout: 10s
+    tcp:
+      tls: true
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # ICMP ping. Requires elevated privileges (see the cap_add on the
+  # blackbox-exporter service in docker-compose.yml).
+  icmp:
+    prober: icmp
+    timeout: 10s
+    icmp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: false
+
+  # DNS resolution check against a resolver passed as the probe target.
+  dns_udp:
+    prober: dns
+    timeout: 10s
+    dns:
+      query_name: "example.com"
+      query_type: "A"
+      transport_protocol: "udp"
+      preferred_ip_protocol: "ip4"

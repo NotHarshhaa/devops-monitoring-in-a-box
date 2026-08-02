@@ -115,10 +115,13 @@ docker push your-username/devops-monitoring-box:latest
 git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
 cd devops-monitoring-in-a-box
 
+# Generate required session/webhook secrets and Alertmanager's credential file.
+./scripts/setup-env.sh
+
 # Start all services (Prometheus, Grafana, Loki, etc.)
 ./devops-monitor.sh start
 
-# Or manually with Docker Compose
+# Or manually with Docker Compose after the setup step above
 docker compose up -d
 ```
 
@@ -174,11 +177,10 @@ railway up
 ### 🏗️ **Self-Hosted Options**
 
 #### **Kubernetes**
-```bash
-# Apply Kubernetes manifests
-kubectl apply -f k8s/
-kubectl get pods -n monitoring
-```
+> ⚠️ Kubernetes manifests are on the roadmap and are not in this repository yet.
+> Track progress in the issue tracker, or deploy with Docker Compose in the
+> meantime. When running the dashboard in a cluster, set `DOCKER_ENV=true` (or
+> rely on `KUBERNETES_SERVICE_HOST`) so it resolves the backends by service name.
 
 #### **Traditional VPS/Server**
 ```bash
@@ -200,10 +202,12 @@ Once deployed, access your monitoring tools:
 | Service | URL | Credentials | Description |
 |---------|-----|-------------|-------------|
 | 🎨 **Modern UI** | [http://localhost:4000](http://localhost:4000) | - | Unified dashboard experience |
+| ❤️ **Health API** | [http://localhost:4000/api/health](http://localhost:4000/api/health) | - | Stack health, used by the container healthcheck |
 | 📊 **Grafana** | [http://localhost:3000](http://localhost:3000) | admin/admin | Visualization dashboards |
 | 📈 **Prometheus** | [http://localhost:9090](http://localhost:9090) | - | Metrics collection & querying |
 | 📜 **Loki** | [http://localhost:3100](http://localhost:3100) | - | Log aggregation |
 | 🚨 **Alertmanager** | [http://localhost:9093](http://localhost:9093) | - | Alert management |
+| 🛰️ **Blackbox Exporter** | [http://localhost:9115](http://localhost:9115) | - | HTTP/TCP uptime probing |
 
 ### 🔧 **Quick Management Commands**
 
@@ -229,20 +233,23 @@ Once deployed, access your monitoring tools:
 The Monitoring in a Box project is organized into several key directories, each serving a specific purpose in the monitoring ecosystem.
 
 ### 🏗️ **Core Components**
-- **`prometheus/`** - Metrics collection and alerting configuration
+- **`prometheus/`** - Metrics collection, alert rules, and `targets/` probe lists
 - **`grafana/`** - Dashboard and visualization setup
 - **`loki/`** - Log aggregation and collection
 - **`alertmanager/`** - Alert routing and notifications
 - **`ui-next/`** - Modern Next.js web interface
 - **`docs/`** - Comprehensive documentation
-- **`exporters/`** - System metrics exporters
+- **`exporters/`** - Exporter configuration (Blackbox uptime probing)
 
 ### 🎯 **Key Files**
 - **`devops-monitor.sh`** - Main management script (wrapper)
+- **`scripts/devops-monitor.sh`** - Management script (Linux/macOS)
+- **`scripts/devops-monitor.ps1`** - Management script (Windows PowerShell)
 - **`env.example`** - Environment variables template
 - **`site-config.json`** - Site configuration (SEO, branding)
 - **`config.json`** - Monitoring configuration
 - **`docker-compose.yml`** - Production stack configuration
+- **`prometheus/targets/*.yml`** - Uptime probe targets, hot-reloaded
 - **`scripts/`** - All management and setup scripts
 
 ### 📖 **Detailed Structure**
@@ -308,19 +315,21 @@ For a complete breakdown of all directories, files, and their purposes, see our 
 Configure your Monitoring in a Box platform with comprehensive environment variables and configuration files.
 
 ### 🔧 Quick Setup
-1. **Copy example configuration**:
+1. **Generate secure configuration** (recommended):
    ```bash
-   cp env.example .env
+   ./scripts/setup-env.sh
    ```
+   This creates `.env` with random `NEXTAUTH_SECRET` and `ALERT_WEBHOOK_TOKEN`
+   values, plus the ignored `alertmanager/webhook_token` credential file.
 
-2. **Edit your settings**:
+2. **Edit non-secret settings**:
    ```bash
    nano .env
    ```
 
 3. **Start the platform**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 ### 📖 Complete Configuration Guide
@@ -336,11 +345,91 @@ For detailed configuration options, environment variables, and deployment settin
 - 🏢 **Multi-tenancy**: Tenant isolation and management
 - 🚀 **Deployment**: Docker, Kubernetes, production settings
 
+## 🛰️ Uptime Monitoring
+
+The stack ships a **Blackbox Exporter** so you can watch any HTTP, HTTPS or TCP
+endpoint, not just the machine it runs on.
+
+Add a target and you are done — Prometheus re-reads the target files every 30
+seconds, so there is no restart and no `prometheus.yml` edit:
+
+```yaml
+# prometheus/targets/http-probes.yml
+- targets:
+    - https://my-app.example.com/health
+  labels:
+    module: https_2xx     # probe module from exporters/blackbox/config.yml
+    env: production       # any labels you add appear on the probe_* series
+    team: platform
+```
+
+On Windows the management script will do it for you:
+
+```powershell
+.\scripts\devops-monitor.ps1 probe -Url https://my-app.example.com/health
+```
+
+Non-HTTP services go in `prometheus/targets/tcp-probes.yml` with
+`module: tcp_connect`.
+
+**Available probe modules** (`exporters/blackbox/config.yml`): `http_2xx`,
+`http_2xx_or_auth`, `http_post_2xx`, `https_2xx`, `http_2xx_body_match`,
+`tcp_connect`, `tcp_connect_tls`, `icmp`, `dns_udp`.
+
+**Alerts that come with it** (`prometheus/probe_rules.yml`): endpoint down,
+flapping, slow response, 24h availability below 99%, unexpected HTTP status, TLS
+certificate expiring in 30/7/0 days, plus scrape-pipeline alerts that fire when
+Prometheus or Alertmanager themselves stop working.
+
+## 🪟 Windows Support
+
+The bash scripts need WSL or Git Bash. `scripts/devops-monitor.ps1` is a native
+PowerShell equivalent:
+
+```powershell
+.\scripts\devops-monitor.ps1 init-env    # generate .env with strong secrets
+.\scripts\devops-monitor.ps1 start       # start the stack
+.\scripts\devops-monitor.ps1 status      # containers + dashboard health
+.\scripts\devops-monitor.ps1 health      # probe every published endpoint
+.\scripts\devops-monitor.ps1 logs -Service prometheus
+.\scripts\devops-monitor.ps1 validate    # promtool + amtool + compose config
+.\scripts\devops-monitor.ps1 verify      # lint, type-check, tests, build
+.\scripts\devops-monitor.ps1 clean       # remove containers and volumes
+```
+
+## 🔀 How the Dashboard Reaches the Backends
+
+The browser never calls Prometheus, Loki or Alertmanager directly. It calls the
+dashboard, which forwards the request server-side:
+
+```
+browser ──▶ /api/proxy/prometheus/api/v1/query ──▶ http://prometheus:9090/api/v1/query
+```
+
+This matters for three reasons:
+
+- **It works in Docker.** Container hostnames such as `prometheus:9090` cannot be
+  resolved by a browser, so direct calls fail in any containerised deployment.
+- **No CORS setup.** Requests are same-origin.
+- **The backends can stay private.** You can remove the published `9090`, `3100`
+  and `9093` ports entirely and the dashboard keeps working.
+
+Every proxied request requires a signed-in user, and each upstream path is
+matched against an explicit allowlist (`ui-next/lib/server/upstream.ts`).
+Administrative endpoints — Prometheus' `admin/tsdb/delete_series`, Loki's `push`
+— are not reachable through the proxy. Creating or expiring an Alertmanager
+silence additionally requires the `ADMIN` or `EDITOR` role.
+
+Set `NEXT_PUBLIC_<SERVICE>_URL` to control the "open in a new tab" links, and
+`<SERVICE>_URL` to control the address the server connects to.
+
 ## 🔧 Next Steps (for contributors)
 
 * Add more exporters (MySQL, Redis, Nginx, etc.)
 * Add Kubernetes manifests for K8s-based deployment
 * Add Terraform/Ansible automation for cloud deployment
+* Migrate the remaining fetch-in-`useEffect` hooks to React Query (currently
+  surfaced as ESLint warnings)
 
 ## 🚀 Getting Started
 
@@ -529,8 +618,18 @@ docker compose logs grafana
 
 ## 🔒 Security Notes
 
-* Default credentials are for development only
-* Change default passwords in production
+* `NEXTAUTH_SECRET` and `ALERT_WEBHOOK_TOKEN` are **required** — Compose fails
+  rather than accepting a shared/default signing key or an unauthenticated
+  Alertmanager webhook. Generate both and the matching
+  `alertmanager/webhook_token` file with `./scripts/setup-env.sh` or
+  `.\scripts\devops-monitor.ps1 init-env`.
+* Change the default Grafana credentials before exposing the stack.
+* Prometheus' admin API (`--web.enable-admin-api`) is disabled by default; it
+  allows deleting time series.
+* `/api/notifications` never returns SMTP passwords or channel webhook URLs;
+  they are masked, and saving the form preserves the stored values.
+* The published `9090`, `3100`, `9093` and `9115` ports are for your own
+  convenience. The dashboard does not need them — remove them in production.
 * Consider using secrets management for sensitive configs
 * Restrict network access in production environments
 

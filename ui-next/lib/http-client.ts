@@ -4,7 +4,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
-import { ServiceConfig, serviceConfigManager } from './service-config';
+import { ServiceConfig, serviceConfigManager, resolveClientBaseURL } from './service-config';
 
 export interface RetryOptions {
   retries: number;
@@ -24,15 +24,25 @@ export class HttpClient {
   private axiosInstance: AxiosInstance;
   private serviceConfig: ServiceConfig;
   private serviceName: string;
+  /** Base URL actually used for requests: the proxy path in the browser. */
+  private baseURL: string;
 
   constructor(options: HttpClientOptions) {
     const config = serviceConfigManager.getServiceConfig(options.serviceName);
     this.serviceConfig = { ...config, ...options.customConfig };
     this.serviceName = options.serviceName;
 
+    // In the browser, monitoring backends are reached through the same-origin
+    // authenticated proxy (/api/proxy/<service>) rather than directly: Docker
+    // hostnames are not resolvable client-side and direct calls would be
+    // cross-origin. An explicit customConfig.url always wins.
+    this.baseURL = options.customConfig?.url
+      ? this.serviceConfig.url
+      : resolveClientBaseURL(options.serviceName, this.serviceConfig.url);
+
     // Create axios instance with default config
     this.axiosInstance = axios.create({
-      baseURL: this.serviceConfig.url,
+      baseURL: this.baseURL,
       timeout: this.serviceConfig.timeout,
       headers: {
         'Content-Type': 'application/json',
@@ -192,7 +202,7 @@ export class HttpClient {
 
       // Other network errors
       return new Error(
-        `Failed to connect to ${this.serviceName} at ${this.serviceConfig.url}. ` +
+        `Failed to connect to ${this.serviceName} at ${this.baseURL}. ` +
         `Please check if the service is running and accessible.`
       );
     }
@@ -200,6 +210,19 @@ export class HttpClient {
     const status = error.response.status;
     const statusText = error.response.statusText;
     const data = error.response.data as any;
+
+    if (status === 401) {
+      return new Error(
+        `Your session has expired. Sign in again to query ${this.serviceName}.`
+      );
+    }
+
+    if (status === 403) {
+      return new Error(
+        data?.message ||
+          `You are not permitted to perform this ${this.serviceName} request.`
+      );
+    }
 
     let message = `${this.serviceName} returned ${status} ${statusText}`;
     
@@ -260,6 +283,13 @@ export class HttpClient {
    * Get base URL
    */
   getBaseURL(): string {
+    return this.baseURL;
+  }
+
+  /**
+   * Get the configured upstream URL (server-side address of the service)
+   */
+  getUpstreamURL(): string {
     return this.serviceConfig.url;
   }
 
@@ -268,7 +298,10 @@ export class HttpClient {
    */
   updateConfig(updates: Partial<ServiceConfig>): void {
     this.serviceConfig = { ...this.serviceConfig, ...updates };
-    this.axiosInstance.defaults.baseURL = this.serviceConfig.url;
+    if (updates.url) {
+      this.baseURL = updates.url;
+      this.axiosInstance.defaults.baseURL = this.baseURL;
+    }
     this.axiosInstance.defaults.timeout = this.serviceConfig.timeout;
   }
 }

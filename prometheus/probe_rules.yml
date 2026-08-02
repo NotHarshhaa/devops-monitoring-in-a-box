@@ -1,0 +1,147 @@
+groups:
+  # Availability alerts derived from Blackbox Exporter probes.
+  - name: probe_alerts
+    rules:
+      # Endpoint completely unreachable.
+      - alert: EndpointDown
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: uptime
+          component: endpoint
+        annotations:
+          summary: "Endpoint {{ $labels.instance }} is down"
+          description: "Blackbox probe for {{ $labels.instance }} (job {{ $labels.job }}) has been failing for more than 2 minutes."
+          runbook_url: "https://docs.example.com/runbooks/endpoint-down"
+
+      # Flapping: up now, but failed repeatedly in the last hour.
+      - alert: EndpointFlapping
+        expr: changes(probe_success[1h]) > 6
+        for: 5m
+        labels:
+          severity: warning
+          service: uptime
+          component: endpoint
+        annotations:
+          summary: "Endpoint {{ $labels.instance }} is flapping"
+          description: "Probe result for {{ $labels.instance }} changed {{ $value | printf \"%.0f\" }} times in the last hour."
+
+      # Slow but working: p50 probe duration above 2s.
+      - alert: EndpointSlowResponse
+        expr: probe_duration_seconds > 2
+        for: 10m
+        labels:
+          severity: warning
+          service: uptime
+          component: latency
+        annotations:
+          summary: "Endpoint {{ $labels.instance }} is slow"
+          description: "Probe of {{ $labels.instance }} took {{ $value | printf \"%.2f\" }}s (threshold 2s) for more than 10 minutes."
+
+      # Availability below 99% over a rolling day.
+      - alert: EndpointAvailabilityBelowSLO
+        expr: avg_over_time(probe_success[1d]) < 0.99
+        for: 15m
+        labels:
+          severity: warning
+          service: uptime
+          component: slo
+        annotations:
+          summary: "{{ $labels.instance }} availability below 99% (24h)"
+          description: "24h availability for {{ $labels.instance }} is {{ $value | printf \"%.4f\" }}, below the 0.99 objective."
+
+      # HTTP status code outside the success range.
+      - alert: EndpointUnexpectedStatusCode
+        expr: probe_http_status_code >= 400
+        for: 5m
+        labels:
+          severity: warning
+          service: uptime
+          component: http
+        annotations:
+          summary: "{{ $labels.instance }} returning HTTP {{ $value }}"
+          description: "Probe of {{ $labels.instance }} has returned HTTP {{ $value }} for more than 5 minutes."
+
+  # TLS certificate lifecycle, from the same probes.
+  - name: certificate_alerts
+    rules:
+      - alert: CertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+        for: 10m
+        labels:
+          severity: warning
+          service: uptime
+          component: tls
+        annotations:
+          summary: "TLS certificate for {{ $labels.instance }} expires in {{ $value | printf \"%.0f\" }} days"
+          description: "Renew the certificate for {{ $labels.instance }} before it expires."
+
+      - alert: CertificateExpiryCritical
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 7
+        for: 10m
+        labels:
+          severity: critical
+          service: uptime
+          component: tls
+        annotations:
+          summary: "TLS certificate for {{ $labels.instance }} expires in {{ $value | printf \"%.0f\" }} days"
+          description: "Certificate for {{ $labels.instance }} expires in under 7 days. Renew immediately."
+
+      - alert: CertificateExpired
+        expr: probe_ssl_earliest_cert_expiry - time() <= 0
+        for: 5m
+        labels:
+          severity: critical
+          service: uptime
+          component: tls
+        annotations:
+          summary: "TLS certificate for {{ $labels.instance }} has expired"
+          description: "Clients will fail TLS verification against {{ $labels.instance }}."
+
+  # Health of the monitoring stack's own scrape pipeline.
+  - name: monitoring_stack_alerts
+    rules:
+      - alert: PrometheusTargetDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: monitoring
+          component: scrape
+        annotations:
+          summary: "Prometheus target {{ $labels.job }}/{{ $labels.instance }} is down"
+          description: "Prometheus has been unable to scrape {{ $labels.instance }} for more than 5 minutes."
+
+      - alert: PrometheusTargetScrapeSlow
+        expr: scrape_duration_seconds > 10
+        for: 10m
+        labels:
+          severity: warning
+          service: monitoring
+          component: scrape
+        annotations:
+          summary: "Scraping {{ $labels.job }}/{{ $labels.instance }} is slow"
+          description: "Scrape of {{ $labels.instance }} took {{ $value | printf \"%.1f\" }}s, close to the scrape timeout."
+
+      - alert: PrometheusRuleEvaluationFailing
+        expr: increase(prometheus_rule_evaluation_failures_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: monitoring
+          component: rules
+        annotations:
+          summary: "Prometheus rule evaluation is failing"
+          description: "{{ $value | printf \"%.0f\" }} rule evaluation failures in the last 10 minutes. Alerts may not fire."
+
+      - alert: AlertmanagerNotificationsFailing
+        expr: increase(alertmanager_notifications_failed_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          service: monitoring
+          component: notifications
+        annotations:
+          summary: "Alertmanager cannot deliver notifications"
+          description: "Integration {{ $labels.integration }} has failed {{ $value | printf \"%.0f\" }} notifications in the last 10 minutes. Alerts are firing but nobody is being told."

@@ -1,6 +1,6 @@
 {
   "name": "devops-monitoring-ui",
-  "version": "2.0.0",
+  "version": "2.5.0",
   "description": "Modern UI layer for DevOps Monitoring in a Box",
   "private": true,
   "scripts": {
@@ -8,8 +8,12 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run lint && npm run type-check && npm run test && npm run build",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -63,12 +67,13 @@
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "15.1.7",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.1.6",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "3.2.4"
   },
   "overrides": {
     "glob": "^10.3.10",

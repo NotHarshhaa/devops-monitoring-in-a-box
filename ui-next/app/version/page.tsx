@@ -55,7 +55,7 @@ export default function VersionPage() {
               Enjoying the New UI?
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Version 2.0.0 represents a complete overhaul of our monitoring dashboard, 
+              Version 2.5.0 represents a complete overhaul of our monitoring dashboard,
               bringing modern design, better performance, and an enhanced user experience.
             </p>
             <div className="flex items-center justify-center space-x-4">

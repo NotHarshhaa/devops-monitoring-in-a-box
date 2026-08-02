@@ -80,6 +80,11 @@ start_monitoring() {
         print_error "docker-compose.yml not found in project root directory"
         return 1
     fi
+
+    if [ ! -s ".env" ] || [ ! -s "alertmanager/webhook_token" ]; then
+        print_error "Missing .env or alertmanager/webhook_token. Run ./scripts/setup-env.sh before starting the stack."
+        return 1
+    fi
     
     print_info "Starting all monitoring services..."
     docker compose up -d

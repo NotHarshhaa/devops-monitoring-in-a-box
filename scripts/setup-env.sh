@@ -98,6 +98,89 @@ check_prerequisites() {
     return 0
 }
 
+# Generate a cryptographically secure value without assuming a specific runtime.
+generate_secret() {
+    if command_exists openssl; then
+        openssl rand -base64 32
+    elif command_exists node; then
+        node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+    elif command_exists python3; then
+        python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+    else
+        print_error "Cannot generate a secret: install openssl, Node.js, or Python 3"
+        return 1
+    fi
+}
+
+get_env_value() {
+    local file="$1"
+    local key="$2"
+
+    awk -v key="$key" '
+        $0 ~ "^[[:space:]]*" key "[[:space:]]*=" {
+            value = $0
+            sub("^[[:space:]]*" key "[[:space:]]*=[[:space:]]*", "", value)
+            sub(/[[:space:]]*#.*/, "", value)
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+            if ((substr(value, 1, 1) == "\"" && substr(value, length(value), 1) == "\"") || (substr(value, 1, 1) == "\047" && substr(value, length(value), 1) == "\047")) {
+                value = substr(value, 2, length(value) - 2)
+            }
+        }
+        END { print value }
+    ' "$file"
+}
+
+set_env_value() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+    local temporary_file
+
+    temporary_file="$(mktemp "${file}.XXXXXX")" || return 1
+    awk -v key="$key" -v value="$value" '
+        BEGIN { found = 0 }
+        $0 ~ "^[[:space:]]*" key "[[:space:]]*=" {
+            print key "=\"" value "\""
+            found = 1
+            next
+        }
+        { print }
+        END { if (!found) print key "=\"" value "\"" }
+    ' "$file" > "$temporary_file" && mv "$temporary_file" "$file"
+}
+
+ensure_secret() {
+    local file="$1"
+    local key="$2"
+    local value
+
+    value="$(get_env_value "$file" "$key")"
+    case "$value" in
+        ""|"change-this-super-secret-key-in-production-32-chars-min"|"your-super-secret-key-change-this-in-production"|"your-secret-key-here")
+            value="$(generate_secret)" || return 1
+            set_env_value "$file" "$key" "$value" || return 1
+            print_status "Generated $key" >&2
+            ;;
+    esac
+
+    printf '%s' "$value"
+}
+
+sync_alertmanager_webhook_token() {
+    local token="$1"
+
+    if [ -z "$token" ]; then
+        print_error "ALERT_WEBHOOK_TOKEN is empty; refusing to create an unauthenticated Alertmanager receiver"
+        return 1
+    fi
+
+    mkdir -p alertmanager
+    # Alertmanager runs as a non-root user in its image, so the bind-mounted
+    # read-only credential must be readable in the container.
+    printf '%s\n' "$token" > alertmanager/webhook_token
+    chmod 644 alertmanager/webhook_token
+    print_status "Created alertmanager/webhook_token"
+}
 # Function to create environment files
 setup_environment() {
     print_header "Setting up environment files..."
@@ -122,14 +205,20 @@ DOCKERHUB_USERNAME=yourusername
 DATABASE_URL="file:./dev.db"
 
 # Authentication
-NEXTAUTH_SECRET="your-super-secret-key-change-this-in-production"
+NEXTAUTH_SECRET=""
 NEXTAUTH_URL="http://localhost:4000"
+ALERT_WEBHOOK_TOKEN=""
 EOF
         fi
     else
         print_info ".env file already exists"
     fi
     
+    local root_nextauth_secret
+    local alert_webhook_token
+    root_nextauth_secret="$(ensure_secret ".env" "NEXTAUTH_SECRET")" || return 1
+    alert_webhook_token="$(ensure_secret ".env" "ALERT_WEBHOOK_TOKEN")" || return 1
+    sync_alertmanager_webhook_token "$alert_webhook_token" || return 1
     # Create UI .env file if it doesn't exist
     if [ ! -f "ui-next/.env" ]; then
         if [ -f "ui-next/env.example" ]; then
@@ -163,6 +252,9 @@ EOF
         print_info "ui-next/.env file already exists"
     fi
     
+    local ui_nextauth_secret
+    ui_nextauth_secret="$(ensure_secret "ui-next/.env" "NEXTAUTH_SECRET")" || return 1
+
     print_status "Environment files are ready"
 }
 
@@ -266,6 +358,11 @@ validate_configuration() {
     # Check if .env files exist
     if [ ! -f ".env" ]; then
         print_error "Root .env file is missing"
+        errors=$((errors + 1))
+    fi
+
+    if [ ! -s "alertmanager/webhook_token" ]; then
+        print_error "alertmanager/webhook_token is missing or empty; rerun ./scripts/setup-env.sh"
         errors=$((errors + 1))
     fi
     

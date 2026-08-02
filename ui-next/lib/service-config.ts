@@ -4,7 +4,17 @@
  */
 
 export interface ServiceConfig {
+  /**
+   * URL used for server-side calls. Inside Docker/Kubernetes this is the
+   * container network address (e.g. http://prometheus:9090), which is NOT
+   * resolvable from a browser.
+   */
   url: string;
+  /**
+   * Browser-facing URL, used only for "open in a new tab" style links.
+   * Data fetching from the browser goes through /api/proxy/<service> instead.
+   */
+  publicUrl: string;
   enabled: boolean;
   timeout: number;
   retries: number;
@@ -19,39 +29,55 @@ export interface ServiceConnectionConfig {
   alertmanager: ServiceConfig;
   nodeExporter?: ServiceConfig;
   cadvisor?: ServiceConfig;
+  blackbox?: ServiceConfig;
 }
 
 /**
- * Detect if we're running in Docker/containerized environment
+ * Detect whether server-side code should use container network hostnames.
+ *
+ * This must NOT be inferred from NODE_ENV: a plain `next start` on a host or a
+ * Vercel deployment is also "production" but cannot resolve `http://prometheus`.
+ * Docker Compose sets DOCKER_ENV=true for the UI service.
  */
 function isDockerEnvironment(): boolean {
-  return (
-    process.env.DOCKER_ENV === 'true' ||
-    process.env.NODE_ENV === 'production' ||
-    !!process.env.VERCEL ||
-    !!process.env.KUBERNETES_SERVICE_HOST
-  );
+  return process.env.DOCKER_ENV === 'true' || !!process.env.KUBERNETES_SERVICE_HOST;
 }
 
 /**
  * Detect if we're in development mode
  */
 function isDevelopment(): boolean {
-  return process.env.NODE_ENV === 'development' && !isDockerEnvironment();
+  return process.env.NODE_ENV !== 'production';
 }
 
 /**
- * Get service URL with environment-aware defaults
+ * Resolve the server-side service URL.
+ *
+ * Precedence: explicit server-side override, then the legacy NEXT_PUBLIC_*
+ * variable (kept for backwards compatibility), then an environment-aware
+ * default.
  */
 function getServiceURL(
-  envVar: string | undefined,
+  serverEnvVar: string | undefined,
+  publicEnvVar: string | undefined,
   defaultLocal: string,
   defaultDocker: string
 ): string {
-  if (envVar) {
-    return envVar;
+  if (serverEnvVar) {
+    return serverEnvVar;
+  }
+  if (publicEnvVar) {
+    return publicEnvVar;
   }
   return isDockerEnvironment() ? defaultDocker : defaultLocal;
+}
+
+/**
+ * Resolve the browser-facing URL for deep links. Container hostnames are never
+ * used here because a browser cannot resolve them.
+ */
+function getPublicURL(publicEnvVar: string | undefined, defaultLocal: string): string {
+  return publicEnvVar || defaultLocal;
 }
 
 /**
@@ -60,22 +86,26 @@ function getServiceURL(
 export const serviceConfig: ServiceConnectionConfig = {
   prometheus: {
     url: getServiceURL(
+      process.env.PROMETHEUS_URL,
       process.env.NEXT_PUBLIC_PROMETHEUS_URL,
       'http://localhost:9090',
       'http://prometheus:9090' // Docker service name
     ),
+    publicUrl: getPublicURL(process.env.NEXT_PUBLIC_PROMETHEUS_URL, 'http://localhost:9090'),
     enabled: process.env.PROMETHEUS_ENABLED !== 'false',
     timeout: parseInt(process.env.PROMETHEUS_TIMEOUT || '30000', 10),
     retries: parseInt(process.env.PROMETHEUS_RETRIES || '3', 10),
     retryDelay: parseInt(process.env.PROMETHEUS_RETRY_DELAY || '1000', 10),
-    healthCheckEndpoint: '/api/v1/status/config',
+    healthCheckEndpoint: '/-/healthy',
   },
   grafana: {
     url: getServiceURL(
+      process.env.GRAFANA_URL,
       process.env.NEXT_PUBLIC_GRAFANA_URL,
       'http://localhost:3000',
       'http://grafana:3000' // Docker service name
     ),
+    publicUrl: getPublicURL(process.env.NEXT_PUBLIC_GRAFANA_URL, 'http://localhost:3000'),
     enabled: process.env.GRAFANA_ENABLED !== 'false',
     timeout: parseInt(process.env.GRAFANA_TIMEOUT || '30000', 10),
     retries: parseInt(process.env.GRAFANA_RETRIES || '3', 10),
@@ -84,10 +114,12 @@ export const serviceConfig: ServiceConnectionConfig = {
   },
   loki: {
     url: getServiceURL(
+      process.env.LOKI_URL,
       process.env.NEXT_PUBLIC_LOKI_URL,
       'http://localhost:3100',
       'http://loki:3100' // Docker service name
     ),
+    publicUrl: getPublicURL(process.env.NEXT_PUBLIC_LOKI_URL, 'http://localhost:3100'),
     enabled: process.env.LOKI_ENABLED !== 'false',
     timeout: parseInt(process.env.LOKI_TIMEOUT || '30000', 10),
     retries: parseInt(process.env.LOKI_RETRIES || '3', 10),
@@ -96,22 +128,26 @@ export const serviceConfig: ServiceConnectionConfig = {
   },
   alertmanager: {
     url: getServiceURL(
+      process.env.ALERTMANAGER_URL,
       process.env.NEXT_PUBLIC_ALERTMANAGER_URL,
       'http://localhost:9093',
       'http://alertmanager:9093' // Docker service name
     ),
+    publicUrl: getPublicURL(process.env.NEXT_PUBLIC_ALERTMANAGER_URL, 'http://localhost:9093'),
     enabled: process.env.ALERTMANAGER_ENABLED !== 'false',
     timeout: parseInt(process.env.ALERTMANAGER_TIMEOUT || '30000', 10),
     retries: parseInt(process.env.ALERTMANAGER_RETRIES || '3', 10),
     retryDelay: parseInt(process.env.ALERTMANAGER_RETRY_DELAY || '1000', 10),
-    healthCheckEndpoint: '/api/v2/status',
+    healthCheckEndpoint: '/-/healthy',
   },
   nodeExporter: {
     url: getServiceURL(
+      process.env.NODE_EXPORTER_URL,
       process.env.NEXT_PUBLIC_NODE_EXPORTER_URL,
       'http://localhost:9100',
       'http://node-exporter:9100'
     ),
+    publicUrl: getPublicURL(process.env.NEXT_PUBLIC_NODE_EXPORTER_URL, 'http://localhost:9100'),
     enabled: process.env.NODE_EXPORTER_ENABLED === 'true',
     timeout: 10000,
     retries: 2,
@@ -120,15 +156,31 @@ export const serviceConfig: ServiceConnectionConfig = {
   },
   cadvisor: {
     url: getServiceURL(
+      process.env.CADVISOR_URL,
       process.env.NEXT_PUBLIC_CADVISOR_URL,
       'http://localhost:8080',
       'http://cadvisor:8080'
     ),
+    publicUrl: getPublicURL(process.env.NEXT_PUBLIC_CADVISOR_URL, 'http://localhost:8080'),
     enabled: process.env.CADVISOR_ENABLED === 'true',
     timeout: 10000,
     retries: 2,
     retryDelay: 500,
     healthCheckEndpoint: '/healthz',
+  },
+  blackbox: {
+    url: getServiceURL(
+      process.env.BLACKBOX_URL,
+      process.env.NEXT_PUBLIC_BLACKBOX_URL,
+      'http://localhost:9115',
+      'http://blackbox-exporter:9115'
+    ),
+    publicUrl: getPublicURL(process.env.NEXT_PUBLIC_BLACKBOX_URL, 'http://localhost:9115'),
+    enabled: process.env.BLACKBOX_ENABLED === 'true',
+    timeout: 10000,
+    retries: 2,
+    retryDelay: 500,
+    healthCheckEndpoint: '/-/healthy',
   },
 };
 
@@ -286,6 +338,47 @@ export class ServiceConfigManager {
 
 // Export singleton instance
 export const serviceConfigManager = ServiceConfigManager.getInstance();
+
+/** Services reachable through the same-origin proxy. */
+export const PROXIED_SERVICES = ['prometheus', 'loki', 'alertmanager'] as const;
+
+export type ProxiedService = (typeof PROXIED_SERVICES)[number];
+
+export function isProxiedService(
+  serviceName: keyof ServiceConnectionConfig | string
+): serviceName is ProxiedService {
+  return (PROXIED_SERVICES as readonly string[]).includes(serviceName as string);
+}
+
+/**
+ * Same-origin base path for a proxied service. Requests keep their upstream
+ * path, so `/api/v1/query` becomes `/api/proxy/prometheus/api/v1/query`.
+ */
+export function getProxyBasePath(serviceName: ProxiedService): string {
+  return `/api/proxy/${serviceName}`;
+}
+
+/** True when the current execution context is a browser. */
+export function isBrowser(): boolean {
+  return typeof window !== 'undefined';
+}
+
+/**
+ * Resolve the base URL a client should use for a service.
+ *
+ * In the browser, proxied services resolve to a relative same-origin path so
+ * that container hostnames are never leaked and no CORS configuration is
+ * needed. Everywhere else the configured upstream URL is used directly.
+ */
+export function resolveClientBaseURL(
+  serviceName: keyof ServiceConnectionConfig,
+  upstreamUrl: string
+): string {
+  if (isBrowser() && isProxiedService(serviceName)) {
+    return getProxyBasePath(serviceName);
+  }
+  return upstreamUrl;
+}
 
 // Export helper functions
 export { isDockerEnvironment, isDevelopment };

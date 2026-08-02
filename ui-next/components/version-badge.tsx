@@ -21,7 +21,7 @@ interface VersionBadgeProps {
 }
 
 export function VersionBadge({ variant = "default", className }: VersionBadgeProps) {
-  const version = "2.0.0"
+  const version = "2.5.0"
   const releaseDate = "February 2026"
 
   const features = [
@@ -62,7 +62,7 @@ export function VersionBadge({ variant = "default", className }: VersionBadgePro
               <Rocket className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Version 2.0.0</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Version 2.5.0</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">Major UI Overhaul</p>
             </div>
           </div>
@@ -127,7 +127,7 @@ export function VersionBadge({ variant = "default", className }: VersionBadgePro
 }
 
 export function VersionInfo() {
-  const version = "2.0.0"
+  const version = "2.5.0"
   const releaseDate = "February 2026"
   
   const changelog = [
@@ -177,7 +177,7 @@ export function VersionInfo() {
           <Rocket className="w-10 h-10" />
         </motion.div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Version 2.0.0</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Version 2.5.0</h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">Major UI Overhaul Release</p>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Released {releaseDate}</p>
         </div>

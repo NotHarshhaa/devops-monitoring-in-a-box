@@ -1,6 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { checkAuthConfig } from "./auth-config-check"
+import { getAuthSecret } from "./auth-secret"
 
 // Run configuration check
 if (typeof window === "undefined") {
@@ -45,7 +46,7 @@ if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_URL) {
 }
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || "devops-monitoring-demo-secret-key-2024",
+  secret: getAuthSecret(),
   debug: process.env.NODE_ENV === "development",
   providers: [
     // Credentials provider for email/password login

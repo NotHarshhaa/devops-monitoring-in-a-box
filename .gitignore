@@ -1,16 +1,37 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+*.tsbuildinfo
+
+# Test/coverage output
+coverage/
+
 # Docker volumes
 prometheus_data/
 grafana_data/
 loki_data/
 alertmanager_data/
 
+# Local databases (created by prisma db push / dev)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
 # Logs
 *.log
 
 # Environment files
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
+!env.example
+
+# Alertmanager webhook shared secret
+alertmanager/webhook_token
 
 # OS generated files
 .DS_Store

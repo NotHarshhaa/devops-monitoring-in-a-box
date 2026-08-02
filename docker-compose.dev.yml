@@ -8,7 +8,11 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - ./prometheus/recording_rules.yml:/etc/prometheus/recording_rules.yml:ro
+      - ./prometheus/probe_rules.yml:/etc/prometheus/probe_rules.yml:ro
+      - ./prometheus/targets:/etc/prometheus/targets:ro
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -76,7 +80,8 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./alertmanager/config.yml:/etc/alertmanager/alertmanager.yml
+      - ./alertmanager/config.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./alertmanager/webhook_token:/etc/alertmanager/webhook_token:ro
       - alertmanager_data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
@@ -121,6 +126,21 @@ services:
     networks:
       - monitoring
 
+  # Blackbox Exporter - HTTP/TCP/ICMP uptime probing
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.24.0
+    container_name: blackbox-exporter-dev
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./exporters/blackbox/config.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+    cap_add:
+      - NET_RAW
+    restart: unless-stopped
+    networks:
+      - monitoring
   # DevOps Monitor UI - Development mode with hot reloading
   devops-monitor-ui:
     build:
@@ -137,6 +157,16 @@ services:
       - NODE_ENV=development
       - PORT=3000
       - WATCHPACK_POLLING=true
+      - DOCKER_ENV=true
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set - run scripts/setup-env.sh or devops-monitor.ps1 init-env}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:4000}
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
+      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
+      - LOKI_URL=${LOKI_URL:-http://loki:3100}
+      - ALERTMANAGER_URL=${ALERTMANAGER_URL:-http://alertmanager:9093}
+      - BLACKBOX_URL=${BLACKBOX_URL:-http://blackbox-exporter:9115}
+      - BLACKBOX_ENABLED=${BLACKBOX_ENABLED:-true}
+      - ALERT_WEBHOOK_TOKEN=${ALERT_WEBHOOK_TOKEN:?ALERT_WEBHOOK_TOKEN must be set - run scripts/setup-env.sh or devops-monitor.ps1 init-env}
     restart: unless-stopped
     networks:
       - monitoring
@@ -144,6 +174,8 @@ services:
       - prometheus
       - grafana
       - loki
+      - alertmanager
+      - blackbox-exporter
 
 volumes:
   prometheus_data:

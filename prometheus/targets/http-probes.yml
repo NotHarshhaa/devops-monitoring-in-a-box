@@ -1,0 +1,24 @@
+# HTTP/HTTPS uptime probe targets.
+#
+# Add your own endpoints here - Prometheus reloads this file automatically
+# (file_sd_configs, 30s refresh), so no restart and no prometheus.yml edit is
+# needed. Labels you set here appear on the resulting probe_* series.
+#
+# The `env` and `team` labels below are examples; keep, change or drop them.
+
+- targets:
+    - https://example.com
+  labels:
+    module: https_2xx
+    env: production
+    team: platform
+    tier: external
+
+# Example: an internal service that answers 401 when unauthenticated.
+# - targets:
+#     - http://my-internal-api:8080/healthz
+#   labels:
+#     module: http_2xx_or_auth
+#     env: staging
+#     team: backend
+#     tier: internal
