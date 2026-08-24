@@ -29,7 +29,7 @@ groups:
 
       # Container memory usage percentage
       - record: container_memory_usage_percent
-        expr: (container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!="",container_spec_memory_limit_bytes>0}) * 100
+        expr: (container_memory_working_set_bytes{name!=""} / (container_spec_memory_limit_bytes{name!=""} > 0)) * 100
 
       # Container restart count
       - record: container_restart_count

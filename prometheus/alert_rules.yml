@@ -189,7 +189,7 @@ groups:
 
       # High container memory usage
       - alert: HighContainerMemoryUsage
-        expr: (container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!="",container_spec_memory_limit_bytes>0} * 100) > 80
+        expr: (container_memory_working_set_bytes{name!=""} / (container_spec_memory_limit_bytes{name!=""} > 0) * 100) > 80
         for: 5m
         labels:
           severity: warning
@@ -202,7 +202,7 @@ groups:
 
       # Critical container memory usage
       - alert: CriticalContainerMemoryUsage
-        expr: (container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!="",container_spec_memory_limit_bytes>0} * 100) > 95
+        expr: (container_memory_working_set_bytes{name!=""} / (container_spec_memory_limit_bytes{name!=""} > 0) * 100) > 95
         for: 2m
         labels:
           severity: critical
