@@ -54,10 +54,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Drop npm/npx — not needed for standalone
-# runtime and ships vulnerable tar (CVE-2026-59873 / tar<=7.5.18).
+# Install tini for graceful PID 1 signal forwarding (SIGTERM/SIGINT).
+# Drop npm/npx/corepack — not needed for standalone runtime and removes vulnerable tar (CVE-2026-59873).
 # Use built-in busybox wget for health checks instead of installing curl to prevent curl CVEs.
-RUN rm -rf /usr/local/lib/node_modules/npm \
+RUN apk add --no-cache tini && \
+    rm -rf /usr/local/lib/node_modules/npm \
            /usr/local/lib/node_modules/corepack \
            /usr/local/bin/npm \
            /usr/local/bin/npx \
@@ -70,8 +71,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy public assets
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Set the correct permission for prerender cache
-RUN mkdir -p .next && \
+# Set the correct permission for prerender cache & ISR
+RUN mkdir -p .next/cache && \
     chown -R nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
@@ -86,7 +87,10 @@ EXPOSE 3000
 
 # Liveness only: the health API stays 200 even when an upstream is down.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider "http://localhost:3000/api/health?live=1" || exit 1
+    CMD wget --no-verbose --tries=1 --spider "http://127.0.0.1:3000/api/health?live=1" || exit 1
+
+# Use tini as init process to handle signal forwarding and prevent zombie processes
+ENTRYPOINT ["/sbin/tini", "--"]
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output

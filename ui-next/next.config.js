@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
+  compress: true,
   // Enable standalone output for Docker deployment
   output: 'standalone',
   experimental: {
@@ -56,10 +58,35 @@ const nextConfig = {
     SITE_URL: process.env.SITE_URL || 'http://localhost:4000',
     SITE_DESCRIPTION: process.env.SITE_DESCRIPTION || 'Comprehensive DevOps monitoring solution with real-time metrics, centralized logging, and intelligent alerting.',
   },
-  // Monitoring backends are reached through the authenticated route handler at
-  // app/api/proxy/[service]/[...path], which works identically in development
-  // and production. The previous dev-only rewrites here were unreachable (no
-  // code called /api/prometheus/*) and silently disappeared in production.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

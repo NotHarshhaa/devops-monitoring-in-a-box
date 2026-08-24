@@ -51,6 +51,14 @@ function isDevelopment(): boolean {
 }
 
 /**
+ * Normalize and sanitize service URLs (strip trailing slashes, trim whitespace)
+ */
+function normalizeURL(rawUrl: string): string {
+  if (!rawUrl) return '';
+  return rawUrl.trim().replace(/\/+$/, '');
+}
+
+/**
  * Resolve the server-side service URL.
  *
  * Precedence: explicit server-side override, then the legacy NEXT_PUBLIC_*
@@ -64,12 +72,12 @@ function getServiceURL(
   defaultDocker: string
 ): string {
   if (serverEnvVar) {
-    return serverEnvVar;
+    return normalizeURL(serverEnvVar);
   }
   if (publicEnvVar) {
-    return publicEnvVar;
+    return normalizeURL(publicEnvVar);
   }
-  return isDockerEnvironment() ? defaultDocker : defaultLocal;
+  return normalizeURL(isDockerEnvironment() ? defaultDocker : defaultLocal);
 }
 
 /**
@@ -77,7 +85,7 @@ function getServiceURL(
  * used here because a browser cannot resolve them.
  */
 function getPublicURL(publicEnvVar: string | undefined, defaultLocal: string): string {
-  return publicEnvVar || defaultLocal;
+  return normalizeURL(publicEnvVar || defaultLocal);
 }
 
 /**
