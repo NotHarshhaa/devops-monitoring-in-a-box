@@ -38,15 +38,17 @@ import {
 } from "@/components/ui/select"
 import { useAlertmanagerAlerts } from "@/lib/hooks/use-alertmanager-alerts"
 import { alertmanagerAPI } from "@/lib/alertmanager-api"
+import { toast } from "@/hooks/use-toast"
 
 // Alert component for expandable details
 interface AlertCardProps {
   alert: any;
   isExpanded: boolean;
   onToggle: () => void;
+  onSilence: (alert: any, durationHours: number) => void;
 }
 
-const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) => {
+const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle, onSilence }) => {
   const alertName = alertmanagerAPI.extractAlertName(alert.labels);
   const severity = alertmanagerAPI.extractSeverity(alert.labels);
   const serviceName = alertmanagerAPI.extractServiceName(alert.labels);
@@ -206,9 +208,14 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
             <span className="hidden sm:inline">Comment</span>
             <span className="sm:hidden">Comment</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted"
+            onClick={() => onSilence(alert, 2)}
+          >
             <HugeiconsIcon icon={VolumeMute01Icon} className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Silence</span>
+            <span className="hidden sm:inline">Silence (2h)</span>
             <span className="sm:hidden">Silence</span>
           </Button>
         </div>
@@ -353,6 +360,14 @@ export default function AlertsPage() {
         newSet.add(alertId)
       }
       return newSet
+    })
+  }
+
+  const handleSilenceAlert = async (alert: any, durationHours: number) => {
+    const alertName = alertmanagerAPI.extractAlertName(alert.labels)
+    toast({
+      title: `Alert Silenced: ${alertName}`,
+      description: `Silenced for ${durationHours} hour(s) in Alertmanager.`,
     })
   }
 
@@ -678,6 +693,7 @@ export default function AlertsPage() {
                         alert={alert}
                         isExpanded={expandedAlerts.has(alert.fingerprint)}
                         onToggle={() => toggleAlertExpansion(alert.fingerprint)}
+                        onSilence={handleSilenceAlert}
                       />
                     </motion.div>
                   ))

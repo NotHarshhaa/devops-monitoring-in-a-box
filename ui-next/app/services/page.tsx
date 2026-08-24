@@ -14,7 +14,9 @@ import {
   Activity01Icon,
   Shield01Icon,
   FlashIcon,
-  DatabaseIcon
+  DatabaseIcon,
+  LockIcon,
+  Analytics01Icon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,6 +25,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useHealthMonitoring } from "@/lib/hooks/use-health-monitoring"
 import { healthAPI } from "@/lib/health-api"
 import { VersionMonitor } from "@/components/version-monitor"
+import { SSLMonitor } from "@/components/ssl-monitor"
+import { SLATracker } from "@/components/sla-tracker"
 
 // Service Health Component
 interface ServiceHealthCardProps {
@@ -375,23 +379,29 @@ export default function ServicesPage() {
           </Button>
         </motion.div>
 
-        {/* Tabs for Health and Versions */}
+        {/* Tabs for Health, SLA, SSL, and Versions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Tabs defaultValue="health" className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-2 h-10 sm:h-11 bg-muted p-1">
-              <TabsTrigger value="health" className="text-sm font-medium gap-2">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted border border-border">
+              <TabsTrigger value="health" className="text-xs sm:text-sm font-medium gap-2 py-2">
                 <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4" />
-                <span className="hidden sm:inline">Service Health</span>
-                <span className="sm:hidden">Health</span>
+                <span>Service Health</span>
               </TabsTrigger>
-              <TabsTrigger value="versions" className="text-sm font-medium gap-2">
+              <TabsTrigger value="sla" className="text-xs sm:text-sm font-medium gap-2 py-2">
+                <HugeiconsIcon icon={Analytics01Icon} className="h-4 w-4" />
+                <span>SLA & Uptime</span>
+              </TabsTrigger>
+              <TabsTrigger value="ssl" className="text-xs sm:text-sm font-medium gap-2 py-2">
+                <HugeiconsIcon icon={LockIcon} className="h-4 w-4" />
+                <span>SSL / TLS Certs</span>
+              </TabsTrigger>
+              <TabsTrigger value="versions" className="text-xs sm:text-sm font-medium gap-2 py-2">
                 <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4" />
-                <span className="hidden sm:inline">Component Versions</span>
-                <span className="sm:hidden">Versions</span>
+                <span>Versions</span>
               </TabsTrigger>
             </TabsList>
 
@@ -418,14 +428,11 @@ export default function ServicesPage() {
                             </p>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right w-full sm:w-auto">
-                          <p className="text-xs sm:text-sm text-muted-foreground">Last Updated</p>
-                          <p className="text-sm font-medium text-foreground">
-                            {healthData.lastUpdated.toLocaleTimeString()}
-                          </p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            {healthData.services.filter(s => s.status === 'up').length} of {healthData.services.length} services up
-                          </p>
+                        <div className="text-left sm:text-right">
+                          <div className="text-xs sm:text-sm text-muted-foreground">Last Checked</div>
+                          <div className="text-xs sm:text-sm font-semibold text-foreground">
+                            {new Date(healthData.lastUpdated).toLocaleTimeString()}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -433,49 +440,14 @@ export default function ServicesPage() {
                 </motion.div>
               )}
 
-              {/* Error State */}
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Card className="border-border bg-muted">
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex items-start gap-3">
-                        <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-foreground flex-shrink-0 mt-0.5" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm sm:text-base font-medium text-foreground mb-1">Error</p>
-                          <p className="text-sm text-foreground break-words">
-                            {error}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-
+              {/* Service Grid and Quick Links */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                {/* Services Health */}
-                <div className="lg:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-2">Service Health Status</h2>
-                      <p className="text-sm sm:text-base text-muted-foreground">
-                        Real-time health monitoring of all monitoring services
-                      </p>
-                    </div>
-                    <Badge className="bg-muted text-foreground">
-                      <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
-                      Live
-                    </Badge>
-                  </div>
-                  
-                  {loading && !healthData ? (
-                    <div className="flex items-center justify-center py-12 sm:py-16">
-                      <div className="text-center">
-                        <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 sm:h-10 sm:w-10 animate-spin mx-auto mb-4 text-foreground" />
+                {/* Services List */}
+                <div className="lg:col-span-2">
+                  {loading ? (
+                    <div className="flex items-center justify-center p-8 sm:p-12">
+                      <div className="text-center space-y-4">
+                        <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 sm:h-12 sm:w-12 animate-spin text-muted-foreground mx-auto" />
                         <p className="text-sm sm:text-base text-muted-foreground">Checking service health...</p>
                       </div>
                     </div>
@@ -520,6 +492,14 @@ export default function ServicesPage() {
                   </motion.div>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="sla" className="space-y-4 sm:space-y-6">
+              <SLATracker />
+            </TabsContent>
+
+            <TabsContent value="ssl" className="space-y-4 sm:space-y-6">
+              <SSLMonitor />
             </TabsContent>
 
             <TabsContent value="versions" className="space-y-4 sm:space-y-6">
