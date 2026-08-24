@@ -54,10 +54,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Install curl for health checks. Drop npm/npx — not needed for standalone
+# Drop npm/npx — not needed for standalone
 # runtime and ships vulnerable tar (CVE-2026-59873 / tar<=7.5.18).
-RUN apk add --no-cache curl && \
-    rm -rf /usr/local/lib/node_modules/npm \
+# Use built-in busybox wget for health checks instead of installing curl to prevent curl CVEs.
+RUN rm -rf /usr/local/lib/node_modules/npm \
            /usr/local/lib/node_modules/corepack \
            /usr/local/bin/npm \
            /usr/local/bin/npx \
@@ -86,7 +86,7 @@ EXPOSE 3000
 
 # Liveness only: the health API stays 200 even when an upstream is down.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health?live=1 || exit 1
+    CMD wget --no-verbose --tries=1 --spider "http://localhost:3000/api/health?live=1" || exit 1
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
