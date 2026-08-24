@@ -11,7 +11,7 @@ groups:
 
       # Disk usage percentage
       - record: node_disk_usage_percent
-        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100
+        expr: ((node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"} - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"}) / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"}) * 100
 
       # Network traffic rate
       - record: node_network_traffic_rate
@@ -25,15 +25,15 @@ groups:
     rules:
       # Container CPU usage percentage
       - record: container_cpu_usage_percent
-        expr: rate(container_cpu_usage_seconds_total[5m]) * 100
+        expr: rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100
 
       # Container memory usage percentage
       - record: container_memory_usage_percent
-        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100
+        expr: (container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!="",container_spec_memory_limit_bytes>0}) * 100
 
       # Container restart count
       - record: container_restart_count
-        expr: increase(container_start_time_seconds[1h])
+        expr: increase(container_start_time_seconds{name!=""}[1h])
 
   - name: application_recording_rules
     rules:

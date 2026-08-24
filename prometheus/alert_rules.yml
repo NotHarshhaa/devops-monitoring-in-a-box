@@ -55,41 +55,41 @@ groups:
 
       # High disk usage
       - alert: HighDiskUsage
-        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 85
+        expr: ((node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"} - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"}) / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"}) * 100 > 85
         for: 5m
         labels:
           severity: warning
           service: system
           component: disk
         annotations:
-          summary: "High disk usage on {{ $labels.instance }}"
-          description: "Disk usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+          summary: "High disk usage on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          description: "Disk usage on {{ $labels.mountpoint }} is above 85% for more than 5 minutes on {{ $labels.instance }}"
           runbook_url: "https://docs.example.com/runbooks/high-disk-usage"
 
       # Critical disk usage
       - alert: CriticalDiskUsage
-        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 95
+        expr: ((node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"} - node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"}) / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|squashfs|iso9660",mountpoint!~"/(boot|run|var/lib/docker/.*)"}) * 100 > 95
         for: 2m
         labels:
           severity: critical
           service: system
           component: disk
         annotations:
-          summary: "Critical disk usage on {{ $labels.instance }}"
-          description: "Disk usage is above 95% for more than 2 minutes on {{ $labels.instance }}"
+          summary: "Critical disk usage on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          description: "Disk usage on {{ $labels.mountpoint }} is above 95% for more than 2 minutes on {{ $labels.instance }}"
           runbook_url: "https://docs.example.com/runbooks/critical-disk-usage"
 
-      # Node down
+      # Node Exporter down
       - alert: NodeDown
-        expr: up == 0
+        expr: up{job="node-exporter"} == 0
         for: 1m
         labels:
           severity: critical
           service: system
           component: node
         annotations:
-          summary: "Node {{ $labels.instance }} is down"
-          description: "Node {{ $labels.instance }} has been down for more than 1 minute"
+          summary: "Node exporter on {{ $labels.instance }} is down"
+          description: "Node exporter on {{ $labels.instance }} has been unreachable for more than 1 minute"
           runbook_url: "https://docs.example.com/runbooks/node-down"
 
       # High load average
@@ -189,7 +189,7 @@ groups:
 
       # High container memory usage
       - alert: HighContainerMemoryUsage
-        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes * 100) > 80
+        expr: (container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!="",container_spec_memory_limit_bytes>0} * 100) > 80
         for: 5m
         labels:
           severity: warning
@@ -202,7 +202,7 @@ groups:
 
       # Critical container memory usage
       - alert: CriticalContainerMemoryUsage
-        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes * 100) > 95
+        expr: (container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!="",container_spec_memory_limit_bytes>0} * 100) > 95
         for: 2m
         labels:
           severity: critical
@@ -215,7 +215,7 @@ groups:
 
       # High container CPU usage
       - alert: HighContainerCPUUsage
-        expr: (rate(container_cpu_usage_seconds_total[5m]) * 100) > 80
+        expr: (rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100) > 80
         for: 5m
         labels:
           severity: warning

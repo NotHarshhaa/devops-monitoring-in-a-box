@@ -3,6 +3,7 @@ apiVersion: 1
 datasources:
   # Prometheus - Primary metrics datasource
   - name: Prometheus
+    uid: prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
@@ -17,12 +18,11 @@ datasources:
       exemplarTraceIdDestinations:
         - name: trace_id
           datasourceUid: "jaeger"
-    secureJsonData:
-      httpHeaderValue1: "Bearer ${PROMETHEUS_TOKEN}"
     version: 1
 
   # Loki - Log aggregation datasource
   - name: Loki
+    uid: loki
     type: loki
     access: proxy
     url: http://loki:3100
@@ -38,6 +38,7 @@ datasources:
 
   # Alertmanager - Alert management datasource
   - name: Alertmanager
+    uid: alertmanager
     type: alertmanager
     access: proxy
     url: http://alertmanager:9093
@@ -48,6 +49,7 @@ datasources:
 
   # Jaeger - Distributed tracing (optional)
   - name: Jaeger
+    uid: jaeger
     type: jaeger
     access: proxy
     url: http://jaeger:16686
@@ -68,6 +70,7 @@ datasources:
 
   # TestData - For testing and demos
   - name: TestData
+    uid: testdata
     type: testdata
     access: proxy
     editable: true
