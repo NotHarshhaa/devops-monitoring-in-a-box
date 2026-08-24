@@ -2,33 +2,34 @@
 
 import React, { Suspense, lazy, useState } from "react"
 import { motion } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Cpu,
-  HardDrive,
-  AlertTriangle,
-  Clock,
-  Bell,
-  Settings,
-  Activity,
-  Zap,
-  Database,
-  Server,
-  BarChart3,
-  PieChart,
-  Globe,
-  Wifi,
-  RefreshCw,
-  Download,
-  Eye,
-  Filter,
-  Calendar,
-  ArrowUpRight,
-  ArrowDownRight,
-  MoreHorizontal,
-  AlertCircle,
-  Info,
-  X
-} from "lucide-react"
+  CpuIcon,
+  HardDriveIcon,
+  Alert02Icon,
+  Clock01Icon,
+  Notification01Icon,
+  Settings01Icon,
+  Activity01Icon,
+  FlashIcon,
+  DatabaseIcon,
+  CloudServerIcon,
+  Analytics01Icon,
+  PieChartIcon,
+  GlobeIcon,
+  WifiIcon,
+  RefreshIcon,
+  Download01Icon,
+  EyeIcon,
+  FilterIcon,
+  Calendar01Icon,
+  ArrowUpRight01Icon,
+  ArrowDownRight01Icon,
+  MoreHorizontalIcon,
+  AlertCircleIcon,
+  InformationCircleIcon,
+  Cancel01Icon
+} from "@hugeicons/core-free-icons"
 import {
   AreaChart,
   Area,
@@ -117,19 +118,6 @@ const services = [
   { name: "File Storage", status: "healthy", uptime: 99.7, responseTime: 67, requests: 234 },
 ]
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.1,
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  }),
-}
-
 // Enhanced Stat Card with mobile-responsive design
 function StatCard({ 
   title, 
@@ -172,9 +160,9 @@ function StatCard({
               className={`flex items-center border px-2 py-1 text-[11px] font-semibold ${ isPositive ? 'border-border text-foreground' : 'border-destructive/40 text-destructive' }`}
             >
               {isPositive ? (
-                <ArrowUpRight className="mr-1 size-3" />
+                <HugeiconsIcon icon={ArrowUpRight01Icon} className="mr-1 size-3" />
               ) : (
-                <ArrowDownRight className="mr-1 size-3" />
+                <HugeiconsIcon icon={ArrowDownRight01Icon} className="mr-1 size-3" />
               )}
               <span>{trendValue}</span>
             </div>
@@ -222,15 +210,15 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case "critical":
-        return <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
+        return <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
       case "error":
-        return <X className="h-3 w-3 sm:h-4 sm:w-4" />
+        return <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
       case "warning":
-        return <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+        return <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
       case "info":
-        return <Info className="h-3 w-3 sm:h-4 sm:w-4" />
+        return <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
       default:
-        return <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+        return <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
     }
   }
 
@@ -260,9 +248,9 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
       transition={{ duration: 0.3 }}
       whileHover={{ x: 4 }}
     >
-      <div className={`p-2 sm:p-3 rounded-lg border ${getSeverityColor(alert.severity)} transition-all duration-200`}>
+      <div className={`p-2 sm:p-3 border border-border ${getSeverityColor(alert.severity)} transition-all duration-200`}>
         <div className="flex items-start gap-2 sm:gap-3">
-          <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${getSeverityColor(alert.severity)}`}>
+          <div className={`p-1.5 sm:p-2 border border-border flex-shrink-0 ${getSeverityColor(alert.severity)}`}>
             {getSeverityIcon(alert.severity)}
           </div>
           <div className="flex-1 min-w-0">
@@ -274,7 +262,7 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
             <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>
           </div>
           <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0">
-            <MoreHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+            <HugeiconsIcon icon={MoreHorizontalIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
@@ -300,11 +288,11 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
   }
 
   const getServiceIcon = (name: string) => {
-    if (name.includes("API")) return <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
-    if (name.includes("Database")) return <Database className="h-3 w-3 sm:h-4 sm:w-4" />
-    if (name.includes("Cache")) return <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
-    if (name.includes("Storage")) return <HardDrive className="h-3 w-3 sm:h-4 sm:w-4" />
-    return <Server className="h-3 w-3 sm:h-4 sm:w-4" />
+    if (name.includes("API")) return <HugeiconsIcon icon={GlobeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+    if (name.includes("Database")) return <HugeiconsIcon icon={DatabaseIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+    if (name.includes("Cache")) return <HugeiconsIcon icon={FlashIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+    if (name.includes("Storage")) return <HugeiconsIcon icon={HardDriveIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+    return <HugeiconsIcon icon={CloudServerIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
   }
 
   return (
@@ -343,16 +331,16 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
           {/* Service Metrics */}
           <div className="space-y-2 sm:space-y-3">
             {/* Uptime */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
                 <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Uptime</span>
               </div>
               <div className="text-right">
                 <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{service.uptime}%</div>
-                <div className="w-12 sm:w-16 h-1 bg-muted dark:bg-muted rounded-full mt-1">
+                <div className="w-12 sm:w-16 h-1 bg-muted dark:bg-muted mt-1">
                   <div 
-                    className="h-full bg-muted rounded-full"
+                    className="h-full bg-foreground"
                     style={{ width: `${service.uptime}%` }}
                   ></div>
                 </div>
@@ -360,7 +348,7 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
             </div>
 
             {/* Response Time */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
                 <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Response</span>
@@ -374,7 +362,7 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
             </div>
 
             {/* Requests */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
                 <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Requests</span>
@@ -386,7 +374,7 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
             </div>
 
             {/* Status */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
                 <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${getStatusColor(service.status)}`}></div>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Status</span>
@@ -401,7 +389,7 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
           {/* Action Button */}
           <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border dark:border-border">
             <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+              <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">View Details</span>
               <span className="sm:hidden">Details</span>
             </Button>
@@ -440,7 +428,7 @@ export default function DashboardPage() {
                   <option value="30d">Last 30 Days</option>
                 </select>
                 <Button variant="outline" size="sm" className="gap-2">
-                  <RefreshCw className="size-3.5" />
+                  <HugeiconsIcon icon={RefreshIcon} className="size-3.5" />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
             </div>
@@ -458,7 +446,7 @@ export default function DashboardPage() {
               value={`${systemMetrics.cpu}%`}
               trend="up"
               trendValue="+5%"
-              icon={<Cpu className="h-5 w-5 sm:h-6 sm:w-6" />}
+              icon={<HugeiconsIcon icon={CpuIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
               description="Average"
@@ -469,7 +457,7 @@ export default function DashboardPage() {
               value={`${systemMetrics.memory}%`}
               trend="down"
               trendValue="-3%"
-              icon={<Database className="h-5 w-5 sm:h-6 sm:w-6" />}
+              icon={<HugeiconsIcon icon={DatabaseIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
               description="8GB/12GB"
@@ -480,7 +468,7 @@ export default function DashboardPage() {
               value={`${systemMetrics.disk}%`}
               trend="up"
               trendValue="+2%"
-              icon={<HardDrive className="h-5 w-5 sm:h-6 sm:w-6" />}
+              icon={<HugeiconsIcon icon={HardDriveIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
               description="120GB/500GB"
@@ -491,7 +479,7 @@ export default function DashboardPage() {
               value={`${systemMetrics.network}MB/s`}
               trend="up"
               trendValue="+12%"
-              icon={<Wifi className="h-5 w-5 sm:h-6 sm:w-6" />}
+              icon={<HugeiconsIcon icon={WifiIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
               description="Total"
@@ -513,7 +501,7 @@ export default function DashboardPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
                       <div className="flex size-8 items-center justify-center border border-border bg-background">
-                        <Activity className="size-4 text-foreground" />
+                        <HugeiconsIcon icon={Activity01Icon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Performance Trends</span>
                       <span className="sm:hidden">Performance</span>
@@ -524,7 +512,7 @@ export default function DashboardPage() {
                     </CardDescription>
                   </div>
                   <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">View Details</span>
                   </Button>
                 </div>
@@ -536,18 +524,18 @@ export default function DashboardPage() {
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                       <XAxis dataKey="time" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
+                      <Tooltip contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "0px" }} />
                       <Legend />
-                      <Area type="monotone" dataKey="cpu" stackId="1" stroke="#525252" fill="#525252" fillOpacity={0.6} />
-                      <Area type="monotone" dataKey="memory" stackId="1" stroke="#737373" fill="#737373" fillOpacity={0.6} />
-                      <Area type="monotone" dataKey="network" stackId="1" stroke="#a3a3a3" fill="#a3a3a3" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="cpu" stackId="1" stroke="var(--chart-1, #525252)" fill="var(--chart-1, #525252)" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="memory" stackId="1" stroke="var(--chart-2, #737373)" fill="var(--chart-2, #737373)" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="network" stackId="1" stroke="var(--chart-3, #a3a3a3)" fill="var(--chart-3, #a3a3a3)" fillOpacity={0.6} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-3 sm:mt-4 grid grid-cols-3 gap-2 sm:gap-4">
-                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
+                  <div className="p-2 sm:p-3 bg-muted border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-foreground"></div>
                       <span className="text-xs sm:text-sm font-medium text-foreground">CPU</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
@@ -555,9 +543,9 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
-                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
+                  <div className="p-2 sm:p-3 bg-muted border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-foreground"></div>
                       <span className="text-xs sm:text-sm font-medium text-foreground">Memory</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
@@ -565,9 +553,9 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
-                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
+                  <div className="p-2 sm:p-3 bg-muted border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-foreground"></div>
                       <span className="text-xs sm:text-sm font-medium text-foreground">Network</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
@@ -592,7 +580,7 @@ export default function DashboardPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
                       <div className="flex size-8 items-center justify-center border border-border bg-background">
-                        <BarChart3 className="size-4 text-foreground" />
+                        <HugeiconsIcon icon={Analytics01Icon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Traffic & Errors</span>
                       <span className="sm:hidden">Traffic</span>
@@ -614,26 +602,26 @@ export default function DashboardPage() {
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                       <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip />
+                      <Tooltip contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "0px" }} />
                       <Legend />
-                      <Bar dataKey="requests" fill="#525252" radius={[8, 8, 0, 0]} />
-                      <Bar dataKey="errors" fill="#262626" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="requests" fill="var(--chart-1, #525252)" radius={[0, 0, 0, 0]} />
+                      <Bar dataKey="errors" fill="var(--chart-2, #262626)" radius={[0, 0, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-4">
-                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
+                  <div className="p-2 sm:p-3 bg-muted border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-foreground"></div>
                       <span className="text-xs sm:text-sm font-medium text-foreground">Total Requests</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
                       {trafficData.reduce((sum, day) => sum + day.requests, 0).toLocaleString()}
                     </div>
                   </div>
-                  <div className="p-2 sm:p-3 bg-muted rounded-lg border border-border">
+                  <div className="p-2 sm:p-3 bg-muted border border-border">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-muted rounded-full"></div>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-foreground"></div>
                       <span className="text-xs sm:text-sm font-medium text-foreground">Total Errors</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
@@ -661,7 +649,7 @@ export default function DashboardPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
                       <div className="flex size-8 items-center justify-center border border-border bg-background">
-                        <Server className="size-4 text-foreground" />
+                        <HugeiconsIcon icon={CloudServerIcon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Services Status</span>
                       <span className="sm:hidden">Services</span>
@@ -672,7 +660,7 @@ export default function DashboardPage() {
                     </CardDescription>
                   </div>
                   <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Configure</span>
                   </Button>
                 </div>
@@ -699,7 +687,7 @@ export default function DashboardPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
                       <div className="flex size-8 items-center justify-center border border-border bg-background">
-                        <Bell className="size-4 text-foreground" />
+                        <HugeiconsIcon icon={Notification01Icon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Recent Alerts</span>
                       <span className="sm:hidden">Alerts</span>
@@ -722,7 +710,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border dark:border-border">
                   <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
-                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">View All Alerts</span>
                     <span className="sm:hidden">All Alerts</span>
                   </Button>
@@ -746,7 +734,7 @@ export default function DashboardPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
                       <div className="flex size-8 items-center justify-center border border-border bg-background">
-                        <BarChart3 className="size-4 text-foreground" />
+                        <HugeiconsIcon icon={Analytics01Icon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Dynamic Metrics</span>
                       <span className="sm:hidden">Metrics</span>
@@ -757,7 +745,7 @@ export default function DashboardPage() {
                     </CardDescription>
                   </div>
                   <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Configure</span>
                   </Button>
                 </div>
@@ -767,7 +755,7 @@ export default function DashboardPage() {
                   <div className="space-y-3 sm:space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
                       <div key={i} className="flex items-center gap-3 sm:gap-4">
-                        <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg" />
+                        <Skeleton className="h-8 w-8 sm:h-10 sm:w-10" />
                         <div className="space-y-1.5 sm:space-y-2 flex-1">
                           <Skeleton className="h-3 sm:h-4 w-full" />
                           <Skeleton className="h-2.5 sm:h-3 w-3/4" />
@@ -798,7 +786,7 @@ export default function DashboardPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
                       <div className="flex size-8 items-center justify-center border border-border bg-background">
-                        <PieChart className="size-4 text-foreground" />
+                        <HugeiconsIcon icon={PieChartIcon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Service Distribution</span>
                       <span className="sm:hidden">Distribution</span>
@@ -809,7 +797,7 @@ export default function DashboardPage() {
                     </CardDescription>
                   </div>
                   <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <HugeiconsIcon icon={FilterIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Filter</span>
                   </Button>
                 </div>
@@ -835,7 +823,7 @@ export default function DashboardPage() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "0px" }} />
                     </RePieChart>
                   </ResponsiveContainer>
                 </div>
@@ -847,9 +835,9 @@ export default function DashboardPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.2, delay: 0.8 + index * 0.1 }}
                       whileHover={{ scale: 1.02 }}
-                      className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border transition-shadow"
+                      className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border transition-shadow"
                     >
-                      <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" style={{ backgroundColor: service.color }}></div>
+                      <div className="w-3 h-3 sm:w-4 sm:h-4" style={{ backgroundColor: service.color }}></div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground truncate">{service.name}</div>
                         <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">{service.value}% allocation</div>

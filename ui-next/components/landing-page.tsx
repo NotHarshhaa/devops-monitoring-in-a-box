@@ -2,32 +2,33 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Monitor,
-  BarChart3,
-  FileText,
-  Bell,
-  Shield,
-  ArrowUpRight,
-  Activity
-} from 'lucide-react'
+  ComputerIcon,
+  Analytics01Icon,
+  File01Icon,
+  Notification01Icon,
+  Shield01Icon,
+  ArrowUpRight01Icon,
+  Activity01Icon
+} from '@hugeicons/core-free-icons'
 
 const features = [
   {
     title: 'Real-time Metrics',
     description:
       'Live system performance with Prometheus-backed dashboards.',
-    icon: BarChart3
+    icon: Analytics01Icon
   },
   {
     title: 'Centralized Logs',
     description: 'Search and correlate logs from Loki across services.',
-    icon: FileText
+    icon: File01Icon
   },
   {
     title: 'Smart Alerts',
     description: 'Route incidents fast with Alertmanager integrations.',
-    icon: Bell
+    icon: Notification01Icon
   }
 ]
 
@@ -100,7 +101,7 @@ export function LandingPage() {
             >
               <div className="flex items-start gap-4 px-4 py-5 sm:px-6">
                 <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-border bg-background">
-                  <feature.icon className="size-4" />
+                  <HugeiconsIcon icon={feature.icon} className="size-4" />
                 </span>
                 <div>
                   <h2 className="text-sm font-semibold sm:text-base">
@@ -119,7 +120,7 @@ export function LandingPage() {
       <section className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
         <div className="border border-border bg-card">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3 sm:px-6">
-            <Shield className="size-3.5 text-muted-foreground" />
+            <HugeiconsIcon icon={Shield01Icon} className="size-3.5 text-muted-foreground" />
             <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
               Access control
             </p>
@@ -139,7 +140,7 @@ export function LandingPage() {
                       {role.description}
                     </p>
                   </div>
-                  <Monitor className="size-3.5 text-muted-foreground/50" />
+                  <HugeiconsIcon icon={ComputerIcon} className="size-3.5 text-muted-foreground/50" />
                 </div>
               </li>
             ))}
@@ -148,7 +149,7 @@ export function LandingPage() {
 
         <div className="flex flex-col justify-between border border-border bg-card p-5 sm:p-6">
           <div className="space-y-3">
-            <Activity className="size-5" />
+            <HugeiconsIcon icon={Activity01Icon} className="size-5" />
             <h2 className="text-lg font-semibold">Ready to operate</h2>
             <p className="text-sm text-muted-foreground">
               Sign in to manage services, inspect metrics, and respond to
@@ -158,7 +159,7 @@ export function LandingPage() {
           <Button className="mt-6 w-full" asChild>
             <Link href="/auth/signin">
               Go to console
-              <ArrowUpRight className="size-3.5" />
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
             </Link>
           </Button>
         </div>

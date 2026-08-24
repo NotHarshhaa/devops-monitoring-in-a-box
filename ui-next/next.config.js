@@ -5,7 +5,8 @@ const nextConfig = {
   output: 'standalone',
   experimental: {
     optimizePackageImports: [
-      'lucide-react',
+      '@hugeicons/react',
+      '@hugeicons/core-free-icons',
       'framer-motion',
       'recharts',
       '@radix-ui/react-dropdown-menu',

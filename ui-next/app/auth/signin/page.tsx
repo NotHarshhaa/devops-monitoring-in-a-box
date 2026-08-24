@@ -4,6 +4,7 @@ import { useState, Suspense } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +12,17 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Github, Chrome, AlertCircle, Eye, EyeOff, Home, Copy, Check } from "lucide-react"
+import { 
+  Loading03Icon, 
+  GithubIcon, 
+  GoogleIcon, 
+  AlertCircleIcon, 
+  ViewIcon, 
+  ViewOffIcon, 
+  Home01Icon, 
+  Copy01Icon, 
+  CheckmarkCircle01Icon 
+} from "@hugeicons/core-free-icons"
 import Link from "next/link"
 
 function SignInForm() {
@@ -124,74 +135,70 @@ function SignInForm() {
 
   return (
     <div className="flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-</div>
-      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-4xl relative z-10"
       >
-        <Card className="bg-card dark:bg-card border border-border dark:border-border dark:shadow-black/20">
+        <Card className="bg-card border border-border">
           <div className="flex flex-col lg:flex-row">
             {/* Left Side - Branding & Info */}
-            <div className="lg:w-2/5 p-8 lg:p-12 text-foreground rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
+            <div className="lg:w-2/5 p-8 lg:p-12 text-foreground border-b lg:border-b-0 lg:border-r border-border">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-center lg:text-left"
               >
-                <div className="w-16 h-16 bg-card flex items-center justify-center mx-auto lg:mx-0 mb-6">
-                  <Chrome className="h-8 w-8 text-foreground" />
+                <div className="w-16 h-16 bg-muted flex items-center justify-center mx-auto lg:mx-0 mb-6 border border-border">
+                  <HugeiconsIcon icon={Home01Icon} className="h-8 w-8 text-foreground" />
                 </div>
-                <h1 className="text-3xl lg:text-4xl font-bold mb-4">
+                <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-foreground">
                   Welcome Back
                 </h1>
-                <p className="text-foreground text-lg mb-8">
+                <p className="text-muted-foreground text-sm sm:text-base mb-8">
                   Sign in to access your DevOps Monitoring Dashboard and manage your infrastructure.
                 </p>
                 
                 {/* Demo credentials preview */}
-                <div className="bg-card p-4 border border-border">
-                  <h3 className="font-semibold mb-3 text-foreground">Demo Credentials</h3>
+                <div className="bg-muted p-4 border border-border">
+                  <h3 className="font-semibold mb-3 text-foreground text-sm">Demo Credentials</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-foreground text-sm">Email:</span>
+                      <span className="text-muted-foreground text-sm">Email:</span>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-sm text-foreground">demo@example.com</span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => copyToClipboard('demo@example.com', 'email')}
-                          className="h-8 w-8 p-0 hover:bg-card text-foreground hover:text-foreground transition-colors"
+                          className="h-8 w-8 p-0 hover:bg-card text-foreground transition-colors"
                           title="Copy email"
                         >
                           {copiedEmail ? (
-                            <Check className="h-4 w-4 text-foreground" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-foreground" />
                           ) : (
-                            <Copy className="h-4 w-4" />
+                            <HugeiconsIcon icon={Copy01Icon} className="h-4 w-4" />
                           )}
                         </Button>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-foreground text-sm">Password:</span>
+                      <span className="text-muted-foreground text-sm">Password:</span>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-sm text-foreground">demo123</span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => copyToClipboard('demo123', 'password')}
-                          className="h-8 w-8 p-0 hover:bg-card text-foreground hover:text-foreground transition-colors"
+                          className="h-8 w-8 p-0 hover:bg-card text-foreground transition-colors"
                           title="Copy password"
                         >
                           {copiedPassword ? (
-                            <Check className="h-4 w-4 text-foreground" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-foreground" />
                           ) : (
-                            <Copy className="h-4 w-4" />
+                            <HugeiconsIcon icon={Copy01Icon} className="h-4 w-4" />
                           )}
                         </Button>
                       </div>
@@ -222,10 +229,10 @@ function SignInForm() {
             {/* Right Side - Form */}
             <div className="lg:w-3/5 p-8 lg:p-12">
               <CardHeader className="text-center pb-4 sm:pb-6 px-0">
-                <CardTitle className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent">
+                <CardTitle className="text-xl sm:text-2xl font-bold text-foreground">
                   Sign In
                 </CardTitle>
-                <CardDescription className="text-sm sm:text-base text-muted-foreground dark:text-muted-foreground">
+                <CardDescription className="text-sm sm:text-base text-muted-foreground">
                   Enter your credentials to continue
                 </CardDescription>
               </CardHeader>
@@ -241,31 +248,28 @@ function SignInForm() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="group relative overflow-hidden border-2 border-border dark:border-border dark: transition-all duration-300 px-4 py-2"
+                      className="border border-border hover:bg-muted transition-all duration-200 px-4 py-2 gap-2"
                     >
-                      <div className="flex items-center space-x-2">
-                        <Home className="h-4 w-4 text-muted-foreground dark:text-muted-foreground transition-colors duration-300" />
-                        <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground transition-colors duration-300">
-                          Back to Home
-                        </span>
-                      </div>
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <HugeiconsIcon icon={Home01Icon} className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">
+                        Back to Home
+                      </span>
                     </Button>
                   </Link>
                 </motion.div>
                 {error && (
                   <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
+                    <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
 
                 {/* Form field errors */}
-                {Object.values(formErrors).map((error, index) => (
-                  error && (
-                    <Alert key={index} variant="destructive" className="bg-muted border-border">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="text-sm">{error}</AlertDescription>
+                {Object.values(formErrors).map((err, index) => (
+                  err && (
+                    <Alert key={index} variant="destructive">
+                      <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" />
+                      <AlertDescription className="text-sm">{err}</AlertDescription>
                     </Alert>
                   )
                 ))}
@@ -280,27 +284,27 @@ function SignInForm() {
                   <div className="relative">
                     <Button
                       variant="outline"
-                      className="w-full h-11 bg-card hover:bg-muted dark:bg-muted dark:hover:bg-muted border-2 border-border dark:border-border dark:hover:border-border transition-all duration-200 dark: opacity-75 cursor-not-allowed"
+                      className="w-full h-11 bg-card hover:bg-muted border border-border transition-all duration-200 opacity-75 cursor-not-allowed gap-2"
                       disabled={true}
                     >
-                      <Chrome className="h-4 w-4 mr-2 text-foreground" />
-                      <span className="font-medium text-muted-foreground dark:text-muted-foreground">Google</span>
-                      <span className="absolute -top-2 -right-2 bg-muted text-foreground text-xs px-2 py-1 rounded-full">Soon</span>
+                      <HugeiconsIcon icon={GoogleIcon} className="h-4 w-4 text-foreground" />
+                      <span className="font-medium text-muted-foreground">Google</span>
+                      <span className="absolute -top-2 -right-2 bg-muted text-foreground text-xs px-2 py-0.5 border border-border">Soon</span>
                     </Button>
-                    <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1 text-center">OAuth coming soon</p>
+                    <p className="text-xs text-muted-foreground mt-1 text-center">OAuth coming soon</p>
                   </div>
                   
                   <div className="relative">
                     <Button
                       variant="outline"
-                      className="w-full h-11 bg-card hover:bg-muted dark:bg-muted dark:hover:bg-muted border-2 border-border dark:border-border dark:hover:border-border transition-all duration-200 dark: opacity-75 cursor-not-allowed"
+                      className="w-full h-11 bg-card hover:bg-muted border border-border transition-all duration-200 opacity-75 cursor-not-allowed gap-2"
                       disabled={true}
                     >
-                      <Github className="h-4 w-4 mr-2 text-muted-foreground dark:text-muted-foreground" />
-                      <span className="font-medium text-muted-foreground dark:text-muted-foreground">GitHub</span>
-                      <span className="absolute -top-2 -right-2 bg-muted text-foreground text-xs px-2 py-1 rounded-full">Soon</span>
+                      <HugeiconsIcon icon={GithubIcon} className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium text-muted-foreground">GitHub</span>
+                      <span className="absolute -top-2 -right-2 bg-muted text-foreground text-xs px-2 py-0.5 border border-border">Soon</span>
                     </Button>
-                    <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1 text-center">OAuth coming soon</p>
+                    <p className="text-xs text-muted-foreground mt-1 text-center">OAuth coming soon</p>
                   </div>
                 </motion.div>
 
@@ -314,7 +318,7 @@ function SignInForm() {
                     <Separator className="w-full" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card dark:bg-muted px-3 py-1 text-muted-foreground dark:text-muted-foreground font-medium rounded-full border dark:border-border">
+                    <span className="bg-card px-3 py-1 text-muted-foreground font-medium border border-border">
                       Or continue with
                     </span>
                   </div>
@@ -330,7 +334,7 @@ function SignInForm() {
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">Email</Label>
+                      <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
                       <Input
                         id="email"
                         type="email"
@@ -339,15 +343,15 @@ function SignInForm() {
                         onChange={(e) => handleInputChange("email", e.target.value)}
                         required
                         disabled={isLoading}
-                        className={`h-11 border-2 transition-colors bg-card dark:bg-muted dark:border-border dark:text-muted-foreground dark:placeholder:text-muted-foreground ${ formErrors.email ? 'border-border ' : '' }`}
+                        className={`h-11 bg-card border-border ${ formErrors.email ? 'border-destructive' : '' }`}
                       />
                       {formErrors.email && (
-                        <p className="text-xs text-foreground mt-1">{formErrors.email}</p>
+                        <p className="text-xs text-destructive mt-1">{formErrors.email}</p>
                       )}
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">Password</Label>
+                      <Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
                       <div className="relative">
                         <Input
                           id="password"
@@ -357,25 +361,25 @@ function SignInForm() {
                           onChange={(e) => handleInputChange("password", e.target.value)}
                           required
                           disabled={isLoading}
-                          className={`h-11 border-2 transition-colors pr-12 bg-card dark:bg-muted dark:border-border dark:text-muted-foreground dark:placeholder:text-muted-foreground ${ formErrors.password ? 'border-border ' : '' }`}
+                          className={`h-11 pr-12 bg-card border-border ${ formErrors.password ? 'border-destructive' : '' }`}
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-1 top-1 h-9 w-9 hover:bg-muted dark:hover:bg-muted rounded-lg"
+                          className="absolute right-1 top-1 h-9 w-9 hover:bg-muted"
                           onClick={() => setShowPassword(!showPassword)}
                           disabled={isLoading}
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                            <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4 text-muted-foreground" />
                           ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                            <HugeiconsIcon icon={ViewIcon} className="h-4 w-4 text-muted-foreground" />
                           )}
                         </Button>
                       </div>
                       {formErrors.password && (
-                        <p className="text-xs text-foreground mt-1">{formErrors.password}</p>
+                        <p className="text-xs text-destructive mt-1">{formErrors.password}</p>
                       )}
                     </div>
                   </div>
@@ -388,11 +392,11 @@ function SignInForm() {
                         checked={rememberMe}
                         onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                         disabled={isLoading}
-                        className="rounded border-border dark:border-border"
+                        className="border-border"
                       />
                       <Label
                         htmlFor="remember"
-                        className="text-sm font-medium text-muted-foreground dark:text-muted-foreground cursor-pointer"
+                        className="text-sm font-medium text-foreground cursor-pointer"
                       >
                         Remember me
                       </Label>
@@ -407,14 +411,14 @@ function SignInForm() {
 
                   <Button 
                     type="submit" 
-                    className="w-full h-11 dark: text-foreground font-medium transition-all duration-200" 
+                    className="w-full h-11 text-foreground font-medium transition-all duration-200" 
                     disabled={isLoading}
                   >
                     {isLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <div className="flex items-center gap-2">
+                        <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
                         Signing in...
-                      </>
+                      </div>
                     ) : (
                       "Sign In"
                     )}
@@ -425,7 +429,7 @@ function SignInForm() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.7 }}
-                  className="text-center text-sm text-muted-foreground dark:text-muted-foreground"
+                  className="text-center text-sm text-muted-foreground"
                 >
                   Don't have an account?{" "}
                   <Link href="/auth/signup" className="text-foreground hover:underline font-medium">
@@ -445,10 +449,10 @@ export default function SignInPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center p-4">
-        <Card>
+        <Card className="border border-border bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <HugeiconsIcon icon={Loading03Icon} className="h-6 w-6 animate-spin" />
               <span className="ml-2">Loading...</span>
             </div>
           </CardContent>

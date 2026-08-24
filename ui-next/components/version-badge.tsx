@@ -1,7 +1,15 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { Info, Zap, Palette, Smartphone, Gauge, Rocket } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  InformationCircleIcon,
+  FlashIcon,
+  PaintBoardIcon,
+  SmartPhone01Icon,
+  DashboardSpeed01Icon,
+  Rocket01Icon
+} from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 
 interface VersionBadgeProps {
@@ -13,10 +21,10 @@ const VERSION = '2.5.0'
 const RELEASE_DATE = 'February 2026'
 
 const features = [
-  { icon: Palette, label: 'Complete UI Overhaul' },
-  { icon: Zap, label: '50% Faster Performance' },
-  { icon: Smartphone, label: 'Enhanced Mobile Experience' },
-  { icon: Gauge, label: 'Optimized Animations' }
+  { icon: PaintBoardIcon, label: 'Complete UI Overhaul' },
+  { icon: FlashIcon, label: '50% Faster Performance' },
+  { icon: SmartPhone01Icon, label: 'Enhanced Mobile Experience' },
+  { icon: DashboardSpeed01Icon, label: 'Optimized Animations' }
 ]
 
 export function VersionBadge({
@@ -26,7 +34,7 @@ export function VersionBadge({
   if (variant === 'compact') {
     return (
       <Badge variant="outline" className={cn('font-medium', className)}>
-        <Rocket className="mr-1 size-3" />
+        <HugeiconsIcon icon={Rocket01Icon} className="mr-1 size-3" />
         v{VERSION}
       </Badge>
     )
@@ -38,7 +46,7 @@ export function VersionBadge({
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center border border-border bg-background">
-              <Rocket className="size-5" />
+              <HugeiconsIcon icon={Rocket01Icon} className="size-5" />
             </span>
             <div>
               <h3 className="text-base font-semibold">Version {VERSION}</h3>
@@ -55,7 +63,7 @@ export function VersionBadge({
               className="flex items-center gap-3 border border-border bg-background p-3"
             >
               <span className="flex size-9 items-center justify-center border border-border">
-                <feature.icon className="size-4" />
+                <HugeiconsIcon icon={feature.icon} className="size-4" />
               </span>
               <p className="text-sm font-medium">{feature.label}</p>
             </div>
@@ -77,7 +85,7 @@ export function VersionBadge({
         className
       )}
     >
-      <Rocket className="size-3.5" />
+      <HugeiconsIcon icon={Rocket01Icon} className="size-3.5" />
       v{VERSION}
     </span>
   )
@@ -118,7 +126,7 @@ export function VersionInfo() {
     <div className="space-y-6">
       <div className="space-y-3 text-center">
         <span className="mx-auto flex size-16 items-center justify-center border border-border bg-card">
-          <Rocket className="size-8" />
+          <HugeiconsIcon icon={Rocket01Icon} className="size-8" />
         </span>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
@@ -138,7 +146,7 @@ export function VersionInfo() {
             className="border border-border bg-card p-5 text-center"
           >
             <span className="mx-auto mb-3 flex size-10 items-center justify-center border border-border bg-background">
-              <feature.icon className="size-5" />
+              <HugeiconsIcon icon={feature.icon} className="size-5" />
             </span>
             <h3 className="text-sm font-semibold">{feature.label}</h3>
           </div>
@@ -147,7 +155,7 @@ export function VersionInfo() {
 
       <div className="border border-border bg-card p-5">
         <h2 className="mb-5 flex items-center text-base font-semibold">
-          <Info className="mr-2 size-4" />
+          <HugeiconsIcon icon={InformationCircleIcon} className="mr-2 size-4" />
           What&apos;s New
         </h2>
         <div className="space-y-5">

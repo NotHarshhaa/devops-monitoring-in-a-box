@@ -3,23 +3,24 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { motion } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
-  Users, 
-  Settings, 
-  Shield, 
-  Activity, 
-  Database, 
-  Crown,
-  Eye,
-  Edit,
-  Trash2,
-  Plus,
-  RefreshCw
-} from "lucide-react"
+  UserGroupIcon, 
+  Settings01Icon, 
+  Shield01Icon, 
+  Activity01Icon, 
+  DatabaseIcon, 
+  StarIcon,
+  EyeIcon,
+  Edit02Icon,
+  Delete02Icon,
+  PlusSignIcon,
+  RefreshIcon
+} from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 
 // Mock data for demonstration
@@ -78,42 +79,40 @@ export default function AdminPage() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return <Crown className="h-4 w-4" />
+        return <HugeiconsIcon icon={StarIcon} className="h-4 w-4" />
       case "EDITOR":
-        return <Edit className="h-4 w-4" />
+        return <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4" />
       case "VIEWER":
-        return <Eye className="h-4 w-4" />
+        return <HugeiconsIcon icon={EyeIcon} className="h-4 w-4" />
       default:
-        return <Users className="h-4 w-4" />
+        return <HugeiconsIcon icon={UserGroupIcon} className="h-4 w-4" />
     }
   }
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "bg-muted text-foreground"
       case "EDITOR":
-        return "bg-muted text-foreground"
       case "VIEWER":
         return "bg-muted text-foreground"
       default:
-        return "bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
+        return "bg-muted text-muted-foreground"
     }
   }
 
   const getStatusColor = (status: string) => {
     return status === "active" 
-      ? "bg-muted text-foreground bg-muted text-foreground"
-      : "bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
+      ? "bg-muted text-foreground"
+      : "bg-muted text-muted-foreground"
   }
 
   if (session?.user && (session.user as any).role !== "ADMIN") {
     return (
       <div className="flex items-center justify-center h-64">
-        <Card className="w-96">
+        <Card className="w-96 border border-border bg-card">
           <CardContent className="pt-6 text-center">
-            <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+            <HugeiconsIcon icon={Shield01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2 text-foreground">Access Denied</h2>
             <p className="text-muted-foreground">
               You need admin privileges to access this page.
             </p>
@@ -132,41 +131,41 @@ export default function AdminPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+          <Card className="border border-border bg-card overflow-hidden">
             <CardHeader className="text-foreground p-4 sm:p-8">
               <div className="flex items-center justify-between">
                 <div className="space-y-2 sm:space-y-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 sm:p-3 bg-card">
-                      <Crown className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
+                    <div className="p-2 sm:p-3 bg-muted">
+                      <HugeiconsIcon icon={StarIcon} className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl sm:text-3xl lg:text-4xl font-bold">
+                      <CardTitle className="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground">
                         Admin Panel
                       </CardTitle>
-                      <CardDescription className="mt-1 sm:mt-2 text-foreground text-sm sm:text-base">
+                      <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-sm sm:text-base">
                         Manage users, configurations, and system settings
                       </CardDescription>
                     </div>
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <Badge className="bg-card text-foreground border-border px-3 py-1.5 font-semibold text-sm">
-                    <Shield className="h-3 w-3 mr-1" />
+                  <Badge className="bg-muted text-foreground border-border px-3 py-1.5 font-semibold text-sm">
+                    <HugeiconsIcon icon={Shield01Icon} className="h-3.5 w-3.5 mr-1" />
                     Administration
                   </Badge>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-4 sm:p-6 border-t border-border">
               <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" className="gap-2 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                  <RefreshCw className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="gap-2 h-9 sm:h-10 bg-card border-border hover:bg-muted">
+                  <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                   <span className="hidden sm:inline">Refresh</span>
                   <span className="sm:hidden">Sync</span>
                 </Button>
-                <Button size="sm" className="gap-2 h-9 sm:h-10 text-foreground">
-                  <Plus className="h-4 w-4" />
+                <Button size="sm" className="gap-2 h-9 sm:h-10">
+                  <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
                   Add User
                 </Button>
               </div>
@@ -185,16 +184,16 @@ export default function AdminPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="text-center p-3 sm:p-4 border border-border"
+            className="text-center p-3 sm:p-4 border border-border bg-card"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
+              <HugeiconsIcon icon={UserGroupIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
               {systemStats.totalUsers}
             </div>
             <div className="text-xs sm:text-sm text-foreground">Total Users</div>
-            <div className="text-xs text-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               {systemStats.activeUsers} active
             </div>
           </motion.div>
@@ -203,16 +202,16 @@ export default function AdminPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="text-center p-3 sm:p-4 border border-border"
+            className="text-center p-3 sm:p-4 border border-border bg-card"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
+              <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
               {systemStats.totalConfigs}
             </div>
             <div className="text-xs sm:text-sm text-foreground">Configurations</div>
-            <div className="text-xs text-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               User-specific configs
             </div>
           </motion.div>
@@ -221,16 +220,16 @@ export default function AdminPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.3 }}
-            className="text-center p-3 sm:p-4 border border-border"
+            className="text-center p-3 sm:p-4 border border-border bg-card"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
+              <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
               {systemStats.totalDashboards}
             </div>
             <div className="text-xs sm:text-sm text-foreground">Dashboards</div>
-            <div className="text-xs text-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               Custom dashboards
             </div>
           </motion.div>
@@ -239,16 +238,16 @@ export default function AdminPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.4 }}
-            className="text-center p-3 sm:p-4 border border-border"
+            className="text-center p-3 sm:p-4 border border-border bg-card"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Database className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
+              <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
               {systemStats.uptime}
             </div>
             <div className="text-xs sm:text-sm text-foreground">System Health</div>
-            <div className="text-xs text-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               System uptime
             </div>
           </motion.div>
@@ -260,30 +259,28 @@ export default function AdminPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="border border-border dark:border-border bg-card dark:bg-card">
+          <Card className="border border-border bg-card">
             <CardContent className="p-4 sm:p-6">
               <Tabs defaultValue="users" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 h-10 sm:h-11 border border-border dark:border-border">
-                  <TabsTrigger value="users" className="text-xs sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background">User Management</TabsTrigger>
-                  <TabsTrigger value="configs" className="text-xs sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background">Configurations</TabsTrigger>
-                  <TabsTrigger value="system" className="text-xs sm:text-sm data-[state=active]:bg-foreground data-[state=active]:text-background">System Settings</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 h-10 sm:h-11 bg-muted p-1">
+                  <TabsTrigger value="users" className="text-xs sm:text-sm">User Management</TabsTrigger>
+                  <TabsTrigger value="configs" className="text-xs sm:text-sm">Configurations</TabsTrigger>
+                  <TabsTrigger value="system" className="text-xs sm:text-sm">System Settings</TabsTrigger>
                 </TabsList>
 
-          <TabsContent value="users" className="mt-6">
+                <TabsContent value="users" className="mt-6">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="border border-border dark:border-border bg-card dark:bg-card">
+                    <Card className="border border-border bg-card">
                       <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
-                          <div className="p-2">
-                            <Users className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-                          </div>
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                          <HugeiconsIcon icon={UserGroupIcon} className="h-5 w-5 text-foreground" />
                           User Management
                         </CardTitle>
-                        <CardDescription className="mt-1 text-muted-foreground dark:text-muted-foreground">
+                        <CardDescription className="mt-1 text-muted-foreground">
                           Manage user accounts, roles, and permissions
                         </CardDescription>
                       </CardHeader>
@@ -295,18 +292,18 @@ export default function AdminPage() {
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ duration: 0.3 }}
-                              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 border border-border dark:border-border rounded-lg hover:bg-muted dark:hover:bg-muted transition-all duration-300"
+                              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 border border-border bg-card hover:bg-muted transition-all duration-300"
                             >
                               <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted flex items-center justify-center flex-shrink-0">
                                   <span className="text-sm sm:text-base font-medium text-foreground">
                                     {user.name.charAt(0).toUpperCase()}
                                   </span>
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                                    <h3 className="font-medium text-sm sm:text-base break-words text-muted-foreground dark:text-foreground">{user.name}</h3>
-                                    <Badge className="text-foreground border border-border">
+                                    <h3 className="font-medium text-sm sm:text-base break-words text-foreground">{user.name}</h3>
+                                    <Badge className="text-foreground border border-border bg-muted">
                                       {getRoleIcon(user.role)}
                                       <span className="ml-1 text-xs">{user.role}</span>
                                     </Badge>
@@ -314,19 +311,19 @@ export default function AdminPage() {
                                       <span className="text-xs">{user.status}</span>
                                     </Badge>
                                   </div>
-                                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground break-words">{user.email}</p>
-                                  <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">
+                                  <p className="text-xs sm:text-sm text-muted-foreground break-words">{user.email}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
                                     Last login: {new Date(user.lastLogin).toLocaleDateString()}
                                   </p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <Button variant="outline" size="sm" className="h-9 flex-1 sm:flex-initial bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                                  <Edit className="h-4 w-4 mr-1.5 sm:mr-0" />
+                                <Button variant="outline" size="sm" className="h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted">
+                                  <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4 mr-1.5 sm:mr-0" />
                                   <span className="sm:hidden">Edit</span>
                                 </Button>
-                                <Button variant="outline" size="sm" className="h-9 text-foreground flex-1 sm:flex-initial bg-card dark:bg-card border-border">
-                                  <Trash2 className="h-4 w-4 mr-1.5 sm:mr-0" />
+                                <Button variant="outline" size="sm" className="h-9 text-destructive flex-1 sm:flex-initial bg-card border-border hover:bg-destructive/10">
+                                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-1.5 sm:mr-0" />
                                   <span className="sm:hidden">Delete</span>
                                 </Button>
                               </div>
@@ -344,23 +341,21 @@ export default function AdminPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="border border-border dark:border-border bg-card dark:bg-card">
+                    <Card className="border border-border bg-card">
                       <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
-                          <div className="p-2">
-                            <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-                          </div>
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                          <HugeiconsIcon icon={Settings01Icon} className="h-5 w-5 text-foreground" />
                           Configuration Management
                         </CardTitle>
-                        <CardDescription className="mt-1 text-muted-foreground dark:text-muted-foreground">
+                        <CardDescription className="mt-1 text-muted-foreground">
                           View and manage user-specific configurations
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-4 sm:p-6">
                         <div className="text-center py-8">
-                          <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2 text-muted-foreground dark:text-foreground">Configuration Management</h3>
-                          <p className="text-muted-foreground dark:text-muted-foreground">
+                          <HugeiconsIcon icon={Settings01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-medium mb-2 text-foreground">Configuration Management</h3>
+                          <p className="text-muted-foreground">
                             View and manage user-specific configurations here.
                           </p>
                         </div>
@@ -375,23 +370,21 @@ export default function AdminPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="border border-border dark:border-border bg-card dark:bg-card">
+                    <Card className="border border-border bg-card">
                       <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
-                          <div className="p-2">
-                            <Database className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-                          </div>
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                          <HugeiconsIcon icon={DatabaseIcon} className="h-5 w-5 text-foreground" />
                           System Settings
                         </CardTitle>
-                        <CardDescription className="mt-1 text-muted-foreground dark:text-muted-foreground">
+                        <CardDescription className="mt-1 text-muted-foreground">
                           Configure system-wide settings and preferences
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-4 sm:p-6">
                         <div className="text-center py-8">
-                          <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2 text-muted-foreground dark:text-foreground">System Settings</h3>
-                          <p className="text-muted-foreground dark:text-muted-foreground">
+                          <HugeiconsIcon icon={DatabaseIcon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-medium mb-2 text-foreground">System Settings</h3>
+                          <p className="text-muted-foreground">
                             Configure system-wide settings and preferences here.
                           </p>
                         </div>

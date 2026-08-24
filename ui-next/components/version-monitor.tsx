@@ -2,25 +2,26 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { 
-  RefreshCw, 
-  Download, 
-  CheckCircle, 
-  AlertTriangle, 
-  XCircle,
-  Info,
-  Clock,
-  Container,
-  Zap,
-  Shield,
-  TrendingUp,
-  Package,
-  Activity,
-  Cpu,
-  Database} from "lucide-react"
+  RefreshIcon, 
+  Download01Icon, 
+  CheckmarkCircle01Icon, 
+  Alert02Icon, 
+  CancelCircleIcon,
+  InformationCircleIcon,
+  Clock01Icon,
+  PackageIcon,
+  FlashIcon,
+  Shield01Icon,
+  Analytics01Icon,
+  Activity01Icon,
+  CpuIcon,
+  DatabaseIcon
+} from "@hugeicons/core-free-icons"
 import { VersionMonitorService, type ComponentVersion } from "@/lib/version-monitor"
 import { toast } from "@/hooks/use-toast"
 
@@ -91,13 +92,13 @@ export function VersionMonitor({
     
     switch (status.status) {
       case 'success':
-        return <CheckCircle className="h-5 w-5 text-foreground" />
+        return <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-foreground" />
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-foreground" />
+        return <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-foreground" />
       case 'error':
-        return <XCircle className="h-5 w-5 text-foreground" />
+        return <HugeiconsIcon icon={CancelCircleIcon} className="h-5 w-5 text-foreground" />
       default:
-        return <Info className="h-5 w-5 text-foreground" />
+        return <HugeiconsIcon icon={InformationCircleIcon} className="h-5 w-5 text-foreground" />
     }
   }
 
@@ -117,16 +118,17 @@ export function VersionMonitor({
   }
 
   const getComponentIcon = (name: string) => {
-    const iconMap: Record<string, React.ReactNode> = {
-      'Prometheus': <Activity className="h-5 w-5" />,
-      'Grafana': <TrendingUp className="h-5 w-5" />,
-      'Loki': <Database className="h-5 w-5" />,
-      'AlertManager': <AlertTriangle className="h-5 w-5" />,
-      'Node Exporter': <Cpu className="h-5 w-5" />,
-      'Docker': <Container className="h-5 w-5" />,
-      'Kubernetes': <Shield className="h-5 w-5" />,
+    const iconMap: Record<string, any> = {
+      'Prometheus': Activity01Icon,
+      'Grafana': Analytics01Icon,
+      'Loki': DatabaseIcon,
+      'AlertManager': Alert02Icon,
+      'Node Exporter': CpuIcon,
+      'Docker': PackageIcon,
+      'Kubernetes': Shield01Icon,
     }
-    return iconMap[name] || <Package className="h-5 w-5" />
+    const icon = iconMap[name] || PackageIcon
+    return <HugeiconsIcon icon={icon} className="h-5 w-5" />
   }
 
   const formatDate = (dateString: string) => {
@@ -152,15 +154,15 @@ export function VersionMonitor({
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="p-6 border border-border"
+        className="p-6 border border-border bg-card"
       >
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-muted-foreground dark:text-foreground flex items-center gap-2">
-              <Package className="h-6 w-6 text-foreground" />
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <HugeiconsIcon icon={PackageIcon} className="h-6 w-6 text-foreground" />
               Component Versions
             </h2>
-            <p className="text-muted-foreground dark:text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1">
               Monitor current and latest versions of monitoring components
             </p>
           </div>
@@ -175,9 +177,9 @@ export function VersionMonitor({
               size="sm"
               onClick={fetchVersions}
               disabled={isLoading}
-              className="gap-2"
+              className="gap-2 bg-card border-border hover:bg-muted"
             >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <HugeiconsIcon icon={RefreshIcon} className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
@@ -189,15 +191,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
+            className="bg-card p-4 border border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted rounded-lg">
-                <CheckCircle className="h-5 w-5 text-foreground" />
+              <div className="p-2 bg-muted border border-border">
+                <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-foreground" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">{upToDateCount}</div>
-                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Up to Date</div>
+                <div className="text-sm text-muted-foreground">Up to Date</div>
               </div>
             </div>
           </motion.div>
@@ -206,15 +208,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
+            className="bg-card p-4 border border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-foreground" />
+              <div className="p-2 bg-muted border border-border">
+                <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-foreground" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">{updateAvailableCount}</div>
-                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Updates Available</div>
+                <div className="text-sm text-muted-foreground">Updates Available</div>
               </div>
             </div>
           </motion.div>
@@ -223,15 +225,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.3 }}
-            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
+            className="bg-card p-4 border border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted rounded-lg">
-                <XCircle className="h-5 w-5 text-foreground" />
+              <div className="p-2 bg-muted border border-border">
+                <HugeiconsIcon icon={CancelCircleIcon} className="h-5 w-5 text-foreground" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">{errorCount}</div>
-                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Errors</div>
+                <div className="text-sm text-muted-foreground">Errors</div>
               </div>
             </div>
           </motion.div>
@@ -240,15 +242,15 @@ export function VersionMonitor({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.4 }}
-            className="bg-card dark:bg-muted p-4 border border-border dark:border-border"
+            className="bg-card p-4 border border-border"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted rounded-lg">
-                <Package className="h-5 w-5 text-foreground" />
+              <div className="p-2 bg-muted border border-border">
+                <HugeiconsIcon icon={PackageIcon} className="h-5 w-5 text-foreground" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">{versions.length}</div>
-                <div className="text-sm text-muted-foreground dark:text-muted-foreground">Total Components</div>
+                <div className="text-sm text-muted-foreground">Total Components</div>
               </div>
             </div>
           </motion.div>
@@ -261,9 +263,9 @@ export function VersionMonitor({
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground"
+          className="flex items-center gap-2 text-sm text-muted-foreground"
         >
-          <Clock className="h-4 w-4" />
+          <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
           <span>Last updated: {formatDate(lastRefresh.toISOString())}</span>
         </motion.div>
       )}
@@ -281,17 +283,17 @@ export function VersionMonitor({
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
               className="h-full"
             >
-              <Card className="h-full transition-all duration-300 border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+              <Card className="h-full transition-all duration-300 border border-border bg-card overflow-hidden">
                 <CardHeader className="pb-2 sm:pb-4 p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="p-2 sm:p-3">
+                      <div className="p-2 sm:p-3 border border-border bg-muted">
                         <div className="text-foreground">
                           {getComponentIcon(component.name)}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-sm sm:text-lg font-semibold text-muted-foreground dark:text-foreground truncate">{component.name}</CardTitle>
+                        <CardTitle className="text-sm sm:text-lg font-semibold text-foreground truncate">{component.name}</CardTitle>
                         <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2">
                           {getStatusIcon(component)}
                           {getStatusBadge(component)}
@@ -304,12 +306,12 @@ export function VersionMonitor({
                   {/* Version Progress */}
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Update Progress</span>
-                      <span className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{getUpdateProgress(component)}%</span>
+                      <span className="text-xs sm:text-sm font-medium text-muted-foreground">Update Progress</span>
+                      <span className="text-xs sm:text-sm font-bold text-foreground">{getUpdateProgress(component)}%</span>
                     </div>
-                    <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-3 overflow-hidden">
+                    <div className="w-full bg-muted h-2 sm:h-3 overflow-hidden border border-border">
                       <div 
-                        className="h-full rounded-full transition-all duration-500 ease-out"
+                        className="h-full bg-foreground transition-all duration-500 ease-out"
                         style={{ width: `${getUpdateProgress(component)}%` }}
                       ></div>
                     </div>
@@ -317,21 +319,21 @@ export function VersionMonitor({
 
                   {/* Version Information */}
                   <div className="space-y-2 sm:space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-4 bg-muted dark:bg-muted border border-border dark:border-border">
+                    <div className="flex items-center justify-between p-2 sm:p-4 bg-muted border border-border">
                       <div className="flex items-center gap-1 sm:gap-2">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
-                        <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Current Version</span>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-foreground"></div>
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Current Version</span>
                       </div>
-                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-card dark:bg-card border-border dark:border-border">
+                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-card border-border">
                         v{component.currentVersion}
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between p-2 sm:p-4 bg-muted dark:bg-muted border border-border dark:border-border">
+                    <div className="flex items-center justify-between p-2 sm:p-4 bg-muted border border-border">
                       <div className="flex items-center gap-1 sm:gap-2">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
-                        <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Latest Version</span>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-foreground"></div>
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">Latest Version</span>
                       </div>
-                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-card dark:bg-card border-border dark:border-border">
+                      <Badge variant="outline" className="font-mono text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1 bg-card border-border">
                         v{component.latestVersion}
                       </Badge>
                     </div>
@@ -342,11 +344,11 @@ export function VersionMonitor({
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-2 sm:p-4 border border-border"
+                      className="p-2 sm:p-4 border border-border bg-muted"
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="p-1.5 sm:p-2 bg-muted rounded-lg">
-                          <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-foreground" />
+                        <div className="p-1.5 sm:p-2 bg-card border border-border">
+                          <HugeiconsIcon icon={FlashIcon} className="h-3 w-3 sm:h-4 sm:w-4 text-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <span className="text-xs sm:text-sm font-semibold text-foreground">
@@ -367,10 +369,10 @@ export function VersionMonitor({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 gap-1 sm:gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm"
+                        className="flex-1 gap-1 sm:gap-2 border-border bg-card hover:bg-muted text-xs sm:text-sm"
                         onClick={() => window.open(component.downloadUrl, '_blank')}
                       >
-                        <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <HugeiconsIcon icon={Download01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="hidden sm:inline">Download</span>
                         <span className="sm:hidden">Get</span>
                       </Button>
@@ -379,7 +381,7 @@ export function VersionMonitor({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 gap-1 sm:gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm"
+                        className="flex-1 gap-1 sm:gap-2 border-border bg-card hover:bg-muted text-xs sm:text-sm"
                         onClick={() => {
                           navigator.clipboard.writeText(component.dockerImage!)
                           toast({
@@ -388,7 +390,7 @@ export function VersionMonitor({
                           })
                         }}
                       >
-                        <Container className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <HugeiconsIcon icon={PackageIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="hidden sm:inline">Docker</span>
                         <span className="sm:hidden">Copy</span>
                       </Button>
@@ -397,14 +399,14 @@ export function VersionMonitor({
 
                   {/* Additional Details */}
                   {showDetails && (
-                    <div className="pt-4 border-t border-border dark:border-border space-y-3">
+                    <div className="pt-4 border-t border-border space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Status</span>
-                        <span className="text-xs font-bold capitalize text-muted-foreground dark:text-foreground">{component.status}</span>
+                        <span className="text-xs font-medium text-muted-foreground">Status</span>
+                        <span className="text-xs font-bold capitalize text-foreground">{component.status}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">Last Checked</span>
-                        <span className="text-xs font-bold text-muted-foreground dark:text-foreground">{formatDate(component.lastChecked)}</span>
+                        <span className="text-xs font-medium text-muted-foreground">Last Checked</span>
+                        <span className="text-xs font-bold text-foreground">{formatDate(component.lastChecked)}</span>
                       </div>
                     </div>
                   )}

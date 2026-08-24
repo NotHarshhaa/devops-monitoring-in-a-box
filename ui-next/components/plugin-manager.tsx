@@ -2,35 +2,32 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
-  Plug, 
-  Settings, 
-  Play, 
-  Pause, 
-  Trash2, 
-  Plus, 
-  Search,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Cloud,
-  GitBranch,
-  Github,
-  Loader2
-} from 'lucide-react'
+  PlugIcon, 
+  Settings01Icon, 
+  PlayIcon, 
+  PauseIcon, 
+  Delete02Icon, 
+  PlusSignIcon, 
+  Search01Icon,
+  CheckmarkCircle01Icon,
+  AlertCircleIcon,
+  CloudIcon,
+  GitBranchIcon,
+  Loading03Icon
+} from '@hugeicons/core-free-icons'
 import { 
   PluginManager, 
   PluginConfiguration, 
   PluginCategory, 
-  DataType,
   getPluginManager,
   Plugin as PluginInterface
 } from '@/lib/plugins'
@@ -138,32 +135,32 @@ export default function PluginManagerComponent() {
   const getPluginIcon = (category: PluginCategory) => {
     switch (category) {
       case PluginCategory.CLOUD_PROVIDER:
-        return <Cloud className="h-5 w-5" />
+        return <HugeiconsIcon icon={CloudIcon} className="h-5 w-5" />
       case PluginCategory.CI_CD:
-        return <GitBranch className="h-5 w-5" />
+        return <HugeiconsIcon icon={GitBranchIcon} className="h-5 w-5" />
       case PluginCategory.MONITORING:
-        return <Settings className="h-5 w-5" />
+        return <HugeiconsIcon icon={Settings01Icon} className="h-5 w-5" />
       default:
-        return <Plug className="h-5 w-5" />
+        return <HugeiconsIcon icon={PlugIcon} className="h-5 w-5" />
     }
   }
 
   const getCategoryColor = (category: PluginCategory) => {
     switch (category) {
       case PluginCategory.CLOUD_PROVIDER:
-        return 'bg-muted text-foreground bg-muted text-foreground'
+        return 'bg-muted text-foreground'
       case PluginCategory.CI_CD:
-        return 'bg-muted text-foreground bg-muted text-foreground'
+        return 'bg-muted text-foreground'
       case PluginCategory.MONITORING:
-        return 'bg-muted text-foreground bg-muted text-foreground'
+        return 'bg-muted text-foreground'
       case PluginCategory.LOGGING:
-        return 'bg-muted text-foreground bg-muted text-foreground'
+        return 'bg-muted text-foreground'
       case PluginCategory.ALERTING:
-        return 'bg-muted text-foreground bg-muted text-foreground'
+        return 'bg-muted text-foreground'
       case PluginCategory.INFRASTRUCTURE:
-        return 'bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground'
+        return 'bg-muted text-muted-foreground'
       default:
-        return 'bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground'
+        return 'bg-muted text-muted-foreground'
     }
   }
 
@@ -184,7 +181,7 @@ export default function PluginManagerComponent() {
   if (isLoading && availablePlugins.length === 0) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin" />
         <span className="ml-2">Loading plugins...</span>
       </div>
     )
@@ -199,7 +196,7 @@ export default function PluginManagerComponent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold">Plugin Manager</h1>
+          <h1 className="text-3xl font-bold text-foreground">Plugin Manager</h1>
           <p className="text-muted-foreground mt-2">
             Install and manage data source plugins for your monitoring dashboard
           </p>
@@ -209,46 +206,46 @@ export default function PluginManagerComponent() {
       {/* Error Alert */}
       {error && (
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="border border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available Plugins</CardTitle>
-            <Plug className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Available Plugins</CardTitle>
+            <HugeiconsIcon icon={PlugIcon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{availablePlugins.length}</div>
+            <div className="text-2xl font-bold text-foreground">{availablePlugins.length}</div>
             <p className="text-xs text-muted-foreground">
               Total plugins in registry
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Installed Instances</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Installed Instances</CardTitle>
+            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{installedPlugins.length}</div>
+            <div className="text-2xl font-bold text-foreground">{installedPlugins.length}</div>
             <p className="text-xs text-muted-foreground">
               Active plugin instances
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Enabled</CardTitle>
-            <Play className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Enabled</CardTitle>
+            <HugeiconsIcon icon={PlayIcon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-foreground">
               {installedPlugins.filter(p => p.enabled).length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -257,13 +254,13 @@ export default function PluginManagerComponent() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categories</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Categories</CardTitle>
+            <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-foreground">
               {new Set(availablePlugins.map(p => p.metadata.category)).size}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -275,7 +272,7 @@ export default function PluginManagerComponent() {
 
       {/* Plugin Management Tabs */}
       <Tabs defaultValue="available" className="space-y-4">
-        <TabsList>
+        <TabsList className="bg-muted p-1">
           <TabsTrigger value="available">Available Plugins</TabsTrigger>
           <TabsTrigger value="installed">Installed Instances</TabsTrigger>
         </TabsList>
@@ -285,16 +282,16 @@ export default function PluginManagerComponent() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search plugins..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-card border-border"
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={selectedCategory === 'all' ? 'default' : 'outline'}
                 size="sm"
@@ -324,16 +321,16 @@ export default function PluginManagerComponent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <Card className="h-full">
+                <Card className="h-full border border-border bg-card">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
+                        <div className="p-2 bg-muted border border-border">
                           {getPluginIcon(plugin.metadata.category)}
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{plugin.metadata.name}</CardTitle>
-                          <CardDescription className="text-sm">
+                          <CardTitle className="text-lg text-foreground">{plugin.metadata.name}</CardTitle>
+                          <CardDescription className="text-sm text-muted-foreground">
                             v{plugin.metadata.version}
                           </CardDescription>
                         </div>
@@ -362,10 +359,10 @@ export default function PluginManagerComponent() {
                     </div>
 
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">Supported Data Types:</div>
+                      <div className="text-sm font-medium text-foreground">Supported Data Types:</div>
                       <div className="flex flex-wrap gap-1">
                         {plugin.metadata.supportedDataTypes.map(dataType => (
-                          <Badge key={dataType} variant="outline" className="text-xs">
+                          <Badge key={dataType} variant="outline" className="text-xs border-border">
                             {dataType}
                           </Badge>
                         ))}
@@ -380,8 +377,9 @@ export default function PluginManagerComponent() {
                         onClick={() => handleInstallPlugin(plugin.metadata.id)}
                         disabled={isLoading}
                         size="sm"
+                        className="gap-1.5"
                       >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
                         Install
                       </Button>
                     </div>
@@ -406,16 +404,16 @@ export default function PluginManagerComponent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <Card>
+                  <Card className="border border-border bg-card">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-primary/10 rounded-lg">
+                          <div className="p-2 bg-muted border border-border">
                             {getPluginIcon(plugin.metadata.category)}
                           </div>
                           <div>
-                            <CardTitle className="text-lg">{instance.name}</CardTitle>
-                            <CardDescription>
+                            <CardTitle className="text-lg text-foreground">{instance.name}</CardTitle>
+                            <CardDescription className="text-muted-foreground">
                               {plugin.metadata.name} v{plugin.metadata.version}
                             </CardDescription>
                           </div>
@@ -434,11 +432,12 @@ export default function PluginManagerComponent() {
                                 !instance.enabled
                               )}
                               disabled={isLoading}
+                              className="border-border hover:bg-muted"
                             >
                               {instance.enabled ? (
-                                <Pause className="h-4 w-4" />
+                                <HugeiconsIcon icon={PauseIcon} className="h-4 w-4" />
                               ) : (
-                                <Play className="h-4 w-4" />
+                                <HugeiconsIcon icon={PlayIcon} className="h-4 w-4" />
                               )}
                             </Button>
                             <Button
@@ -449,8 +448,9 @@ export default function PluginManagerComponent() {
                                 instance.instanceId
                               )}
                               disabled={isLoading}
+                              className="border-border hover:bg-muted"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
@@ -459,11 +459,11 @@ export default function PluginManagerComponent() {
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm font-medium">Instance ID</Label>
+                          <Label className="text-sm font-medium text-foreground">Instance ID</Label>
                           <p className="text-sm text-muted-foreground">{instance.instanceId}</p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium">Last Updated</Label>
+                          <Label className="text-sm font-medium text-foreground">Last Updated</Label>
                           <p className="text-sm text-muted-foreground">
                             {instance.lastUpdated.toLocaleDateString()}
                           </p>
@@ -476,10 +476,10 @@ export default function PluginManagerComponent() {
             })}
             
             {installedPlugins.length === 0 && (
-              <Card>
+              <Card className="border border-border bg-card">
                 <CardContent className="flex flex-col items-center justify-center py-8">
-                  <Plug className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No plugins installed</h3>
+                  <HugeiconsIcon icon={PlugIcon} className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">No plugins installed</h3>
                   <p className="text-muted-foreground text-center">
                     Install plugins from the Available Plugins tab to start monitoring your infrastructure.
                   </p>

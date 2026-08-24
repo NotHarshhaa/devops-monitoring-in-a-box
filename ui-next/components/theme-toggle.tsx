@@ -2,13 +2,14 @@
 
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import { Monitor, Moon, Sun } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Sun01Icon, Moon01Icon, ComputerIcon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 
 const options = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'system', label: 'System', icon: Monitor },
-  { value: 'dark', label: 'Dark', icon: Moon }
+  { value: 'light', label: 'Light', icon: Sun01Icon },
+  { value: 'system', label: 'System', icon: ComputerIcon },
+  { value: 'dark', label: 'Dark', icon: Moon01Icon }
 ] as const
 
 export function ThemeToggle({ className }: { className?: string }) {
@@ -58,7 +59,7 @@ export function ThemeToggle({ className }: { className?: string }) {
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
-            <Icon className="size-3.5 shrink-0" strokeWidth={2} />
+            <HugeiconsIcon icon={Icon} className="size-3.5 shrink-0" />
             <span className="hidden text-[11px] font-medium tracking-wide sm:inline">
               {label}
             </span>

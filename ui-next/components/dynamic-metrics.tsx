@@ -8,7 +8,17 @@ import { MetricsChart } from "./metrics-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertCircle, Settings, CheckCircle, RefreshCw, Download, Activity, AlertTriangle } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Loading03Icon,
+  AlertCircleIcon,
+  Settings01Icon,
+  CheckmarkCircle01Icon,
+  RefreshIcon,
+  Download01Icon,
+  Activity01Icon,
+  Alert02Icon
+} from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { ClientOnly } from "./client-only";
 
@@ -37,13 +47,13 @@ export function DynamicMetrics({
     <ClientOnly fallback={
       <div className={cn("space-y-6", className)}>
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
     }>
       <div className={cn("space-y-6", className)}>
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
     </ClientOnly>
@@ -56,7 +66,7 @@ export function DynamicMetrics({
         <div className={cn("space-y-6", className)}>
           <Card className="border-border bg-muted">
             <CardContent className="flex items-center gap-2 text-foreground p-6">
-              <AlertCircle className="h-6 w-6" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-6 w-6" />
               <span>Failed to load metrics configuration</span>
             </CardContent>
           </Card>
@@ -65,7 +75,7 @@ export function DynamicMetrics({
         <div className={cn("space-y-6", className)}>
           <Card className="border-border bg-muted">
             <CardContent className="flex items-center gap-2 text-foreground p-6">
-              <AlertCircle className="h-6 w-6" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-6 w-6" />
               <span>Failed to load metrics configuration: {error}</span>
             </CardContent>
           </Card>
@@ -81,7 +91,7 @@ export function DynamicMetrics({
           <Card>
             <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
               <div className="text-center">
-                <Settings className="h-8 w-8 mx-auto mb-2" />
+                <HugeiconsIcon icon={Settings01Icon} className="h-8 w-8 mx-auto mb-2" />
                 <p>Loading metrics configuration...</p>
               </div>
             </CardContent>
@@ -92,7 +102,7 @@ export function DynamicMetrics({
           <Card>
             <CardContent className="flex items-center justify-center h-32 text-muted-foreground">
               <div className="text-center">
-                <Settings className="h-8 w-8 mx-auto mb-2" />
+                <HugeiconsIcon icon={Settings01Icon} className="h-8 w-8 mx-auto mb-2" />
                 <p>No metrics configured</p>
                 <p className="text-sm">Add metrics in the configuration to see them here</p>
               </div>
@@ -208,7 +218,7 @@ export function DynamicMetrics({
       <ClientOnly fallback={
         <div className={cn("space-y-8", className)}>
           <div className="flex items-center justify-center h-32">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         </div>
       }>
@@ -226,11 +236,13 @@ export function DynamicMetrics({
     );
   }
 
+  const metricsWithCharts = metrics.filter(m => m.chart);
+
   return (
     <ClientOnly fallback={
       <div className={cn("space-y-6", className)}>
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
     }>
@@ -246,9 +258,9 @@ export function DynamicMetrics({
           </div>
         )}
         
-        {showCharts && (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-            {metrics.map((metric, index) => renderMetricChart(metric, index))}
+        {showCharts && metricsWithCharts.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            {metricsWithCharts.map((metric, index) => renderMetricChart(metric, index))}
           </div>
         )}
       </motion.div>
@@ -302,22 +314,30 @@ function getBaseValueForMetric(metricName: string): number {
   return baseValues[metricName] || 50;
 }
 
-// Component for displaying configuration summary
-export function MetricsConfigSummary() {
+// Summary component to show overall configuration health
+export function DynamicMetricsSummary({ 
+  tenantId, 
+  userId, 
+  service 
+}: { 
+  tenantId?: string; 
+  userId?: string; 
+  service?: string; 
+} = {}) {
   const { metrics, metricsByGroup, isLoading, error } = useMultiTenantMetricsConfig();
 
   if (isLoading) {
     return (
       <ClientOnly fallback={
-        <Card>
+        <Card className="border border-border bg-card">
           <CardContent className="flex items-center justify-center h-20">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading03Icon} className="h-6 w-6 animate-spin text-muted-foreground" />
           </CardContent>
         </Card>
       }>
-        <Card>
+        <Card className="border border-border bg-card">
           <CardContent className="flex items-center justify-center h-20">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading03Icon} className="h-6 w-6 animate-spin text-muted-foreground" />
           </CardContent>
         </Card>
       </ClientOnly>
@@ -327,16 +347,16 @@ export function MetricsConfigSummary() {
   if (error) {
     return (
       <ClientOnly fallback={
-        <Card className="border-border bg-muted">
+        <Card className="border border-border bg-muted">
           <CardContent className="flex items-center gap-2 text-foreground p-4">
-            <AlertCircle className="h-5 w-5" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" />
             <span className="text-sm">Configuration error</span>
           </CardContent>
         </Card>
       }>
-        <Card className="border-border bg-muted">
+        <Card className="border border-border bg-muted">
           <CardContent className="flex items-center gap-2 text-foreground p-4">
-            <AlertCircle className="h-5 w-5" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" />
             <span className="text-sm">Configuration error: {error}</span>
           </CardContent>
         </Card>
@@ -362,10 +382,10 @@ export function MetricsConfigSummary() {
 
   return (
     <ClientOnly fallback={
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <HugeiconsIcon icon={Settings01Icon} className="h-5 w-5" />
             Metrics Configuration
           </CardTitle>
           <CardDescription>
@@ -374,7 +394,7 @@ export function MetricsConfigSummary() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-20">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading03Icon} className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -384,18 +404,18 @@ export function MetricsConfigSummary() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+        <Card className="border border-border bg-card overflow-hidden">
           <CardHeader className="text-foreground p-3 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                  <div className="p-2 sm:p-3 bg-card">
-                    <Settings className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
+                  <div className="p-2 sm:p-3 bg-muted">
+                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <span className="hidden sm:inline">Metrics Configuration</span>
                   <span className="sm:hidden">Metrics Config</span>
                 </CardTitle>
-                <CardDescription className="mt-1 sm:mt-2 text-foreground text-xs sm:text-sm">
+                <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
                   <span className="hidden sm:inline">Current metrics configuration and health status</span>
                   <span className="sm:hidden">Configuration & health</span>
                 </CardDescription>
@@ -469,7 +489,7 @@ export function MetricsConfigSummary() {
               >
                 <div className="flex items-center gap-2 sm:gap-4">
                   <div className="p-2 sm:p-3 bg-muted">
-                    <Activity className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
+                    <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <div>
                     <div className="text-lg sm:text-2xl font-bold text-foreground">{realTimeMetrics}</div>
@@ -486,7 +506,7 @@ export function MetricsConfigSummary() {
               >
                 <div className="flex items-center gap-2 sm:gap-4">
                   <div className="p-2 sm:p-3 bg-muted">
-                    <AlertTriangle className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
+                    <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <div>
                     <div className="text-lg sm:text-2xl font-bold text-foreground">{metricsWithThresholds}</div>
@@ -503,7 +523,7 @@ export function MetricsConfigSummary() {
               >
                 <div className="flex items-center gap-2 sm:gap-4">
                   <div className="p-2 sm:p-3 bg-muted">
-                    <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 sm:h-6 sm:w-6 text-foreground" />
                   </div>
                   <div>
                     <div className="text-lg sm:text-2xl font-bold text-foreground">
@@ -564,15 +584,15 @@ export function MetricsConfigSummary() {
               className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-border dark:border-border"
             >
               <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                <Settings className="h-4 w-4" />
+                <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4" />
                 Configure Metrics
               </Button>
               <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                <Download className="h-4 w-4" />
+                <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
                 Export Configuration
               </Button>
               <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                <RefreshCw className="h-4 w-4" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                 Refresh Status
               </Button>
             </motion.div>
@@ -582,3 +602,5 @@ export function MetricsConfigSummary() {
     </ClientOnly>
   );
 }
+
+export const MetricsConfigSummary = DynamicMetricsSummary;

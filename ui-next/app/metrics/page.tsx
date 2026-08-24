@@ -2,20 +2,22 @@
 
 import React from "react"
 import { motion } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  BarChart3,
-  TrendingDown,
-  Download,
-  RefreshCw,
-  Activity,
-  Cpu,
-  HardDrive,
-  Wifi,
-  Monitor,
-  Database,
-  Shield,
-  Gauge
-} from "lucide-react"
+  Analytics01Icon,
+  ArrowDownRight01Icon,
+  Download01Icon,
+  RefreshIcon,
+  Activity01Icon,
+  CpuIcon,
+  HardDriveIcon,
+  WifiIcon,
+  ComputerIcon,
+  DatabaseIcon,
+  Shield01Icon,
+  DashboardSpeed01Icon,
+  Loading03Icon
+} from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -27,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { MetricsOverview, SystemLoadOverview } from "@/components/metrics-overview"
+import { MetricsOverview } from "@/components/metrics-overview"
 import { MetricsChart } from "@/components/metrics-chart"
 import { 
   useAllMetricsRange, 
@@ -104,19 +106,19 @@ export default function MetricsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+          <Card className="border border-border bg-card overflow-hidden">
             <CardHeader className="text-foreground p-4 sm:p-8">
               <div className="flex items-center justify-between">
                 <div className="space-y-2 sm:space-y-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 sm:p-3 bg-card">
-                      <BarChart3 className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
+                    <div className="p-2 sm:p-3 bg-card border border-border">
+                      <HugeiconsIcon icon={Analytics01Icon} className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
                     </div>
                     <div>
                       <CardTitle className="text-xl sm:text-3xl lg:text-4xl font-bold">
                         System Metrics
                       </CardTitle>
-                      <CardDescription className="mt-1 sm:mt-2 text-foreground text-sm sm:text-base">
+                      <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-sm sm:text-base">
                         Real-time performance monitoring from Prometheus
                       </CardDescription>
                     </div>
@@ -124,7 +126,7 @@ export default function MetricsPage() {
                 </div>
                 <div className="hidden sm:block">
                   <Badge className="bg-card text-foreground border-border px-3 py-1.5 font-semibold text-sm">
-                    <Activity className="h-3 w-3 mr-1" />
+                    <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
                     Live Data
                   </Badge>
                 </div>
@@ -138,13 +140,13 @@ export default function MetricsPage() {
                   transition={{ duration: 0.3, delay: 0.1 }}
                   className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Cpu className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={CpuIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {allCurrentMetrics.data?.cpu ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
                   </div>
-                  <div className="text-xs sm:text-sm text-foreground">CPU Usage</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">CPU Usage</div>
                 </motion.div>
 
                 <motion.div
@@ -153,13 +155,13 @@ export default function MetricsPage() {
                   transition={{ duration: 0.3, delay: 0.2 }}
                   className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Database className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {allCurrentMetrics.data?.memory ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
                   </div>
-                  <div className="text-xs sm:text-sm text-foreground">Memory</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Memory</div>
                 </motion.div>
 
                 <motion.div
@@ -168,13 +170,13 @@ export default function MetricsPage() {
                   transition={{ duration: 0.3, delay: 0.3 }}
                   className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <HardDrive className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={HardDriveIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {allCurrentMetrics.data?.disk ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
                   </div>
-                  <div className="text-xs sm:text-sm text-foreground">Disk Usage</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Disk Usage</div>
                 </motion.div>
 
                 <motion.div
@@ -183,13 +185,13 @@ export default function MetricsPage() {
                   transition={{ duration: 0.3, delay: 0.4 }}
                   className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Wifi className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={WifiIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {allCurrentMetrics.data?.network ? `${(allCurrentMetrics.data.network.inbound + allCurrentMetrics.data.network.outbound).toFixed(1)} MB/s` : '--'}
                   </div>
-                  <div className="text-xs sm:text-sm text-foreground">Network</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Network</div>
                 </motion.div>
               </div>
             </CardContent>
@@ -205,7 +207,7 @@ export default function MetricsPage() {
         >
           <div className="flex flex-wrap items-center gap-2">
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[120px] sm:w-[140px] h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border">
+              <SelectTrigger className="w-[120px] sm:w-[140px] h-9 sm:h-10 bg-card border-border">
                 <SelectValue placeholder="Time Range" />
               </SelectTrigger>
               <SelectContent>
@@ -220,10 +222,10 @@ export default function MetricsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted" 
+              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted" 
               onClick={handleRefresh}
             >
-              <RefreshCw className="h-4 w-4" />
+              <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
               <span className="hidden sm:inline">Refresh</span>
               <span className="sm:hidden">Sync</span>
             </Button>
@@ -231,16 +233,16 @@ export default function MetricsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted"
+              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
             >
-              <Download className="h-4 w-4" />
+              <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
               <span className="hidden sm:inline">Export</span>
               <span className="sm:hidden">Save</span>
             </Button>
           </div>
 
           <Badge className="bg-muted text-foreground">
-            <Activity className="h-3 w-3 mr-1" />
+            <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
             Live Monitoring
           </Badge>
         </motion.div>
@@ -254,15 +256,6 @@ export default function MetricsPage() {
           <MetricsOverview />
         </motion.div>
 
-        {/* System Load Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <SystemLoadOverview />
-        </motion.div>
-
         {/* Enhanced Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -270,29 +263,29 @@ export default function MetricsPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-            <TabsList className="h-10 sm:h-11 w-full grid grid-cols-2 sm:grid-cols-5 bg-muted dark:bg-muted p-1">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-xs sm:text-sm font-medium gap-1 sm:gap-2">
-                <Monitor className="h-3 w-3 sm:h-4 sm:w-4" />
+            <TabsList className="h-10 sm:h-11 w-full grid grid-cols-2 sm:grid-cols-5 bg-muted p-1">
+              <TabsTrigger value="overview" className="text-xs sm:text-sm font-medium gap-1 sm:gap-2">
+                <HugeiconsIcon icon={ComputerIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Overview</span>
                 <span className="sm:hidden">All</span>
               </TabsTrigger>
-              <TabsTrigger value="cpu" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-xs sm:text-sm font-medium gap-1 sm:gap-2">
-                <Cpu className="h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="cpu" className="text-xs sm:text-sm font-medium gap-1 sm:gap-2">
+                <HugeiconsIcon icon={CpuIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">CPU</span>
                 <span className="sm:hidden">CPU</span>
               </TabsTrigger>
-              <TabsTrigger value="memory" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-xs sm:text-sm font-medium gap-1 sm:gap-2">
-                <Database className="h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="memory" className="text-xs sm:text-sm font-medium gap-1 sm:gap-2">
+                <HugeiconsIcon icon={DatabaseIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Memory</span>
                 <span className="sm:hidden">RAM</span>
               </TabsTrigger>
-              <TabsTrigger value="disk" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-xs sm:text-sm font-medium gap-1 sm:gap-2">
-                <HardDrive className="h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="disk" className="text-xs sm:text-sm font-medium gap-1 sm:gap-2">
+                <HugeiconsIcon icon={HardDriveIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Disk</span>
                 <span className="sm:hidden">I/O</span>
               </TabsTrigger>
-              <TabsTrigger value="network" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted rounded-lg text-xs sm:text-sm font-medium gap-1 sm:gap-2">
-                <Wifi className="h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="network" className="text-xs sm:text-sm font-medium gap-1 sm:gap-2">
+                <HugeiconsIcon icon={WifiIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Network</span>
                 <span className="sm:hidden">Net</span>
               </TabsTrigger>
@@ -307,7 +300,7 @@ export default function MetricsPage() {
                   transition={{ duration: 0.5 }}
                   className="lg:col-span-2"
                 >
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <MetricsChart
                       title="System Resource Usage"
                       description="CPU, memory, and disk utilization over time"
@@ -334,15 +327,15 @@ export default function MetricsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <Gauge className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={DashboardSpeed01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Resource Distribution
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Current system resource allocation
                       </CardDescription>
                     </CardHeader>
@@ -352,12 +345,12 @@ export default function MetricsPage() {
                           <>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">CPU</span>
-                                <span className="text-sm sm:text-base font-medium text-muted-foreground dark:text-foreground">{allCurrentMetrics.data.cpu.toFixed(1)}%</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground">CPU</span>
+                                <span className="text-sm sm:text-base font-medium text-foreground">{allCurrentMetrics.data.cpu.toFixed(1)}%</span>
                               </div>
-                              <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-2.5">
+                              <div className="w-full bg-muted h-2 sm:h-2.5">
                                 <div 
-                                  className="h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                                  className="h-2 sm:h-2.5 bg-foreground transition-all duration-300"
                                   style={{ width: `${allCurrentMetrics.data.cpu}%` }}
                                 />
                               </div>
@@ -365,12 +358,12 @@ export default function MetricsPage() {
                             
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Memory</span>
-                                <span className="text-sm sm:text-base font-medium text-muted-foreground dark:text-foreground">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground">Memory</span>
+                                <span className="text-sm sm:text-base font-medium text-foreground">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
                               </div>
-                              <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-2.5">
+                              <div className="w-full bg-muted h-2 sm:h-2.5">
                                 <div 
-                                  className="h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                                  className="h-2 sm:h-2.5 bg-foreground transition-all duration-300"
                                   style={{ width: `${allCurrentMetrics.data.memory}%` }}
                                 />
                               </div>
@@ -378,22 +371,22 @@ export default function MetricsPage() {
                             
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Disk</span>
-                                <span className="text-sm sm:text-base font-medium text-muted-foreground dark:text-foreground">{allCurrentMetrics.data.disk.toFixed(1)}%</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground">Disk</span>
+                                <span className="text-sm sm:text-base font-medium text-foreground">{allCurrentMetrics.data.disk.toFixed(1)}%</span>
                               </div>
-                              <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-2.5">
+                              <div className="w-full bg-muted h-2 sm:h-2.5">
                                 <div 
-                                  className="h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                                  className="h-2 sm:h-2.5 bg-foreground transition-all duration-300"
                                   style={{ width: `${allCurrentMetrics.data.disk}%` }}
                                 />
                               </div>
                             </div>
                           </>
                         ) : (
-                          <div className="text-center text-muted-foreground dark:text-muted-foreground py-8 sm:py-12">
+                          <div className="text-center text-muted-foreground py-8 sm:py-12">
                             {allCurrentMetrics.isLoading ? (
                               <div className="flex flex-col items-center justify-center gap-3">
-                                <RefreshCw className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-foreground" />
+                                <HugeiconsIcon icon={Loading03Icon} className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-foreground" />
                                 <span className="text-sm sm:text-base">Loading...</span>
                               </div>
                             ) : (
@@ -413,7 +406,7 @@ export default function MetricsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <MetricsChart
                       title="Network Traffic"
                       description="Inbound and outbound network traffic"
@@ -439,15 +432,15 @@ export default function MetricsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <Database className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Memory Usage Breakdown
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Memory usage by type
                       </CardDescription>
                     </CardHeader>
@@ -457,12 +450,12 @@ export default function MetricsPage() {
                           <>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Used</span>
-                                <span className="text-sm sm:text-base font-medium text-muted-foreground dark:text-foreground">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground">Used</span>
+                                <span className="text-sm sm:text-base font-medium text-foreground">{allCurrentMetrics.data.memory.toFixed(1)}%</span>
                               </div>
-                              <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-2.5">
+                              <div className="w-full bg-muted h-2 sm:h-2.5">
                                 <div 
-                                  className="h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                                  className="h-2 sm:h-2.5 bg-foreground transition-all duration-300"
                                   style={{ width: `${allCurrentMetrics.data.memory}%` }}
                                 />
                               </div>
@@ -470,22 +463,22 @@ export default function MetricsPage() {
                             
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Available</span>
-                                <span className="text-sm sm:text-base font-medium text-muted-foreground dark:text-foreground">{(100 - allCurrentMetrics.data.memory).toFixed(1)}%</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground">Available</span>
+                                <span className="text-sm sm:text-base font-medium text-foreground">{(100 - allCurrentMetrics.data.memory).toFixed(1)}%</span>
                               </div>
-                              <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-2.5">
+                              <div className="w-full bg-muted h-2 sm:h-2.5">
                                 <div 
-                                  className="h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                                  className="h-2 sm:h-2.5 bg-foreground transition-all duration-300"
                                   style={{ width: `${100 - allCurrentMetrics.data.memory}%` }}
                                 />
                               </div>
                             </div>
                           </>
                         ) : (
-                          <div className="text-center text-muted-foreground dark:text-muted-foreground py-8 sm:py-12">
+                          <div className="text-center text-muted-foreground py-8 sm:py-12">
                             {allCurrentMetrics.isLoading ? (
                               <div className="flex flex-col items-center justify-center gap-3">
-                                <RefreshCw className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-foreground" />
+                                <HugeiconsIcon icon={Loading03Icon} className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-foreground" />
                                 <span className="text-sm sm:text-base">Loading...</span>
                               </div>
                             ) : (
@@ -503,7 +496,7 @@ export default function MetricsPage() {
             {/* CPU Tab */}
             <TabsContent value="cpu" className="space-y-4 sm:space-y-6">
               <div className="grid gap-4 sm:gap-6">
-                <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                <Card className="border border-border bg-card transition-all duration-300">
                   <MetricsChart
                     title="CPU Usage Over Time"
                     description="Detailed CPU utilization metrics"
@@ -523,67 +516,67 @@ export default function MetricsPage() {
                 </Card>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="pb-2 p-4 sm:p-6">
-                      <CardTitle className="text-lg text-muted-foreground dark:text-foreground flex items-center gap-2">
-                        <Cpu className="h-5 w-5 text-foreground" />
+                      <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                        <HugeiconsIcon icon={CpuIcon} className="h-5 w-5 text-foreground" />
                         Current Usage
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex items-center justify-between">
-                        <div className="text-2xl sm:text-3xl font-bold text-muted-foreground dark:text-foreground">
+                        <div className="text-2xl sm:text-3xl font-bold text-foreground">
                           {allCurrentMetrics.data?.cpu ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
                         </div>
                         <div className="flex items-center text-foreground">
-                          <TrendingDown className="h-4 w-4 mr-1" />
+                          <HugeiconsIcon icon={ArrowDownRight01Icon} className="h-4 w-4 mr-1" />
                           <span className="text-xs sm:text-sm">Real-time</span>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="pb-2 p-4 sm:p-6">
-                      <CardTitle className="text-lg text-muted-foreground dark:text-foreground flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-foreground" />
+                      <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                        <HugeiconsIcon icon={Activity01Icon} className="h-5 w-5 text-foreground" />
                         Average Load
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
                         <div>
-                          <div className="text-lg sm:text-xl font-bold text-muted-foreground dark:text-foreground">
+                          <div className="text-lg sm:text-xl font-bold text-foreground">
                             {allCurrentMetrics.data?.load.load1 ? allCurrentMetrics.data.load.load1.toFixed(1) : '--'}
                           </div>
-                          <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">1 min</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">1 min</div>
                         </div>
                         <div>
-                          <div className="text-lg sm:text-xl font-bold text-muted-foreground dark:text-foreground">
+                          <div className="text-lg sm:text-xl font-bold text-foreground">
                             {allCurrentMetrics.data?.load.load5 ? allCurrentMetrics.data.load.load5.toFixed(1) : '--'}
                           </div>
-                          <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">5 min</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">5 min</div>
                         </div>
                         <div>
-                          <div className="text-lg sm:text-xl font-bold text-muted-foreground dark:text-foreground">
+                          <div className="text-lg sm:text-xl font-bold text-foreground">
                             {allCurrentMetrics.data?.load.load15 ? allCurrentMetrics.data.load.load15.toFixed(1) : '--'}
                           </div>
-                          <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">15 min</div>
+                          <div className="text-xs sm:text-sm text-muted-foreground">15 min</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="pb-2 p-4 sm:p-6">
-                      <CardTitle className="text-lg text-muted-foreground dark:text-foreground flex items-center gap-2">
-                        <Shield className="h-5 w-5 text-foreground" />
+                      <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                        <HugeiconsIcon icon={Shield01Icon} className="h-5 w-5 text-foreground" />
                         Status
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${ allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 80 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
+                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 80 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
                           {allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 80 
                             ? 'High'
                             : allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 60
@@ -601,7 +594,7 @@ export default function MetricsPage() {
             {/* Memory Tab */}
             <TabsContent value="memory" className="space-y-4 sm:space-y-6">
               <div className="grid gap-4 sm:gap-6">
-                <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                <Card className="border border-border bg-card transition-all duration-300">
                   <MetricsChart
                     title="Memory Usage Over Time"
                     description="RAM utilization over time"
@@ -621,36 +614,36 @@ export default function MetricsPage() {
                 </Card>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <Database className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Memory Details
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Current memory statistics
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground dark:text-muted-foreground">Total Usage</span>
-                          <span className="font-medium text-muted-foreground dark:text-foreground">
+                          <span className="text-sm text-muted-foreground">Total Usage</span>
+                          <span className="font-medium text-foreground">
                             {allCurrentMetrics.data?.memory ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
                           </span>
                         </div>
-                        <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-2.5">
+                        <div className="w-full bg-muted h-2 sm:h-2.5">
                           <div 
-                            className="h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                            className="h-2 sm:h-2.5 bg-foreground transition-all duration-300"
                             style={{ width: `${allCurrentMetrics.data?.memory || 0}%` }}
                           />
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground dark:text-muted-foreground">Available</span>
-                          <span className="font-medium text-muted-foreground dark:text-foreground">
+                          <span className="text-sm text-muted-foreground">Available</span>
+                          <span className="font-medium text-foreground">
                             {allCurrentMetrics.data?.memory ? `${(100 - allCurrentMetrics.data.memory).toFixed(1)}%` : '--'}
                           </span>
                         </div>
@@ -658,21 +651,21 @@ export default function MetricsPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Memory Status
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Memory health indicator
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${ allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 90 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
+                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 90 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
                           {allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 90 
                             ? 'Critical'
                             : allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 75
@@ -690,7 +683,7 @@ export default function MetricsPage() {
             {/* Disk Tab */}
             <TabsContent value="disk" className="space-y-4 sm:space-y-6">
               <div className="grid gap-4 sm:gap-6">
-                <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                <Card className="border border-border bg-card transition-all duration-300">
                   <MetricsChart
                     title="Disk Usage Over Time"
                     description="Storage metrics and I/O operations"
@@ -710,36 +703,36 @@ export default function MetricsPage() {
                 </Card>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <HardDrive className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={HardDriveIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Disk Details
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Current disk statistics
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground dark:text-muted-foreground">Storage Used</span>
-                          <span className="font-medium text-muted-foreground dark:text-foreground">
+                          <span className="text-sm text-muted-foreground">Storage Used</span>
+                          <span className="font-medium text-foreground">
                             {allCurrentMetrics.data?.disk ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
                           </span>
                         </div>
-                        <div className="w-full bg-muted dark:bg-muted rounded-full h-2 sm:h-2.5">
+                        <div className="w-full bg-muted h-2 sm:h-2.5">
                           <div 
-                            className="h-2 sm:h-2.5 rounded-full transition-all duration-300"
+                            className="h-2 sm:h-2.5 bg-foreground transition-all duration-300"
                             style={{ width: `${allCurrentMetrics.data?.disk || 0}%` }}
                           />
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground dark:text-muted-foreground">Available</span>
-                          <span className="font-medium text-muted-foreground dark:text-foreground">
+                          <span className="text-sm text-muted-foreground">Available</span>
+                          <span className="font-medium text-foreground">
                             {allCurrentMetrics.data?.disk ? `${(100 - allCurrentMetrics.data.disk).toFixed(1)}%` : '--'}
                           </span>
                         </div>
@@ -747,21 +740,21 @@ export default function MetricsPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Disk Status
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Storage health indicator
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${ allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 90 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
+                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 90 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
                           {allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 90 
                             ? 'Critical'
                             : allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 80
@@ -779,7 +772,7 @@ export default function MetricsPage() {
             {/* Network Tab */}
             <TabsContent value="network" className="space-y-4 sm:space-y-6">
               <div className="grid gap-4 sm:gap-6">
-                <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                <Card className="border border-border bg-card transition-all duration-300">
                   <MetricsChart
                     title="Network Traffic Over Time"
                     description="Network throughput and connections"
@@ -800,35 +793,35 @@ export default function MetricsPage() {
                 </Card>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <Wifi className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={WifiIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Network Details
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Current network statistics
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground dark:text-muted-foreground">Inbound</span>
-                          <span className="font-medium text-muted-foreground dark:text-foreground">
+                          <span className="text-sm text-muted-foreground">Inbound</span>
+                          <span className="font-medium text-foreground">
                             {allCurrentMetrics.data?.network ? `${allCurrentMetrics.data.network.inbound.toFixed(2)} MB/s` : '--'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground dark:text-muted-foreground">Outbound</span>
-                          <span className="font-medium text-muted-foreground dark:text-foreground">
+                          <span className="text-sm text-muted-foreground">Outbound</span>
+                          <span className="font-medium text-foreground">
                             {allCurrentMetrics.data?.network ? `${allCurrentMetrics.data.network.outbound.toFixed(2)} MB/s` : '--'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground dark:text-muted-foreground">Total</span>
-                          <span className="font-medium text-muted-foreground dark:text-foreground">
+                          <span className="text-sm text-muted-foreground">Total</span>
+                          <span className="font-medium text-foreground">
                             {allCurrentMetrics.data?.network ? `${(allCurrentMetrics.data.network.inbound + allCurrentMetrics.data.network.outbound).toFixed(2)} MB/s` : '--'}
                           </span>
                         </div>
@@ -836,24 +829,24 @@ export default function MetricsPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-border dark:border-border bg-card dark:bg-card transition-all duration-300">
+                  <Card className="border border-border bg-card transition-all duration-300">
                     <CardHeader className="p-4 sm:p-6">
-                      <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
                         <div className="p-2">
-                          <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                          <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                         </div>
                         Network Status
                       </CardTitle>
-                      <CardDescription className="text-muted-foreground dark:text-muted-foreground">
+                      <CardDescription className="text-muted-foreground">
                         Connection health indicator
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-foreground">
+                        <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-foreground border border-border bg-muted">
                           Active
                         </div>
-                        <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-2">
+                        <p className="text-sm text-muted-foreground mt-2">
                           Network interfaces are operational
                         </p>
                       </div>

@@ -2,27 +2,29 @@
 
 import React from "react"
 import { motion } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Bell,
-  AlertTriangle,
-  Info,
-  CheckCircle,
-  Clock,
-  Filter,
-  RefreshCw,
-  Calendar,
-  ArrowUpDown,
-  VolumeX,
-  MessageSquare,
-  AlertCircle,
-  Search,
-  Loader2,
-  ChevronDown,
-  ChevronRight,
-  ExternalLink,
-  Shield,
-  Activity,
-  Database} from "lucide-react"
+  Notification01Icon,
+  Alert02Icon,
+  InformationCircleIcon,
+  CheckmarkCircle01Icon,
+  Clock01Icon,
+  FilterIcon,
+  RefreshIcon,
+  Calendar01Icon,
+  Sorting01Icon,
+  VolumeMute01Icon,
+  Message01Icon,
+  AlertCircleIcon,
+  Search01Icon,
+  Loading03Icon,
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  ArrowUpRight01Icon,
+  Shield01Icon,
+  Activity01Icon,
+  DatabaseIcon
+} from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -59,7 +61,7 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
       whileHover={{ y: -2, scale: 1.01 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className={`overflow-hidden border border-border dark:border-border bg-card dark:bg-card transition-all duration-300 ${ severity === "critical" ? "border-l-4 border-l-foreground" : "warning" }`}>
+      <Card className={`overflow-hidden border border-border bg-card transition-all duration-300 ${ severity === "critical" ? "border-l-4 border-l-foreground" : "" }`}>
       <CardHeader className="p-4 sm:p-6 pb-3">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
           <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
@@ -67,8 +69,8 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
               {getSeverityIcon(severity)}
             </div>
             <div className="min-w-0 flex-1">
-              <CardTitle className="text-base sm:text-lg break-words text-muted-foreground dark:text-foreground">{alertName}</CardTitle>
-              <CardDescription className="text-xs sm:text-sm mt-1 break-words text-muted-foreground dark:text-muted-foreground">
+              <CardTitle className="text-base sm:text-lg break-words text-foreground">{alertName}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1 break-words text-muted-foreground">
                 {summary}
               </CardDescription>
             </div>
@@ -82,29 +84,29 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
       <CardContent className="p-4 sm:p-6 pt-0 pb-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
           <div className="space-y-1">
-            <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Service</p>
-            <p className="text-sm sm:text-base font-medium break-words text-muted-foreground dark:text-foreground">{serviceName}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Service</p>
+            <p className="text-sm sm:text-base font-medium break-words text-foreground">{serviceName}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Value</p>
-            <p className="text-sm sm:text-base font-medium break-words text-muted-foreground dark:text-foreground">{value}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Value</p>
+            <p className="text-sm sm:text-base font-medium break-words text-foreground">{value}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Duration</p>
-            <p className="text-sm sm:text-base font-medium text-muted-foreground dark:text-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">Duration</p>
+            <p className="text-sm sm:text-base font-medium text-foreground">
               {alertmanagerAPI.calculateDuration(alert.startsAt, alert.endsAt)}
             </p>
           </div>
           <div className="sm:col-span-3 space-y-1">
-            <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Description</p>
-            <p className="text-sm sm:text-base break-words text-muted-foreground dark:text-foreground">{description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Description</p>
+            <p className="text-sm sm:text-base break-words text-foreground">{description}</p>
           </div>
           {Object.keys(alert.labels).length > 0 && (
             <div className="sm:col-span-3 space-y-2">
-              <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground font-medium">Labels</p>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Labels</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(alert.labels).map(([key, value]) => (
-                  <Badge key={key} variant="secondary" className="text-xs bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground">
+                  <Badge key={key} variant="secondary" className="text-xs bg-muted text-muted-foreground">
                     {key}={String(value)}
                   </Badge>
                 ))}
@@ -119,14 +121,14 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-4 pt-4 border-t border-border dark:border-border"
+            className="mt-4 pt-4 border-t border-border"
           >
             <div className="space-y-3">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mb-2">Annotations</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Annotations</p>
                 <div className="space-y-1">
                   {Object.entries(alert.annotations).map(([key, value]) => (
-                    <div key={key} className="text-sm text-muted-foreground dark:text-foreground">
+                    <div key={key} className="text-sm text-foreground">
                       <span className="font-medium">{key}:</span> {String(value)}
                     </div>
                   ))}
@@ -134,8 +136,8 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
               </div>
               
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mb-2">Timestamps</p>
-                <div className="space-y-1 text-sm text-muted-foreground dark:text-foreground">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Timestamps</p>
+                <div className="space-y-1 text-sm text-foreground">
                   <div>
                     <span className="font-medium">Started:</span> {alertmanagerAPI.formatTimestamp(alert.startsAt)}
                   </div>
@@ -152,14 +154,14 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
 
               {alert.generatorURL && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mb-2">Generator URL</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Generator URL</p>
                   <a 
                     href={alert.generatorURL} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-sm text-foreground flex items-center gap-1"
                   >
-                    <ExternalLink className="h-3 w-3" />
+                    <HugeiconsIcon icon={ArrowUpRight01Icon} className="h-3 w-3" />
                     View in Prometheus
                   </a>
                 </div>
@@ -169,8 +171,8 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
         )}
       </CardContent>
       <CardFooter className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground flex items-center gap-1.5">
-          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+        <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
+          <HugeiconsIcon icon={Clock01Icon} className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
           <span className="break-words">
             {isFiring
               ? `Started at ${alertmanagerAPI.formatTimestamp(alert.startsAt)}`
@@ -182,30 +184,30 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle }) =>
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted"
+            className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted"
             onClick={onToggle}
           >
             {isExpanded ? (
               <>
-                <ChevronDown className="h-3.5 w-3.5" />
+                <HugeiconsIcon icon={ArrowDown01Icon} className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Less</span>
                 <span className="sm:hidden">Collapse</span>
               </>
             ) : (
               <>
-                <ChevronRight className="h-3.5 w-3.5" />
+                <HugeiconsIcon icon={ArrowRight01Icon} className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Details</span>
                 <span className="sm:hidden">Expand</span>
               </>
             )}
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-            <MessageSquare className="h-3.5 w-3.5" />
+          <Button variant="outline" size="sm" className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted">
+            <HugeiconsIcon icon={Message01Icon} className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Comment</span>
             <span className="sm:hidden">Comment</span>
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-            <VolumeX className="h-3.5 w-3.5" />
+          <Button variant="outline" size="sm" className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted">
+            <HugeiconsIcon icon={VolumeMute01Icon} className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Silence</span>
             <span className="sm:hidden">Silence</span>
           </Button>
@@ -277,13 +279,13 @@ const getStatusBadge = (status: string) => {
 const getSeverityIcon = (severity: string) => {
   switch (severity) {
     case "critical":
-      return <div className="p-2 rounded-lg"><AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
+      return <div className="p-2 border border-border"><HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
     case "warning":
-      return <div className="p-2 rounded-lg"><AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
+      return <div className="p-2 border border-border"><HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
     case "info":
-      return <div className="p-2 rounded-lg"><Info className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
+      return <div className="p-2 border border-border"><HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
     default:
-      return <div className="p-2 rounded-lg"><Info className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
+      return <div className="p-2 border border-border"><HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" /></div>
   }
 }
 
@@ -363,19 +365,19 @@ export default function AlertsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border border-border dark:border-border bg-card dark:bg-card overflow-hidden">
+          <Card className="border border-border bg-card overflow-hidden">
             <CardHeader className="text-foreground p-4 sm:p-8">
               <div className="flex items-center justify-between">
                 <div className="space-y-2 sm:space-y-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 sm:p-3 bg-card">
-                      <Bell className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
+                    <div className="p-2 sm:p-3 bg-card border border-border">
+                      <HugeiconsIcon icon={Notification01Icon} className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
                     </div>
                     <div>
                       <CardTitle className="text-xl sm:text-3xl lg:text-4xl font-bold">
                         System Alerts
                       </CardTitle>
-                      <CardDescription className="mt-1 sm:mt-2 text-foreground text-sm sm:text-base">
+                      <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-sm sm:text-base">
                         Monitor and manage system alerts from Alertmanager
                       </CardDescription>
                     </div>
@@ -383,7 +385,7 @@ export default function AlertsPage() {
                 </div>
                 <div className="hidden sm:block">
                   <Badge className="bg-card text-foreground border-border px-3 py-1.5 font-semibold text-sm">
-                    <Activity className="h-3 w-3 mr-1" />
+                    <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
                     Live Monitoring
                   </Badge>
                 </div>
@@ -397,13 +399,13 @@ export default function AlertsPage() {
                   transition={{ duration: 0.3, delay: 0.1 }}
                   className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {stats.firing}
                   </div>
-                  <div className="text-xs sm:text-sm text-foreground">Firing</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Firing</div>
                 </motion.div>
 
                 <motion.div
@@ -412,28 +414,28 @@ export default function AlertsPage() {
                   transition={{ duration: 0.3, delay: 0.2 }}
                   className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {stats.total - stats.firing - stats.suppressed}
                   </div>
-                  <div className="text-xs sm:text-sm text-foreground">Resolved</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Resolved</div>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.3 }}
-                  className="text-center p-3 sm:p-4 border border-border dark:border-border"
+                  className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <VolumeX className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={VolumeMute01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
-                  <div className="text-lg sm:text-xl font-bold text-muted-foreground dark:text-muted-foreground">
+                  <div className="text-lg sm:text-xl font-bold text-foreground">
                     {stats.suppressed}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">Suppressed</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Suppressed</div>
                 </motion.div>
 
                 <motion.div
@@ -442,13 +444,13 @@ export default function AlertsPage() {
                   transition={{ duration: 0.3, delay: 0.4 }}
                   className="text-center p-3 sm:p-4 border border-border"
                 >
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Database className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
+                    <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {services.length}
                   </div>
-                  <div className="text-xs sm:text-sm text-foreground">Services</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Services</div>
                 </motion.div>
               </div>
             </CardContent>
@@ -466,14 +468,14 @@ export default function AlertsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted" 
+              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted" 
               onClick={refresh}
               disabled={loading}
             >
               {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
               ) : (
-                <RefreshCw className="h-4 w-4" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
               )}
               <span className="hidden sm:inline">Refresh</span>
               <span className="sm:hidden">Sync</span>
@@ -482,9 +484,9 @@ export default function AlertsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted"
+              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
             >
-              <Calendar className="h-4 w-4" />
+              <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4" />
               <span className="hidden sm:inline">History</span>
               <span className="sm:hidden">Hist</span>
             </Button>
@@ -492,16 +494,16 @@ export default function AlertsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted"
+              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
             >
-              <VolumeX className="h-4 w-4" />
+              <HugeiconsIcon icon={VolumeMute01Icon} className="h-4 w-4" />
               <span className="hidden sm:inline">Silences</span>
               <span className="sm:hidden">Quiet</span>
             </Button>
           </div>
 
           <Badge className="bg-muted text-foreground">
-            <Activity className="h-3 w-3 mr-1" />
+            <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
             {loading ? 'Loading...' : 'Live'}
           </Badge>
         </motion.div>
@@ -512,11 +514,11 @@ export default function AlertsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="border border-border dark:border-border bg-card dark:bg-card">
+          <Card className="border border-border bg-card">
             <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-muted-foreground dark:text-foreground">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <div className="p-2">
-                  <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  <HugeiconsIcon icon={FilterIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                 </div>
                 Filters & Search
               </CardTitle>
@@ -525,10 +527,10 @@ export default function AlertsPage() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search alerts..."
-                      className="pl-9 h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border"
+                      className="pl-9 h-9 sm:h-10 bg-card border-border"
                       value={filters.searchQuery}
                       onChange={(e) => handleSearchChange(e.target.value)}
                     />
@@ -539,18 +541,18 @@ export default function AlertsPage() {
                     className="h-9 sm:h-10 bg-muted text-foreground"
                   >
                     {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin mr-2" />
                     ) : (
-                      <Search className="h-4 w-4 mr-2" />
+                      <HugeiconsIcon icon={Search01Icon} className="h-4 w-4 mr-2" />
                     )}
                     Search
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Severity</label>
+                    <label className="text-xs sm:text-sm font-medium text-muted-foreground">Severity</label>
                     <Select value={filters.severity} onValueChange={handleSeverityChange}>
-                      <SelectTrigger className="h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border">
+                      <SelectTrigger className="h-9 sm:h-10 bg-card border-border">
                         <SelectValue placeholder="Filter by severity" />
                       </SelectTrigger>
                       <SelectContent>
@@ -564,9 +566,9 @@ export default function AlertsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Status</label>
+                    <label className="text-xs sm:text-sm font-medium text-muted-foreground">Status</label>
                     <Select value={filters.status} onValueChange={handleStatusChange}>
-                      <SelectTrigger className="h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border">
+                      <SelectTrigger className="h-9 sm:h-10 bg-card border-border">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -578,9 +580,9 @@ export default function AlertsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Service</label>
+                    <label className="text-xs sm:text-sm font-medium text-muted-foreground">Service</label>
                     <Select value={filters.service} onValueChange={handleServiceChange}>
-                      <SelectTrigger className="h-9 sm:h-10 bg-card dark:bg-card border-border dark:border-border">
+                      <SelectTrigger className="h-9 sm:h-10 bg-card border-border">
                         <SelectValue placeholder="Filter by service" />
                       </SelectTrigger>
                       <SelectContent>
@@ -605,13 +607,13 @@ export default function AlertsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="border border-border dark:border-border bg-card dark:bg-card">
+          <Card className="border border-border bg-card">
             <CardHeader className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-muted-foreground dark:text-foreground">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl text-foreground">
                     <div className="p-2">
-                      <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                      <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                     </div>
                     Alert Entries
                   </CardTitle>
@@ -619,22 +621,22 @@ export default function AlertsPage() {
                     {error ? (
                       <span className="text-foreground text-sm">Error: {error}</span>
                     ) : loading ? (
-                      <span className="flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
                         Loading alerts...
                       </span>
                     ) : (
-                      <span className="text-sm text-muted-foreground dark:text-muted-foreground">Showing {filteredAlerts.length} alert{filteredAlerts.length !== 1 ? 's' : ''}</span>
+                      <span className="text-sm text-muted-foreground">Showing {filteredAlerts.length} alert{filteredAlerts.length !== 1 ? 's' : ''}</span>
                     )}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <Button variant="outline" size="sm" className="gap-1.5 h-9 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                    <ArrowUpDown className="h-3.5 w-3.5" />
+                  <Button variant="outline" size="sm" className="gap-1.5 h-9 bg-card border-border hover:bg-muted">
+                    <HugeiconsIcon icon={Sorting01Icon} className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Sort</span>
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-1.5 h-9 bg-card dark:bg-card border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                    <Filter className="h-3.5 w-3.5" />
+                  <Button variant="outline" size="sm" className="gap-1.5 h-9 bg-card border-border hover:bg-muted">
+                    <HugeiconsIcon icon={FilterIcon} className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">More Filters</span>
                     <span className="sm:hidden">Filters</span>
                   </Button>
@@ -646,8 +648,8 @@ export default function AlertsPage() {
                 {filteredAlerts.length === 0 && !loading ? (
                   <div className="text-center py-8 sm:py-12">
                     <div className="flex flex-col items-center justify-center gap-3">
-                      <AlertCircle className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
-                      <span className="text-sm sm:text-base text-muted-foreground dark:text-muted-foreground">No alerts found</span>
+                      <HugeiconsIcon icon={AlertCircleIcon} className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
+                      <span className="text-sm sm:text-base text-muted-foreground">No alerts found</span>
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -659,7 +661,7 @@ export default function AlertsPage() {
                         })}
                         className="gap-1.5"
                       >
-                        <Filter className="h-4 w-4" />
+                        <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" />
                         Clear Filters
                       </Button>
                     </div>

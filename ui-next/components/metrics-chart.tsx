@@ -2,7 +2,13 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, AlertCircle, Loader2, Settings } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  RefreshIcon,
+  AlertCircleIcon,
+  Loading03Icon,
+  Settings01Icon
+} from "@hugeicons/core-free-icons";
 import {
   LineChart,
   Line,
@@ -121,7 +127,7 @@ export function MetricsChart({
               <div className="flex items-center gap-2">
                 {showRefreshInterval && (
                   <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
                     <Select
                       value={refreshInterval.toString()}
                       onValueChange={handleRefreshIntervalChange}
@@ -141,7 +147,7 @@ export function MetricsChart({
                 )}
                 {onRefresh && (
                   <Button variant="outline" size="sm" onClick={onRefresh} disabled>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
                   </Button>
                 )}
               </div>
@@ -155,7 +161,7 @@ export function MetricsChart({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin text-muted-foreground" />
             </motion.div>
           </CardContent>
         </Card>
@@ -170,7 +176,7 @@ export function MetricsChart({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className={cn("relative overflow-hidden border-border bg-muted border-border bg-muted", className)}>
+        <Card className={cn("relative overflow-hidden border-border bg-muted", className)}>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
@@ -180,7 +186,7 @@ export function MetricsChart({
               <div className="flex items-center gap-2">
                 {showRefreshInterval && (
                   <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
                     <Select
                       value={refreshInterval.toString()}
                       onValueChange={handleRefreshIntervalChange}
@@ -200,7 +206,7 @@ export function MetricsChart({
                 )}
                 {onRefresh && (
                   <Button variant="outline" size="sm" onClick={onRefresh}>
-                    <RefreshCw className="h-4 w-4" />
+                    <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -214,7 +220,7 @@ export function MetricsChart({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <AlertCircle className="h-6 w-6" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-6 w-6" />
               <span>{errorMessage}</span>
             </motion.div>
           </CardContent>
@@ -240,7 +246,7 @@ export function MetricsChart({
               <div className="flex items-center gap-2">
                 {showRefreshInterval && (
                   <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
                     <Select
                       value={refreshInterval.toString()}
                       onValueChange={handleRefreshIntervalChange}
@@ -260,7 +266,7 @@ export function MetricsChart({
                 )}
                 {onRefresh && (
                   <Button variant="outline" size="sm" onClick={onRefresh}>
-                    <RefreshCw className="h-4 w-4" />
+                    <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -292,7 +298,7 @@ export function MetricsChart({
       contentStyle: {
         backgroundColor: "var(--background)",
         borderColor: "var(--border)",
-        borderRadius: "8px",
+        borderRadius: "0px",
         boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
       },
       formatter: formatTooltipValue,
@@ -526,7 +532,7 @@ export function MetricsChart({
             <div className="flex items-center gap-2">
               {showRefreshInterval && (
                 <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
                   <Select
                     value={refreshInterval.toString()}
                     onValueChange={handleRefreshIntervalChange}
@@ -550,11 +556,12 @@ export function MetricsChart({
                   size="sm" 
                   onClick={onRefresh}
                   disabled={isLoading}
+                  className="border-border hover:bg-muted"
                 >
                   {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
                   ) : (
-                    <RefreshCw className="h-4 w-4" />
+                    <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                   )}
                 </Button>
               )}

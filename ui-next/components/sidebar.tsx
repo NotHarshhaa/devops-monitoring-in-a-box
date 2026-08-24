@@ -3,42 +3,43 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Home,
-  Server,
-  BarChart3,
-  FileText,
-  Bell,
-  Settings,
-  X,
-  Activity,
-  Database,
-  Monitor,
-  ChevronLeft,
-  ChevronRight,
-  Layout,
-  Plug
-} from 'lucide-react'
+  DashboardSquare01Icon,
+  Layout01Icon,
+  CloudServerIcon,
+  Analytics01Icon,
+  File01Icon,
+  Notification01Icon,
+  Settings01Icon,
+  Cancel01Icon,
+  Activity01Icon,
+  DatabaseIcon,
+  ComputerIcon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  Plug01Icon
+} from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { VersionBadge } from '@/components/version-badge'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Templates', href: '/templates', icon: Layout },
-  { name: 'Services', href: '/services', icon: Server },
-  { name: 'Metrics', href: '/metrics', icon: BarChart3 },
-  { name: 'Logs', href: '/logs', icon: FileText },
-  { name: 'Alerts', href: '/alerts', icon: Bell },
-  { name: 'Plugins', href: '/plugins', icon: Plug },
-  { name: 'Settings', href: '/settings', icon: Settings }
+  { name: 'Dashboard', href: '/dashboard', icon: DashboardSquare01Icon },
+  { name: 'Templates', href: '/templates', icon: Layout01Icon },
+  { name: 'Services', href: '/services', icon: CloudServerIcon },
+  { name: 'Metrics', href: '/metrics', icon: Analytics01Icon },
+  { name: 'Logs', href: '/logs', icon: File01Icon },
+  { name: 'Alerts', href: '/alerts', icon: Notification01Icon },
+  { name: 'Plugins', href: '/plugins', icon: Plug01Icon },
+  { name: 'Settings', href: '/settings', icon: Settings01Icon }
 ]
 
 const serviceStatus = [
-  { name: 'Prometheus', status: 'healthy', icon: Database },
-  { name: 'Grafana', status: 'healthy', icon: BarChart3 },
-  { name: 'Loki', status: 'healthy', icon: FileText },
-  { name: 'Node Exporter', status: 'healthy', icon: Monitor }
+  { name: 'Prometheus', status: 'healthy', icon: DatabaseIcon },
+  { name: 'Grafana', status: 'healthy', icon: Analytics01Icon },
+  { name: 'Loki', status: 'healthy', icon: File01Icon },
+  { name: 'Node Exporter', status: 'healthy', icon: ComputerIcon }
 ]
 
 const NavigationItem = memo(function NavigationItem({
@@ -66,7 +67,7 @@ const NavigationItem = memo(function NavigationItem({
           : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
       )}
     >
-      <item.icon className="size-4 shrink-0" />
+      <HugeiconsIcon icon={item.icon} className="size-4 shrink-0" />
       {!isCollapsed && <span className="font-medium">{item.name}</span>}
     </Link>
   )
@@ -88,7 +89,7 @@ const ServiceStatusItem = memo(function ServiceStatusItem({
       title={isCollapsed ? `${service.name}: ${service.status}` : undefined}
     >
       <span className="size-1.5 shrink-0 rounded-full bg-foreground" />
-      <service.icon className="size-3.5 shrink-0 text-muted-foreground" />
+      <HugeiconsIcon icon={service.icon} className="size-3.5 shrink-0 text-muted-foreground" />
       {!isCollapsed && (
         <>
           <span className="flex-1 truncate text-xs">{service.name}</span>
@@ -181,13 +182,13 @@ export const Sidebar = memo(function Sidebar({
               className="mx-auto flex size-9 items-center justify-center border border-border hover:bg-muted"
               aria-label="Expand sidebar"
             >
-              <Activity className="size-4" />
+              <HugeiconsIcon icon={Activity01Icon} className="size-4" />
             </button>
           ) : (
             <>
               <Link href="/dashboard" className="flex min-w-0 items-center gap-2.5">
                 <span className="flex size-8 shrink-0 items-center justify-center border border-border bg-background">
-                  <Activity className="size-3.5" />
+                  <HugeiconsIcon icon={Activity01Icon} className="size-3.5" />
                 </span>
                 <span className="truncate text-sm font-semibold">Monitor</span>
               </Link>
@@ -199,7 +200,7 @@ export const Sidebar = memo(function Sidebar({
                     onClick={() => setIsCollapsed(true)}
                     aria-label="Collapse sidebar"
                   >
-                    <ChevronLeft className="size-4" />
+                    <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
                   </Button>
                 )}
                 {!isDesktop && (
@@ -209,7 +210,7 @@ export const Sidebar = memo(function Sidebar({
                     onClick={closeMobile}
                     aria-label="Close navigation"
                   >
-                    <X className="size-4" />
+                    <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
                   </Button>
                 )}
               </div>
@@ -248,7 +249,7 @@ export const Sidebar = memo(function Sidebar({
               className="mx-auto flex size-8 items-center justify-center text-muted-foreground hover:text-foreground"
               aria-label="Expand sidebar"
             >
-              <ChevronRight className="size-4" />
+              <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
             </button>
           )}
         </div>

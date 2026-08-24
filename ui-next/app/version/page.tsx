@@ -1,31 +1,38 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { VersionInfo } from "@/components/version-badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Download, Github, Star, Heart } from "lucide-react"
+import { 
+  ArrowLeft02Icon, 
+  Download01Icon, 
+  GithubIcon, 
+  StarIcon, 
+  FavouriteIcon 
+} from "@hugeicons/core-free-icons"
 import Link from "next/link"
 
 export default function VersionPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="border-b border-border dark:border-border bg-card dark:bg-card">
+      <div className="border-b border-border bg-card">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/dashboard">
               <Button variant="ghost" className="flex items-center space-x-2">
-                <ArrowLeft className="w-4 h-4" />
+                <HugeiconsIcon icon={ArrowLeft02Icon} className="w-4 h-4" />
                 <span>Back to Dashboard</span>
               </Button>
             </Link>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <Github className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" className="gap-2 border-border hover:bg-muted">
+                <HugeiconsIcon icon={GithubIcon} className="w-4 h-4" />
                 View on GitHub
               </Button>
-              <Button size="sm">
-                <Download className="w-4 h-4 mr-2" />
+              <Button size="sm" className="gap-2">
+                <HugeiconsIcon icon={Download01Icon} className="w-4 h-4" />
                 Download
               </Button>
             </div>
@@ -50,26 +57,26 @@ export default function VersionPage() {
           transition={{ delay: 0.5 }}
           className="mt-12 text-center"
         >
-          <div className="p-8 border border-border dark:border-border">
-            <h3 className="text-lg font-semibold text-muted-foreground dark:text-foreground mb-4">
+          <div className="p-8 border border-border bg-card">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Enjoying the New UI?
             </h3>
-            <p className="text-muted-foreground dark:text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-6">
               Version 2.5.0 represents a complete overhaul of our monitoring dashboard,
               bringing modern design, better performance, and an enhanced user experience.
             </p>
             <div className="flex items-center justify-center space-x-4">
-              <Button variant="outline">
-                <Star className="w-4 h-4 mr-2" />
+              <Button variant="outline" className="gap-2 border-border hover:bg-muted">
+                <HugeiconsIcon icon={StarIcon} className="w-4 h-4" />
                 Star on GitHub
               </Button>
-              <Button>
-                <Heart className="w-4 h-4 mr-2" />
+              <Button className="gap-2">
+                <HugeiconsIcon icon={FavouriteIcon} className="w-4 h-4" />
                 Support the Project
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-6">
-              Made with <Heart className="w-4 h-4 inline text-foreground mx-1" /> by the DevOps Monitor Team
+            <p className="text-sm text-muted-foreground mt-6 flex items-center justify-center gap-1">
+              Made with <HugeiconsIcon icon={FavouriteIcon} className="w-4 h-4 text-foreground" /> by the DevOps Monitor Team
             </p>
           </div>
         </motion.div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useMultiTenantConfig } from "@/lib/hooks/use-multi-tenant-config";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,15 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Upload, 
-  Download, 
-  FileText, 
-  CheckCircle, 
-  AlertCircle, 
-  Loader2,
-  Copy,
-  RefreshCw
-} from "lucide-react";
+  Upload01Icon, 
+  Download01Icon, 
+  File01Icon, 
+  CheckmarkCircle01Icon, 
+  AlertCircleIcon, 
+  Loading03Icon,
+  Copy01Icon,
+  RefreshIcon
+} from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { ClientOnly } from "./client-only";
 
@@ -85,7 +86,6 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
   const handleJsonChange = (value: string) => {
     setJsonInput(value);
     if (value.trim()) {
-      // Debounce validation
       const timeoutId = setTimeout(() => {
         validateJson(value);
       }, 500);
@@ -116,7 +116,6 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
   const handleCopyConfig = async () => {
     try {
       await navigator.clipboard.writeText(exportConfig());
-      // You could add a toast notification here
     } catch (err) {
       console.error('Failed to copy config:', err);
     }
@@ -133,51 +132,51 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
   return (
     <ClientOnly fallback={
       <div className={cn("space-y-6", className)}>
-        <Card>
+        <Card className="border border-border bg-card">
           <CardContent className="flex items-center justify-center h-32">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin text-muted-foreground" />
           </CardContent>
         </Card>
       </div>
     }>
       <div className={cn("space-y-6", className)}>
         {/* Configuration Summary */}
-        <Card>
+        <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <HugeiconsIcon icon={File01Icon} className="h-5 w-5" />
             Current Configuration
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Overview of the current monitoring configuration
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold">{configSummary.metrics.total}</div>
+            <div className="text-center p-3 border border-border">
+              <div className="text-2xl font-bold text-foreground">{configSummary.metrics.total}</div>
               <div className="text-sm text-muted-foreground">Metrics</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">{configSummary.services.total}</div>
+            <div className="text-center p-3 border border-border">
+              <div className="text-2xl font-bold text-foreground">{configSummary.services.total}</div>
               <div className="text-sm text-muted-foreground">Services</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">{configSummary.logs.limit}</div>
+            <div className="text-center p-3 border border-border">
+              <div className="text-2xl font-bold text-foreground">{configSummary.logs.limit}</div>
               <div className="text-sm text-muted-foreground">Log Limit</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">{configSummary.alerts.severity_levels}</div>
+            <div className="text-center p-3 border border-border">
+              <div className="text-2xl font-bold text-foreground">{configSummary.alerts.severity_levels}</div>
               <div className="text-sm text-muted-foreground">Alert Levels</div>
             </div>
           </div>
           
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline">v{configSummary.version}</Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className="border-border">v{configSummary.version}</Badge>
+            <Badge variant="outline" className="border-border">
               {configSummary.dashboard.refresh_interval} refresh
             </Badge>
-            <Badge variant="outline">
+            <Badge variant="outline" className="border-border">
               {configSummary.metrics.groups} groups
             </Badge>
           </div>
@@ -187,24 +186,24 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
       {/* Configuration Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Export Configuration */}
-        <Card>
+        <Card className="border border-border bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Download className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <HugeiconsIcon icon={Download01Icon} className="h-5 w-5" />
               Export Configuration
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Download or copy the current configuration
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Button onClick={handleExportConfig} className="flex-1">
-                <Download className="h-4 w-4 mr-2" />
+              <Button onClick={handleExportConfig} className="flex-1 gap-2">
+                <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
                 Download JSON
               </Button>
-              <Button variant="outline" onClick={handleCopyConfig}>
-                <Copy className="h-4 w-4" />
+              <Button variant="outline" onClick={handleCopyConfig} className="border-border hover:bg-muted">
+                <HugeiconsIcon icon={Copy01Icon} className="h-4 w-4" />
               </Button>
             </div>
             
@@ -215,26 +214,26 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
         </Card>
 
         {/* Import Configuration */}
-        <Card>
+        <Card className="border border-border bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <HugeiconsIcon icon={Upload01Icon} className="h-5 w-5" />
               Import Configuration
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Load configuration from a JSON file
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="config-file">Select Configuration File</Label>
+              <Label htmlFor="config-file" className="text-foreground">Select Configuration File</Label>
               <Input
                 id="config-file"
                 type="file"
                 accept=".json"
                 onChange={handleFileUpload}
                 ref={fileInputRef}
-                className="mt-1"
+                className="mt-1 bg-card border-border"
               />
             </div>
             
@@ -246,15 +245,15 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
       </div>
 
       {/* JSON Editor */}
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <HugeiconsIcon icon={File01Icon} className="h-5 w-5" />
                 Configuration Editor
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground">
                 Edit configuration directly in JSON format
               </CardDescription>
             </div>
@@ -263,6 +262,7 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowPreview(!showPreview)}
+                className="border-border hover:bg-muted"
               >
                 {showPreview ? 'Hide' : 'Show'} Preview
               </Button>
@@ -270,8 +270,9 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
                 variant="outline"
                 size="sm"
                 onClick={handleResetConfig}
+                className="gap-2 border-border hover:bg-muted"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                 Reset
               </Button>
             </div>
@@ -279,13 +280,13 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="json-editor">JSON Configuration</Label>
+            <Label htmlFor="json-editor" className="text-foreground">JSON Configuration</Label>
             <Textarea
               id="json-editor"
               value={jsonInput}
               onChange={(e) => handleJsonChange(e.target.value)}
               placeholder="Paste your JSON configuration here..."
-              className="mt-1 min-h-[300px] font-mono text-sm"
+              className="mt-1 min-h-[300px] font-mono text-sm bg-card border-border"
             />
           </div>
 
@@ -294,20 +295,20 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={cn("p-4 rounded-lg border",
+              className={cn("p-4 border",
                 validationResult.valid
-                  ? "border-border bg-muted border-border bg-muted"
-                  : "border-border bg-muted border-border bg-muted"
+                  ? "border-border bg-muted"
+                  : "border-destructive bg-destructive/10"
               )}
             >
               <div className="flex items-center gap-2 mb-2">
                 {validationResult.valid ? (
-                  <CheckCircle className="h-5 w-5 text-foreground" />
+                  <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-foreground" />
                 ) : (
-                  <AlertCircle className="h-5 w-5 text-foreground" />
+                  <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5 text-destructive" />
                 )}
                 <span className={cn("font-medium",
-                  validationResult.valid ? "text-foreground text-foreground" : "text-foreground text-foreground"
+                  validationResult.valid ? "text-foreground" : "text-destructive"
                 )}>
                   {validationResult.valid ? 'Configuration Valid' : 'Configuration Invalid'}
                 </span>
@@ -315,8 +316,8 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
               
               {validationResult.errors.length > 0 && (
                 <div className="mb-2">
-                  <div className="text-sm font-medium text-foreground mb-1">Errors:</div>
-                  <ul className="text-sm text-foreground list-disc list-inside">
+                  <div className="text-sm font-medium text-destructive mb-1">Errors:</div>
+                  <ul className="text-sm text-destructive list-disc list-inside">
                     {validationResult.errors.map((error, index) => (
                       <li key={index}>{error}</li>
                     ))}
@@ -327,7 +328,7 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
               {validationResult.warnings.length > 0 && (
                 <div>
                   <div className="text-sm font-medium text-foreground mb-1">Warnings:</div>
-                  <ul className="text-sm text-foreground list-disc list-inside">
+                  <ul className="text-sm text-muted-foreground list-disc list-inside">
                     {validationResult.warnings.map((warning, index) => (
                       <li key={index}>{warning}</li>
                     ))}
@@ -342,12 +343,12 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
             <Button
               onClick={handleLoadConfig}
               disabled={!jsonInput.trim() || isValidating || isLoading}
-              className="flex-1"
+              className="flex-1 gap-2"
             >
               {isValidating || isLoading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
               ) : (
-                <Upload className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={Upload01Icon} className="h-4 w-4" />
               )}
               Load Configuration
             </Button>
@@ -358,13 +359,13 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-lg border border-border bg-muted"
+              className="p-4 border border-destructive bg-destructive/10"
             >
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-foreground" />
-                <span className="text-foreground font-medium">Error</span>
+                <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5 text-destructive" />
+                <span className="text-destructive font-medium">Error</span>
               </div>
-              <p className="text-foreground text-sm mt-1">{error}</p>
+              <p className="text-destructive text-sm mt-1">{error}</p>
             </motion.div>
           )}
         </CardContent>
@@ -376,15 +377,15 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card>
+          <Card className="border border-border bg-card">
             <CardHeader>
-              <CardTitle>Configuration Preview</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground">Configuration Preview</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Current configuration in JSON format
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <pre className="bg-muted p-4 rounded-lg overflow-auto text-sm font-mono">
+              <pre className="bg-muted p-4 border border-border overflow-auto text-sm font-mono">
                 {exportConfig()}
               </pre>
             </CardContent>

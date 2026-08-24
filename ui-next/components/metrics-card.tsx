@@ -2,7 +2,13 @@ import React, { memo, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, TrendingDown, AlertCircle, Loader2 } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  ArrowUpRight01Icon,
+  ArrowDownRight01Icon,
+  AlertCircleIcon,
+  Loading03Icon
+} from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 
 interface MetricsCardProps {
@@ -55,7 +61,7 @@ export const MetricsCard = memo(function MetricsCard({
         </CardHeader>
         <CardContent>
           <div className="flex h-16 items-center justify-center">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading03Icon} className="size-6 animate-spin text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -74,7 +80,7 @@ export const MetricsCard = memo(function MetricsCard({
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 text-muted-foreground">
-            <AlertCircle className="size-4" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="size-4" />
             <span className="text-sm">{errorMessage}</span>
           </div>
         </CardContent>
@@ -95,9 +101,9 @@ export const MetricsCard = memo(function MetricsCard({
           {trend && (
             <Badge variant="outline" className="gap-1 text-xs">
               {trend === 'up' ? (
-                <TrendingUp className="size-3" />
+                <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3" />
               ) : (
-                <TrendingDown className="size-3" />
+                <HugeiconsIcon icon={ArrowDownRight01Icon} className="size-3" />
               )}
               <span className="hidden sm:inline">{trendValue}</span>
             </Badge>

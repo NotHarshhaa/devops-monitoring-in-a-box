@@ -2,29 +2,29 @@
 
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
-  Search, 
-  Download, 
-  Star, 
-  Clock, 
-  User, 
-  Tag,
-  Github,
-  Filter,
-  Grid3X3,
-  List,
-  Zap,
-  Database,
-  Server,
-  Container,
-  Globe
-} from "lucide-react"
+  Search01Icon, 
+  Download01Icon, 
+  StarIcon, 
+  Clock01Icon, 
+  UserIcon, 
+  Tag01Icon,
+  GithubIcon,
+  FilterIcon,
+  Grid3X3Icon,
+  LeftToRightListBulletIcon,
+  FlashIcon,
+  DatabaseIcon,
+  CloudServerIcon,
+  PackageIcon,
+  GlobeIcon
+} from "@hugeicons/core-free-icons"
 import { dashboardTemplates, getTemplatesByCategory, searchTemplates, type DashboardTemplate } from "@/lib/dashboard-templates"
 import { toast } from "@/hooks/use-toast"
 
@@ -89,11 +89,11 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'kubernetes': return <Container className="h-4 w-4" />
-      case 'database': return <Database className="h-4 w-4" />
-      case 'web-server': return <Globe className="h-4 w-4" />
-      case 'system': return <Server className="h-4 w-4" />
-      default: return <Zap className="h-4 w-4" />
+      case 'kubernetes': return <HugeiconsIcon icon={PackageIcon} className="h-4 w-4" />
+      case 'database': return <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4" />
+      case 'web-server': return <HugeiconsIcon icon={GlobeIcon} className="h-4 w-4" />
+      case 'system': return <HugeiconsIcon icon={CloudServerIcon} className="h-4 w-4" />
+      default: return <HugeiconsIcon icon={FlashIcon} className="h-4 w-4" />
     }
   }
 
@@ -111,7 +111,7 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Dashboard Templates</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard Templates</h2>
           <p className="text-muted-foreground text-sm sm:text-base">
             Pre-built monitoring dashboards for common use cases
           </p>
@@ -122,26 +122,26 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
             size="sm"
             onClick={() => setViewMode("grid")}
           >
-            <Grid3X3 className="h-4 w-4" />
+            <HugeiconsIcon icon={Grid3X3Icon} className="h-4 w-4" />
           </Button>
           <Button
             variant={viewMode === "list" ? "default" : "outline"}
             size="sm"
             onClick={() => setViewMode("list")}
           >
-            <List className="h-4 w-4" />
+            <HugeiconsIcon icon={LeftToRightListBulletIcon} className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {/* GitHub Import Section */}
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Github className="h-5 w-5" />
+          <CardTitle className="flex items-center space-x-2 text-foreground">
+            <HugeiconsIcon icon={GithubIcon} className="h-5 w-5" />
             <span>Import from GitHub</span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Import dashboard templates from GitHub repositories
           </CardDescription>
         </CardHeader>
@@ -151,10 +151,10 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
               placeholder="https://github.com/user/repo/blob/main/dashboard.json"
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
-              className="flex-1"
+              className="flex-1 bg-card border-border"
             />
-            <Button onClick={handleGitHubImport}>
-              <Download className="h-4 w-4 mr-2" />
+            <Button onClick={handleGitHubImport} className="gap-2">
+              <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
               Import
             </Button>
           </div>
@@ -164,18 +164,18 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
       {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search templates..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-card border-border"
           />
         </div>
         
         <div className="flex gap-3 sm:gap-4">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] bg-card border-border">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -188,7 +188,7 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
           </Select>
 
           <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger className="w-full sm:w-[150px] bg-card border-border">
               <SelectValue placeholder="Difficulty" />
             </SelectTrigger>
             <SelectContent>
@@ -218,24 +218,24 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className="h-full transition-shadow">
+                <Card className="h-full border border-border bg-card transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">
                         {getCategoryIcon(template.category)}
-                        <CardTitle className="text-lg">{template.name}</CardTitle>
+                        <CardTitle className="text-lg text-foreground">{template.name}</CardTitle>
                       </div>
                       <Badge className={getDifficultyColor(template.difficulty)}>
                         {template.difficulty}
                       </Badge>
                     </div>
-                    <CardDescription>{template.description}</CardDescription>
+                    <CardDescription className="text-muted-foreground">{template.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex flex-wrap gap-2">
                       {template.tags.slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="secondary" className="text-xs">
-                          <Tag className="h-3 w-3 mr-1" />
+                          <HugeiconsIcon icon={Tag01Icon} className="h-3 w-3 mr-1" />
                           {tag}
                         </Badge>
                       ))}
@@ -248,20 +248,20 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
 
                     <div className="space-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4" />
+                        <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
                         <span>{template.estimatedSetupTime}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4" />
+                        <HugeiconsIcon icon={UserIcon} className="h-4 w-4" />
                         <span>{template.author}</span>
                       </div>
                     </div>
 
                     <Button 
                       onClick={() => handleImportTemplate(template)}
-                      className="w-full"
+                      className="w-full gap-2 border border-border bg-card hover:bg-muted text-foreground"
                     >
-                      <Download className="h-4 w-4 mr-2" />
+                      <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
                       Import Template
                     </Button>
                   </CardContent>
@@ -284,31 +284,31 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card>
+                <Card className="border border-border bg-card">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         {getCategoryIcon(template.category)}
                         <div>
-                          <h3 className="font-semibold">{template.name}</h3>
+                          <h3 className="font-semibold text-foreground">{template.name}</h3>
                           <p className="text-sm text-muted-foreground">{template.description}</p>
                           <div className="flex items-center space-x-4 mt-2">
                             <Badge className={getDifficultyColor(template.difficulty)}>
                               {template.difficulty}
                             </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3 inline mr-1" />
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3" />
                               {template.estimatedSetupTime}
                             </span>
-                            <span className="text-xs text-muted-foreground">
-                              <User className="h-3 w-3 inline mr-1" />
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <HugeiconsIcon icon={UserIcon} className="h-3 w-3" />
                               {template.author}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <Button onClick={() => handleImportTemplate(template)}>
-                        <Download className="h-4 w-4 mr-2" />
+                      <Button onClick={() => handleImportTemplate(template)} className="gap-2 border border-border bg-card hover:bg-muted text-foreground">
+                        <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
                         Import
                       </Button>
                     </div>
@@ -323,7 +323,7 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
       {filteredTemplates.length === 0 && (
         <div className="text-center py-12">
           <div className="text-muted-foreground">
-            <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <HugeiconsIcon icon={Search01Icon} className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No templates found</h3>
             <p>Try adjusting your search criteria or filters</p>
           </div>

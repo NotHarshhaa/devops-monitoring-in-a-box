@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,16 +13,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Settings, 
-  Save, 
-  TestTube, 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Loader2
-} from 'lucide-react'
+  Settings01Icon, 
+  FloppyDiskIcon, 
+  FlaskConicalIcon, 
+  CheckmarkCircle01Icon, 
+  CancelCircleIcon, 
+  AlertCircleIcon,
+  ViewIcon,
+  ViewOffIcon,
+  Loading03Icon
+} from '@hugeicons/core-free-icons'
 import { 
   PluginConfiguration, 
   ConfigurationProperty, 
@@ -53,7 +54,7 @@ export default function PluginConfigurationComponent({
   if (!plugin) {
     return (
       <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
+        <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" />
         <AlertDescription>Plugin not found</AlertDescription>
       </Alert>
     )
@@ -124,6 +125,7 @@ export default function PluginConfigurationComponent({
                 onChange={(e) => handleChange(e.target.value)}
                 placeholder={property.description}
                 required={isRequired}
+                className="bg-card border-border"
               />
             </div>
           )
@@ -143,6 +145,7 @@ export default function PluginConfigurationComponent({
               required={isRequired}
               minLength={property.minLength}
               maxLength={property.maxLength}
+              className="bg-card border-border"
             />
           </div>
         )
@@ -163,6 +166,7 @@ export default function PluginConfigurationComponent({
               required={isRequired}
               min={property.minimum}
               max={property.maximum}
+              className="bg-card border-border"
             />
           </div>
         )
@@ -195,6 +199,7 @@ export default function PluginConfigurationComponent({
               onChange={(e) => handleChange(e.target.value.split('\n').filter(item => item.trim()))}
               placeholder={`Enter each item on a new line\n${property.description}`}
               rows={3}
+              className="bg-card border-border"
             />
           </div>
         )
@@ -213,6 +218,7 @@ export default function PluginConfigurationComponent({
               onChange={(e) => handleChange(e.target.value)}
               placeholder={property.description}
               required={isRequired}
+              className="bg-card border-border"
             />
           </div>
         )
@@ -237,6 +243,7 @@ export default function PluginConfigurationComponent({
             onChange={(e) => setCredentials(prev => ({ ...prev, [key]: e.target.value }))}
             placeholder={`Enter ${key}`}
             required
+            className="bg-card border-border"
           />
           {isSecret && (
             <Button
@@ -247,9 +254,9 @@ export default function PluginConfigurationComponent({
               onClick={() => setShowCredentials(prev => ({ ...prev, [key]: !showPassword }))}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4" />
               ) : (
-                <Eye className="h-4 w-4" />
+                <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
               )}
             </Button>
           )}
@@ -261,34 +268,34 @@ export default function PluginConfigurationComponent({
   return (
     <div className="space-y-6">
       {/* Plugin Info */}
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <HugeiconsIcon icon={Settings01Icon} className="h-5 w-5" />
             Plugin Configuration
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Configure settings for {plugin.metadata.name} v{plugin.metadata.version}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-medium">Plugin ID</Label>
+              <Label className="text-sm font-medium text-foreground">Plugin ID</Label>
               <p className="text-sm text-muted-foreground">{instance.pluginId}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium">Instance ID</Label>
+              <Label className="text-sm font-medium text-foreground">Instance ID</Label>
               <p className="text-sm text-muted-foreground">{instance.instanceId}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium">Status</Label>
+              <Label className="text-sm font-medium text-foreground">Status</Label>
               <Badge variant={instance.enabled ? 'default' : 'secondary'}>
                 {instance.enabled ? 'Enabled' : 'Disabled'}
               </Badge>
             </div>
             <div>
-              <Label className="text-sm font-medium">Last Updated</Label>
+              <Label className="text-sm font-medium text-foreground">Last Updated</Label>
               <p className="text-sm text-muted-foreground">
                 {instance.lastUpdated.toLocaleDateString()}
               </p>
@@ -300,7 +307,7 @@ export default function PluginConfigurationComponent({
       {/* Error Alert */}
       {error && (
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -309,9 +316,9 @@ export default function PluginConfigurationComponent({
       {testResult !== null && (
         <Alert variant={testResult ? 'default' : 'destructive'}>
           {testResult ? (
-            <CheckCircle className="h-4 w-4" />
+            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4" />
           ) : (
-            <XCircle className="h-4 w-4" />
+            <HugeiconsIcon icon={CancelCircleIcon} className="h-4 w-4" />
           )}
           <AlertDescription>
             {testResult ? 'Connection test successful' : 'Connection test failed'}
@@ -320,10 +327,10 @@ export default function PluginConfigurationComponent({
       )}
 
       {/* Configuration */}
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle>Configuration Settings</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-foreground">Configuration Settings</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Configure the plugin settings according to your environment
           </CardDescription>
         </CardHeader>
@@ -335,10 +342,10 @@ export default function PluginConfigurationComponent({
       </Card>
 
       {/* Credentials */}
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle>Credentials</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-foreground">Credentials</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Provide authentication credentials for the plugin
           </CardDescription>
         </CardHeader>
@@ -356,16 +363,16 @@ export default function PluginConfigurationComponent({
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex-1"
+          className="flex-1 gap-2"
         >
           {isSaving ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
               Saving...
             </>
           ) : (
             <>
-              <Save className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={FloppyDiskIcon} className="h-4 w-4" />
               Save Configuration
             </>
           )}
@@ -374,15 +381,16 @@ export default function PluginConfigurationComponent({
           variant="outline"
           onClick={handleTest}
           disabled={isTesting}
+          className="gap-2 border-border hover:bg-muted"
         >
           {isTesting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
               Testing...
             </>
           ) : (
             <>
-              <TestTube className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={FlaskConicalIcon} className="h-4 w-4" />
               Test Connection
             </>
           )}

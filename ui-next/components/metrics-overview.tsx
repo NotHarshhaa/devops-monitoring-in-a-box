@@ -1,6 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Cpu, Database, HardDrive, Network, Activity } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  CpuIcon,
+  DatabaseIcon,
+  HardDriveIcon,
+  WifiIcon,
+  Activity01Icon
+} from "@hugeicons/core-free-icons";
 import { MetricsCard } from "./metrics-card";
 import { 
   useCPUUsage, 
@@ -70,7 +77,7 @@ export function MetricsOverview() {
           isLoading={cpuUsage.isLoading}
           isError={cpuUsage.isError}
           errorMessage="Failed to load CPU usage"
-          icon={<Cpu className="h-4 w-4" />}
+          icon={<HugeiconsIcon icon={CpuIcon} className="h-4 w-4" />}
           color={cpuTrend.color}
         />
       </motion.div>
@@ -87,7 +94,7 @@ export function MetricsOverview() {
           isLoading={memoryUsage.isLoading}
           isError={memoryUsage.isError}
           errorMessage="Failed to load memory usage"
-          icon={<Database className="h-4 w-4" />}
+          icon={<HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4" />}
           color={memoryTrend.color}
         />
       </motion.div>
@@ -104,7 +111,7 @@ export function MetricsOverview() {
           isLoading={diskUsage.isLoading}
           isError={diskUsage.isError}
           errorMessage="Failed to load disk usage"
-          icon={<HardDrive className="h-4 w-4" />}
+          icon={<HugeiconsIcon icon={HardDriveIcon} className="h-4 w-4" />}
           color={diskTrend.color}
         />
       </motion.div>
@@ -112,13 +119,25 @@ export function MetricsOverview() {
       <motion.div variants={itemVariants}>
         <MetricsCard
           title="Network Traffic"
-          description="Current network throughput"
-          value={networkTraffic.data ? networkTraffic.data.inbound + networkTraffic.data.outbound : 0}
+          description="Total network I/O"
+          value={networkTraffic.data ? (networkTraffic.data.inbound + networkTraffic.data.outbound).toFixed(1) : 0}
           unit="MB/s"
           isLoading={networkTraffic.isLoading}
           isError={networkTraffic.isError}
           errorMessage="Failed to load network traffic"
-          icon={<Network className="h-4 w-4" />}
+          icon={<HugeiconsIcon icon={WifiIcon} className="h-4 w-4" />}
+        />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <MetricsCard
+          title="System Load"
+          description="1-minute load average"
+          value={systemLoad.data ? systemLoad.data.load1.toFixed(2) : 0}
+          isLoading={systemLoad.isLoading}
+          isError={systemLoad.isError}
+          errorMessage="Failed to load system load"
+          icon={<HugeiconsIcon icon={Activity01Icon} className="h-4 w-4" />}
         />
       </motion.div>
     </motion.div>
@@ -166,8 +185,7 @@ export function SystemLoadOverview() {
           isLoading={systemLoad.isLoading}
           isError={systemLoad.isError}
           errorMessage="Failed to load system load"
-          icon={<Activity className="h-4 w-4" />}
-          color={systemLoad.data?.load1 && systemLoad.data.load1 > 1 ? 'warning' : 'default'}
+          icon={<HugeiconsIcon icon={Activity01Icon} className="h-4 w-4" />}
         />
       </motion.div>
 
@@ -179,8 +197,7 @@ export function SystemLoadOverview() {
           isLoading={systemLoad.isLoading}
           isError={systemLoad.isError}
           errorMessage="Failed to load system load"
-          icon={<Activity className="h-4 w-4" />}
-          color={systemLoad.data?.load5 && systemLoad.data.load5 > 1 ? 'warning' : 'default'}
+          icon={<HugeiconsIcon icon={Activity01Icon} className="h-4 w-4" />}
         />
       </motion.div>
 
@@ -192,8 +209,7 @@ export function SystemLoadOverview() {
           isLoading={systemLoad.isLoading}
           isError={systemLoad.isError}
           errorMessage="Failed to load system load"
-          icon={<Activity className="h-4 w-4" />}
-          color={systemLoad.data?.load15 && systemLoad.data.load15 > 1 ? 'warning' : 'default'}
+          icon={<HugeiconsIcon icon={Activity01Icon} className="h-4 w-4" />}
         />
       </motion.div>
     </motion.div>

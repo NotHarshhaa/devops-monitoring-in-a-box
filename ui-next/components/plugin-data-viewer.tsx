@@ -2,30 +2,30 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
-  RefreshCw, 
-  Download, 
-  BarChart3, 
-  Table, 
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Loader2,
-  Eye,
-  Filter
-} from 'lucide-react'
+  RefreshIcon, 
+  Download01Icon, 
+  Analytics01Icon, 
+  Table01Icon, 
+  Alert02Icon,
+  CheckmarkCircle01Icon,
+  Clock01Icon,
+  Loading03Icon,
+  EyeIcon,
+  FilterIcon
+} from '@hugeicons/core-free-icons'
 import { 
   PluginManager, 
   PluginConfiguration, 
   DataType, 
-  RenderType,
-  TimeRange,
+  RenderType, 
+  TimeRange, 
   getPluginManager 
 } from '@/lib/plugins'
 
@@ -48,10 +48,6 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
 
   const plugin = pluginManager.registry.getPlugin(instance.pluginId)
 
-  // NOTE: every hook below must run unconditionally. The "plugin not found"
-  // early return used to sit here, above the effects, so the number of hooks
-  // changed as soon as the plugin resolved - which makes React throw
-  // "Rendered more hooks than during the previous render".
   const supportedDataTypes = plugin?.metadata.supportedDataTypes ?? []
 
   useEffect(() => {
@@ -99,44 +95,15 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
     }
   }
 
-  const renderData = async () => {
-    if (data.length === 0) return null
-
-    try {
-      const response = await pluginManager.renderDataFromPlugin({
-        pluginId: instance.pluginId,
-        instanceId: instance.instanceId,
-        dataType: selectedDataType,
-        data,
-        renderType: selectedRenderType,
-        options: {
-          chartType: 'line',
-          limit: 100
-        }
-      })
-
-      if (response.success) {
-        return response
-      } else {
-        setError(response.error || 'Failed to render data')
-        return null
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    }
-  }
-
   useEffect(() => {
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataType, timeRange])
 
-  // Safe to bail out now that all hooks have run.
   if (!plugin) {
     return (
       <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
+        <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
         <AlertDescription>Plugin not found</AlertDescription>
       </Alert>
     )
@@ -172,32 +139,32 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
   const getDataTypeIcon = (dataType: DataType) => {
     switch (dataType) {
       case DataType.METRICS:
-        return <BarChart3 className="h-4 w-4" />
+        return <HugeiconsIcon icon={Analytics01Icon} className="h-4 w-4" />
       case DataType.LOGS:
-        return <Table className="h-4 w-4" />
+        return <HugeiconsIcon icon={Table01Icon} className="h-4 w-4" />
       case DataType.ALERTS:
-        return <AlertTriangle className="h-4 w-4" />
+        return <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
       case DataType.EVENTS:
-        return <Clock className="h-4 w-4" />
+        return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
       case DataType.TRACES:
-        return <Eye className="h-4 w-4" />
+        return <HugeiconsIcon icon={EyeIcon} className="h-4 w-4" />
       default:
-        return <BarChart3 className="h-4 w-4" />
+        return <HugeiconsIcon icon={Analytics01Icon} className="h-4 w-4" />
     }
   }
 
   const getRenderTypeIcon = (renderType: RenderType) => {
     switch (renderType) {
       case RenderType.CHART:
-        return <BarChart3 className="h-4 w-4" />
+        return <HugeiconsIcon icon={Analytics01Icon} className="h-4 w-4" />
       case RenderType.TABLE:
-        return <Table className="h-4 w-4" />
+        return <HugeiconsIcon icon={Table01Icon} className="h-4 w-4" />
       case RenderType.CARD:
-        return <CheckCircle className="h-4 w-4" />
+        return <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4" />
       case RenderType.ALERT:
-        return <AlertTriangle className="h-4 w-4" />
+        return <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
       default:
-        return <BarChart3 className="h-4 w-4" />
+        return <HugeiconsIcon icon={Analytics01Icon} className="h-4 w-4" />
     }
   }
 
@@ -206,7 +173,7 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">{instance.name}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{instance.name}</h2>
           <p className="text-muted-foreground">
             Data from {plugin.metadata.name} plugin
           </p>
@@ -224,19 +191,19 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
       </div>
 
       {/* Controls */}
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <HugeiconsIcon icon={FilterIcon} className="h-5 w-5" />
             Data Controls
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Data Type</label>
+              <label className="text-sm font-medium text-foreground">Data Type</label>
               <Select value={selectedDataType} onValueChange={(value) => setSelectedDataType(value as DataType)}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -253,9 +220,9 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Render Type</label>
+              <label className="text-sm font-medium text-foreground">Render Type</label>
               <Select value={selectedRenderType} onValueChange={(value) => setSelectedRenderType(value as RenderType)}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -288,9 +255,9 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Time Range</label>
+              <label className="text-sm font-medium text-foreground">Time Range</label>
               <Select defaultValue="24h" onValueChange={handleTimeRangeChange}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -304,26 +271,28 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Actions</label>
+              <label className="text-sm font-medium text-foreground">Actions</label>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={fetchData}
                   disabled={isLoading || !instance.enabled}
+                  className="border-border hover:bg-muted"
                 >
                   {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
                   ) : (
-                    <RefreshCw className="h-4 w-4" />
+                    <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                   )}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={data.length === 0}
+                  className="border-border hover:bg-muted"
                 >
-                  <Download className="h-4 w-4" />
+                  <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -334,32 +303,32 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
       {/* Error Alert */}
       {error && (
         <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {/* Data Display */}
-      <Card>
+      <Card className="border border-border bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             {getDataTypeIcon(selectedDataType)}
             {selectedDataType} Data
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             {data.length} records found
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <HugeiconsIcon icon={Loading03Icon} className="h-8 w-8 animate-spin" />
               <span className="ml-2">Loading data...</span>
             </div>
           ) : data.length === 0 ? (
             <div className="text-center py-8">
-              <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No data available</h3>
+              <HugeiconsIcon icon={Analytics01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">No data available</h3>
               <p className="text-muted-foreground">
                 {instance.enabled 
                   ? 'No data found for the selected time range and filters.'
@@ -369,7 +338,6 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Mock data display - in real implementation, this would render the actual plugin data */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {data.slice(0, 6).map((item, index) => (
                   <motion.div
@@ -378,18 +346,18 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <Card>
+                    <Card className="border border-border bg-card">
                       <CardContent className="p-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
+                            <span className="text-sm font-medium text-foreground">
                               {item.metricName || item.eventType || item.level || 'Data Point'}
                             </span>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs border-border">
                               {selectedDataType}
                             </Badge>
                           </div>
-                          <div className="text-2xl font-bold">
+                          <div className="text-2xl font-bold text-foreground">
                             {item.value || item.status || item.conclusion || 'N/A'}
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -404,7 +372,7 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
 
               {data.length > 6 && (
                 <div className="text-center">
-                  <Button variant="outline">
+                  <Button variant="outline" className="border-border hover:bg-muted">
                     View All {data.length} Records
                   </Button>
                 </div>

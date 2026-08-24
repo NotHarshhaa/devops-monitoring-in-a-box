@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, Menu } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Activity01Icon, Menu01Icon } from '@hugeicons/core-free-icons'
 import { useState } from 'react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { UserMenu } from '@/components/user-menu'
@@ -48,7 +49,7 @@ function PublicHeader() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <span className="flex size-8 items-center justify-center border border-border bg-background">
-            <Activity className="size-4" />
+            <HugeiconsIcon icon={Activity01Icon} className="size-4" />
           </span>
           <span className="text-sm font-semibold tracking-wide">
             Monitoring in a Box
@@ -82,7 +83,7 @@ function DashboardHeader({
           onClick={onOpenSidebar}
           aria-label="Open navigation"
         >
-          <Menu className="size-4" />
+          <HugeiconsIcon icon={Menu01Icon} className="size-4" />
         </Button>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold tracking-wide">{title}</p>
