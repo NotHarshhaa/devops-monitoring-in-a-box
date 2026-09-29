@@ -16,7 +16,11 @@ import {
   DatabaseIcon,
   Shield01Icon,
   DashboardSpeed01Icon,
-  Loading03Icon
+  Loading03Icon,
+  DashboardSquare01Icon,
+  File01Icon,
+  Notification01Icon,
+  CloudServerIcon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,6 +41,7 @@ import {
   useAllCurrentMetrics 
 } from "@/lib/hooks/use-prometheus-metrics"
 import { useQueryClient } from "@tanstack/react-query"
+import { PageConnections } from "@/components/page-connections"
 
 // Time range options
 const timeRangeData = [
@@ -213,6 +218,16 @@ export default function MetricsPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/logs', label: 'Logs', icon: File01Icon },
+            { href: '/alerts', label: 'Alerts', icon: Notification01Icon },
+            { href: '/services', label: 'Services', icon: CloudServerIcon },
+          ]}
+        />
 
         {/* Controls */}
         <motion.div

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -21,7 +22,10 @@ import {
   DatabaseIcon,
   CodeSquareIcon,
   Layers01Icon,
-  Tag01Icon
+  Tag01Icon,
+  DashboardSquare01Icon,
+  Analytics01Icon,
+  CloudServerIcon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -36,6 +40,7 @@ import {
 } from "@/components/ui/select"
 import { useLokiLogs } from "@/lib/hooks/use-loki-logs"
 import { lokiAPI } from "@/lib/loki-api"
+import { PageConnections } from "@/components/page-connections"
 
 // Time range options
 const timeRangeData = [
@@ -247,6 +252,15 @@ export default function LogsPage() {
           </Card>
         </motion.div>
 
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/metrics', label: 'Metrics', icon: Analytics01Icon },
+            { href: '/services', label: 'Services', icon: CloudServerIcon },
+          ]}
+        />
+
         {/* Filters and Controls */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -425,6 +439,13 @@ export default function LogsPage() {
                       <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" />
                       Clear Filters
                     </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Not seeing expected logs? Check Loki's status on the{' '}
+                      <Link href="/services" className="underline underline-offset-2 hover:text-foreground">
+                        Services page
+                      </Link>
+                      .
+                    </p>
                   </div>
                 </div>
               ) : (

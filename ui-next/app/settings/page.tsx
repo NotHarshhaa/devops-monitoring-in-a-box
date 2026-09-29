@@ -11,7 +11,9 @@ import {
   LockIcon,
   DatabaseIcon,
   Shield01Icon,
-  Settings01Icon
+  Settings01Icon,
+  DashboardSquare01Icon,
+  CloudServerIcon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -29,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { PageConnections } from "@/components/page-connections"
 import { ConfigLoader } from "@/components/config-loader"
 import { NotificationSettings } from "@/components/notification-settings"
 import { SiteConfigManager } from "@/components/site-config-manager"
@@ -195,6 +198,15 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/services', label: 'Services', icon: CloudServerIcon },
+            { href: '/admin', label: 'Admin', icon: Shield01Icon },
+          ]}
+        />
 
         {/* Enhanced Settings Tabs */}
         <motion.div

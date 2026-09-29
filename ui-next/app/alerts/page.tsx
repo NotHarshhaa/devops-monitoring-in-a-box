@@ -11,7 +11,6 @@ import {
   Clock01Icon,
   FilterIcon,
   RefreshIcon,
-  Sorting01Icon,
   VolumeMute01Icon,
   AlertCircleIcon,
   Search01Icon,
@@ -21,7 +20,10 @@ import {
   ArrowUpRight01Icon,
   Shield01Icon,
   Activity01Icon,
-  DatabaseIcon
+  DatabaseIcon,
+  DashboardSquare01Icon,
+  CloudServerIcon,
+  Settings01Icon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,6 +39,8 @@ import {
 import { useAlertmanagerAlerts } from "@/lib/hooks/use-alertmanager-alerts"
 import { alertmanagerAPI } from "@/lib/alertmanager-api"
 import { toast } from "@/hooks/use-toast"
+import Link from "next/link"
+import { PageConnections } from "@/components/page-connections"
 
 // Alert component for expandable details
 interface AlertCardProps {
@@ -491,6 +495,15 @@ export default function AlertsPage() {
           </Card>
         </motion.div>
 
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/services', label: 'Services', icon: CloudServerIcon },
+            { href: '/settings', label: 'Notification Settings', icon: Settings01Icon },
+          ]}
+        />
+
         {/* Controls */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -644,17 +657,6 @@ export default function AlertsPage() {
                     )}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Button variant="outline" size="sm" className="gap-1.5 h-9 bg-card border-border hover:bg-muted">
-                    <HugeiconsIcon icon={Sorting01Icon} className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Sort</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-1.5 h-9 bg-card border-border hover:bg-muted">
-                    <HugeiconsIcon icon={FilterIcon} className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">More Filters</span>
-                    <span className="sm:hidden">Filters</span>
-                  </Button>
-                </div>
               </div>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
@@ -678,6 +680,13 @@ export default function AlertsPage() {
                         <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" />
                         Clear Filters
                       </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Expecting alerts? Check Alertmanager's status on the{' '}
+                        <Link href="/services" className="underline underline-offset-2 hover:text-foreground">
+                          Services page
+                        </Link>
+                        .
+                      </p>
                     </div>
                   </div>
                 ) : (

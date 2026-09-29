@@ -24,6 +24,8 @@ import {
   Analytics01Icon
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { PageConnections } from "@/components/page-connections"
+import { DashboardSquare01Icon } from "@hugeicons/core-free-icons"
 
 export default function ProfilePage() {
   const { data: session, update } = useSession()
@@ -136,6 +138,14 @@ export default function ProfilePage() {
             </CardHeader>
           </Card>
         </motion.div>
+
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/settings', label: 'Settings', icon: Settings01Icon },
+          ]}
+        />
 
         {/* Enhanced Profile Overview */}
         <motion.div

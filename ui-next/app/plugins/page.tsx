@@ -11,12 +11,14 @@ import {
   FilterIcon,
   RefreshIcon,
   PlugIcon,
-  StarIcon
+  StarIcon,
+  DashboardSquare01Icon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import PluginManagerComponent from '@/components/plugin-manager'
+import { PageConnections } from '@/components/page-connections'
 
 export default function PluginsPage() {
   return (
@@ -119,6 +121,14 @@ export default function PluginsPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/settings', label: 'Settings', icon: Settings01Icon },
+          ]}
+        />
 
         {/* Controls */}
         <motion.div

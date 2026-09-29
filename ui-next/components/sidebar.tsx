@@ -15,7 +15,6 @@ import {
   Cancel01Icon,
   Activity01Icon,
   DatabaseIcon,
-  ComputerIcon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
   Plug01Icon
@@ -35,12 +34,21 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings01Icon }
 ]
 
-const serviceStatus = [
-  { name: 'Prometheus', status: 'healthy', icon: DatabaseIcon },
-  { name: 'Grafana', status: 'healthy', icon: Analytics01Icon },
-  { name: 'Loki', status: 'healthy', icon: File01Icon },
-  { name: 'Node Exporter', status: 'healthy', icon: ComputerIcon }
+type StackStatus = 'up' | 'down' | 'disabled' | 'unknown'
+
+const stackServices = [
+  { key: 'prometheus', name: 'Prometheus', icon: DatabaseIcon },
+  { key: 'grafana', name: 'Grafana', icon: Analytics01Icon },
+  { key: 'loki', name: 'Loki', icon: File01Icon },
+  { key: 'alertmanager', name: 'Alertmanager', icon: Notification01Icon }
 ]
+
+const statusDotClass: Record<StackStatus, string> = {
+  up: 'bg-emerald-500',
+  down: 'bg-destructive',
+  disabled: 'bg-muted-foreground/40',
+  unknown: 'bg-muted-foreground/40'
+}
 
 const NavigationItem = memo(function NavigationItem({
   item,
@@ -75,30 +83,34 @@ const NavigationItem = memo(function NavigationItem({
 
 const ServiceStatusItem = memo(function ServiceStatusItem({
   service,
+  status,
   isCollapsed
 }: {
-  service: (typeof serviceStatus)[0]
+  service: (typeof stackServices)[0]
+  status: StackStatus
   isCollapsed: boolean
 }) {
+  const label = status === 'up' ? 'ok' : status === 'down' ? 'down' : status === 'disabled' ? 'off' : '…'
   return (
-    <div
+    <Link
+      href="/services"
       className={cn(
-        'flex items-center gap-2.5 px-3 py-2',
+        'flex items-center gap-2.5 px-3 py-2 transition-colors hover:bg-muted/60',
         isCollapsed && 'justify-center px-2'
       )}
-      title={isCollapsed ? `${service.name}: ${service.status}` : undefined}
+      title={isCollapsed ? `${service.name}: ${label}` : undefined}
     >
-      <span className="size-1.5 shrink-0 rounded-full bg-foreground" />
+      <span className={cn('size-1.5 shrink-0 rounded-full', statusDotClass[status])} />
       <HugeiconsIcon icon={service.icon} className="size-3.5 shrink-0 text-muted-foreground" />
       {!isCollapsed && (
         <>
           <span className="flex-1 truncate text-xs">{service.name}</span>
           <span className="font-mono text-[10px] text-muted-foreground uppercase">
-            ok
+            {label}
           </span>
         </>
       )}
-    </div>
+    </Link>
   )
 })
 
@@ -114,6 +126,35 @@ export const Sidebar = memo(function Sidebar({
   const [isDesktop, setIsDesktop] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
+  const [stackStatus, setStackStatus] = useState<Record<string, StackStatus>>({})
+
+  // Real stack health for the sidebar footer, refreshed periodically.
+  // /api/health returns the per-service probe report (redacted for
+  // unauthenticated callers, which is fine here).
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const response = await fetch('/api/health', { cache: 'no-store' })
+        if (!response.ok) return
+        const report = await response.json()
+        if (cancelled || !Array.isArray(report?.services)) return
+        const next: Record<string, StackStatus> = {}
+        report.services.forEach((service: { key?: string; status?: StackStatus }) => {
+          if (service?.key) next[service.key] = service.status ?? 'unknown'
+        })
+        setStackStatus(next)
+      } catch {
+        // keep last known statuses; sidebar must never block navigation
+      }
+    }
+    load()
+    const interval = setInterval(load, 60_000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [])
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -150,14 +191,15 @@ export const Sidebar = memo(function Sidebar({
 
   const serviceStatusItems = useMemo(
     () =>
-      serviceStatus.map((service) => (
+      stackServices.map((service) => (
         <ServiceStatusItem
           key={service.name}
           service={service}
+          status={stackStatus[service.key] ?? 'unknown'}
           isCollapsed={isCollapsed}
         />
       )),
-    [isCollapsed]
+    [stackStatus, isCollapsed]
   )
 
   const width = isDesktop ? (isCollapsed ? 72 : 256) : 256

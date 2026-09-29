@@ -18,6 +18,8 @@ import {
   Edit02Icon
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { PageConnections } from "@/components/page-connections"
+import { DashboardSquare01Icon } from "@hugeicons/core-free-icons"
 
 // Sample data. There is no user-management API yet — user administration is
 // not implemented, so this page is presented as sample data instead of
@@ -150,6 +152,14 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/settings', label: 'Settings', icon: Settings01Icon },
+          ]}
+        />
 
         {/* Enhanced System Overview */}
         <motion.div

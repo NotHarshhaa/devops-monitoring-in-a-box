@@ -3,11 +3,11 @@
 import React from "react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { 
-  CloudServerIcon, 
-  CheckmarkCircle01Icon, 
-  Alert02Icon, 
-  RefreshIcon, 
+import {
+  CloudServerIcon,
+  CheckmarkCircle01Icon,
+  Alert02Icon,
+  RefreshIcon,
   ArrowUpRight01Icon,
   Loading03Icon,
   Clock01Icon,
@@ -16,7 +16,10 @@ import {
   FlashIcon,
   DatabaseIcon,
   LockIcon,
-  Analytics01Icon
+  Analytics01Icon,
+  DashboardSquare01Icon,
+  Notification01Icon,
+  File01Icon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,6 +30,7 @@ import { healthAPI } from "@/lib/health-api"
 import { VersionMonitor } from "@/components/version-monitor"
 import { SSLMonitor } from "@/components/ssl-monitor"
 import { SLATracker } from "@/components/sla-tracker"
+import { PageConnections } from "@/components/page-connections"
 
 // Service Health Component
 interface ServiceHealthCardProps {
@@ -354,6 +358,16 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/metrics', label: 'Metrics', icon: Analytics01Icon },
+            { href: '/logs', label: 'Logs', icon: File01Icon },
+            { href: '/alerts', label: 'Alerts', icon: Notification01Icon },
+          ]}
+        />
 
         {/* Refresh Button */}
         <motion.div

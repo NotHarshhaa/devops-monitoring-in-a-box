@@ -29,7 +29,8 @@ import {
   AlertCircleIcon,
   InformationCircleIcon,
   Cancel01Icon,
-  Loading03Icon
+  Loading03Icon,
+  File01Icon
 } from "@hugeicons/core-free-icons"
 import {
   AreaChart,
@@ -62,6 +63,7 @@ import { useAllCurrentMetrics, useAllMetricsRange } from "@/lib/hooks/use-promet
 import { useAlertmanagerAlerts } from "@/lib/hooks/use-alertmanager-alerts"
 import { alertmanagerAPI } from "@/lib/alertmanager-api"
 import { VersionBadge } from "@/components/version-badge"
+import { PageConnections } from "@/components/page-connections"
 
 // Lazy load heavy components for better performance
 const DynamicMetrics = lazy(() => import("@/components/dynamic-metrics").then(module => ({ default: module.DynamicMetrics })))
@@ -454,6 +456,17 @@ export default function DashboardPage() {
             </div>
         </div>
 
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/metrics', label: 'Metrics', icon: Analytics01Icon },
+            { href: '/logs', label: 'Logs', icon: File01Icon },
+            { href: '/alerts', label: 'Alerts', icon: Notification01Icon },
+            { href: '/services', label: 'Services', icon: CloudServerIcon },
+            { href: '/settings', label: 'Settings', icon: Settings01Icon },
+          ]}
+        />
+
         {/* Key Metrics Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -689,6 +702,9 @@ export default function DashboardPage() {
                   <div className="text-center py-8 text-muted-foreground">
                     <HugeiconsIcon icon={AlertCircleIcon} className="size-8 mx-auto mb-2" />
                     <p className="text-sm">Service health is unavailable right now.</p>
+                    <Link href="/services" className="text-xs mt-2 inline-block underline underline-offset-2 hover:text-foreground">
+                      Open the Services page
+                    </Link>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { DashboardTemplateManager } from "@/components/dashboard-template-manager"
 import { type DashboardTemplate } from "@/lib/dashboard-templates"
+import { PageConnections } from "@/components/page-connections"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -13,7 +14,9 @@ import {
   ArrowRight01Icon,
   FlashIcon,
   PaintBoardIcon,
-  Layers01Icon
+  Layers01Icon,
+  DashboardSquare01Icon,
+  Settings01Icon
 } from "@hugeicons/core-free-icons"
 
 export default function TemplatesPage() {
@@ -117,6 +120,14 @@ export default function TemplatesPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Cross-page navigation */}
+        <PageConnections
+          links={[
+            { href: '/dashboard', label: 'Dashboard', icon: DashboardSquare01Icon },
+            { href: '/settings', label: 'Settings', icon: Settings01Icon },
+          ]}
+        />
 
         {/* Quick Actions */}
         <motion.div
