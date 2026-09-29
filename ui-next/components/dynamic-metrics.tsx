@@ -1,8 +1,14 @@
-// Dynamic metrics component that generates cards and charts based on configuration
+// Dynamic metrics component that renders cards and charts based on configuration.
+// Values are queried live from Prometheus using each metric's configured PromQL
+// expression — the previous implementation generated Math.random() values during
+// render, so numbers flickered on every re-render.
 
 import React from "react";
 import { motion } from "framer-motion";
+import { useQueries } from "@tanstack/react-query";
 import { useMultiTenantMetricsConfig } from "@/lib/hooks/use-multi-tenant-config";
+import { prometheusAPI } from "@/lib/prometheus-api";
+import { config } from "@/lib/config";
 import { MetricsCard } from "./metrics-card";
 import { MetricsChart } from "./metrics-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +27,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import { ClientOnly } from "./client-only";
+import Link from "next/link";
 
 interface DynamicMetricsProps {
   className?: string;
@@ -29,18 +36,82 @@ interface DynamicMetricsProps {
   groupBy?: boolean;
 }
 
-export function DynamicMetrics({ 
-  className, 
-  showCharts = true, 
+interface MetricLiveState {
+  value: number | null;
+  isLoading: boolean;
+  isError: boolean;
+  rangeData: Array<{ time: number; value: number }>;
+}
+
+export function DynamicMetrics({
+  className,
+  showCharts = true,
   showCards = true,
-  groupBy = true 
+  groupBy = true
 }: DynamicMetricsProps) {
-  const { 
-    metrics, 
-    metricsByGroup, 
-    isLoading, 
-    error 
+  const {
+    metrics,
+    metricsByGroup,
+    isLoading,
+    error
   } = useMultiTenantMetricsConfig();
+
+  const refreshMs = config.prometheus.refreshInterval;
+  const enabledMetrics = (metrics ?? []).filter(m => m.query);
+
+  // One live Prometheus instant query per configured metric
+  const valueQueries = useQueries({
+    queries: enabledMetrics.map((metric) => ({
+      queryKey: ['dynamic-metric-value', metric.name, metric.query],
+      queryFn: () => prometheusAPI.getInstantVector(metric.query),
+      refetchInterval: refreshMs,
+      staleTime: refreshMs,
+      retry: 0,
+      refetchOnWindowFocus: false,
+    })),
+  });
+
+  // Range queries for the chart view (only fetched when charts are shown)
+  const rangeQueries = useQueries({
+    queries: (showCharts ? enabledMetrics : []).map((metric) => {
+      const end = Math.floor(Date.now() / 1000);
+      const start = end - 60 * 60; // last hour
+      return {
+        queryKey: ['dynamic-metric-range', metric.name, metric.query, start],
+        queryFn: () => prometheusAPI.getRangeMatrix(metric.query, start, end),
+        refetchInterval: refreshMs * 6,
+        staleTime: refreshMs,
+        retry: 0,
+        refetchOnWindowFocus: false,
+      };
+    }),
+  });
+
+  const liveStates = new Map<string, MetricLiveState>();
+  enabledMetrics.forEach((metric, i) => {
+    const q = valueQueries[i];
+    const result = q?.data;
+    const first = Array.isArray(result) && result.length > 0 ? result[0] : null;
+    const rawValue = first ? parseFloat(first.value[1]) : null;
+    liveStates.set(metric.name, {
+      value: rawValue !== null && !Number.isNaN(rawValue) ? rawValue : null,
+      isLoading: !!q?.isLoading,
+      isError: !!q?.isError,
+      rangeData: [],
+    });
+  });
+  if (showCharts) {
+    enabledMetrics.forEach((metric, i) => {
+      const state = liveStates.get(metric.name);
+      if (!state) return;
+      const q = rangeQueries[i];
+      const matrix = q?.data;
+      const series = Array.isArray(matrix) && matrix.length > 0 ? matrix[0] : null;
+      state.rangeData = series
+        ? series.values.map(([t, v]) => ({ time: t * 1000, value: parseFloat(v) }))
+        : [];
+    });
+  }
 
   if (isLoading) {
       return (
@@ -137,39 +208,37 @@ export function DynamicMetrics({
   };
 
   const renderMetricCard = (metric: any, index: number) => {
-    // Mock data for demonstration - in real implementation, this would come from Prometheus
-    const mockValue = Math.random() * 100;
-    const mockTrend = Math.random() > 0.5 ? 'up' : 'down';
-    const mockTrendValue = `${(Math.random() * 10).toFixed(1)}%`;
+    const live = liveStates.get(metric.name);
+    const value = live?.value ?? null;
+    const noData = !live?.isLoading && !live?.isError && value === null;
 
     return (
       <motion.div key={`${metric.name}-${index}`} variants={itemVariants}>
         <MetricsCard
           title={metric.name}
           description={metric.description || `Monitor ${metric.name.toLowerCase()}`}
-          value={mockValue}
+          value={value === null ? '--' : value}
           unit={metric.unit || ''}
-          percentage={metric.unit === '%' ? mockValue : undefined}
-          trend={mockTrend}
-          trendValue={mockTrendValue}
-          isLoading={false}
-          isError={false}
-          color={getMetricColor(mockValue, metric.thresholds)}
+          percentage={metric.unit === '%' && value !== null ? value : undefined}
+          isLoading={!!live?.isLoading}
+          isError={!!live?.isError || noData}
+          errorMessage={live?.isError ? 'Failed to load metric' : 'No data returned for this metric'}
+          color={value !== null ? getMetricColor(value, metric.thresholds) : 'default'}
         />
       </motion.div>
     );
   };
 
   const renderMetricChart = (metric: any, index: number) => {
-    // Mock chart data for demonstration
-    const mockData = generateMockChartData(metric.name);
+    const live = liveStates.get(metric.name);
+    const chartData = live?.rangeData ?? [];
 
     return (
       <motion.div key={`chart-${metric.name}-${index}`} variants={itemVariants}>
         <MetricsChart
           title={metric.name}
           description={metric.description || `Chart for ${metric.name.toLowerCase()}`}
-          data={mockData}
+          data={chartData}
           dataKeys={[
             {
               key: 'value',
@@ -180,7 +249,6 @@ export function DynamicMetrics({
           chartType={metric.chart || 'line'}
           height={300}
           showLegend={true}
-          showRefreshInterval={true}
           formatYAxis={(value) => `${value.toFixed(1)}${metric.unit || ''}`}
           formatTooltip={(value, name) => [`${value.toFixed(2)}${metric.unit || ''}`, name]}
         />
@@ -271,47 +339,10 @@ export function DynamicMetrics({
 // Helper function to get metric color based on thresholds
 function getMetricColor(value: number, thresholds?: { warning?: number; critical?: number }): 'default' | 'success' | 'warning' | 'danger' {
   if (!thresholds) return 'default';
-  
+
   if (thresholds.critical && value >= thresholds.critical) return 'danger';
   if (thresholds.warning && value >= thresholds.warning) return 'warning';
   return 'success';
-}
-
-// Helper function to generate mock chart data
-function generateMockChartData(metricName: string) {
-  const data = [];
-  const now = Date.now();
-  const interval = 5 * 60 * 1000; // 5 minutes
-  
-  for (let i = 24; i >= 0; i--) {
-    const timestamp = now - (i * interval);
-    const baseValue = getBaseValueForMetric(metricName);
-    const variation = (Math.random() - 0.5) * 20; // ±10% variation
-    const value = Math.max(0, baseValue + variation);
-    
-    data.push({
-      time: timestamp,
-      value: value,
-    });
-  }
-  
-  return data;
-}
-
-// Helper function to get base value for different metrics
-function getBaseValueForMetric(metricName: string): number {
-  const baseValues: Record<string, number> = {
-    'CPU Usage': 45,
-    'Memory Usage': 67,
-    'Disk Usage': 23,
-    'Network Traffic': 12,
-    'Load Average': 1.2,
-    'Response Time': 150,
-    'Error Rate': 0.5,
-    'Throughput': 1000,
-  };
-  
-  return baseValues[metricName] || 50;
 }
 
 // Summary component to show overall configuration health
@@ -583,18 +614,12 @@ export function DynamicMetricsSummary({
               transition={{ duration: 0.3, delay: 1.0 }}
               className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-border dark:border-border"
             >
-              <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4" />
-                Configure Metrics
-              </Button>
-              <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
-                Export Configuration
-              </Button>
-              <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
-                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
-                Refresh Status
-              </Button>
+              <Link href="/settings" className="w-full sm:w-auto">
+                <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted w-full sm:w-auto">
+                  <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4" />
+                  Configure Metrics
+                </Button>
+              </Link>
             </motion.div>
           </CardContent>
         </Card>

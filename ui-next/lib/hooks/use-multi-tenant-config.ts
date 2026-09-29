@@ -32,7 +32,7 @@ export function useMultiTenantConfig() {
   // Subscribe to configuration changes
   useEffect(() => {
     setIsClient(true);
-    
+
     if (typeof window !== 'undefined') {
       const unsubscribe = multiTenantConfigManager.addListener(userId, (newConfig) => {
         setConfig(newConfig);
@@ -40,6 +40,15 @@ export function useMultiTenantConfig() {
       });
 
       return unsubscribe;
+    }
+  }, [userId]);
+
+  // Re-read the config when the signed-in user changes: the listener above
+  // only fires on updates, so the state would otherwise keep the config that
+  // was loaded for the previous (e.g. 'anonymous') user.
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setConfig(multiTenantConfigManager.getConfig(userId));
     }
   }, [userId]);
 

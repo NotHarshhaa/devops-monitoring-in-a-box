@@ -1,30 +1,28 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  UserGroupIcon, 
-  Settings01Icon, 
-  Shield01Icon, 
-  Activity01Icon, 
-  DatabaseIcon, 
+import {
+  UserGroupIcon,
+  Settings01Icon,
+  Shield01Icon,
+  Activity01Icon,
+  DatabaseIcon,
   StarIcon,
   EyeIcon,
-  Edit02Icon,
-  Delete02Icon,
-  PlusSignIcon,
-  RefreshIcon
+  Edit02Icon
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 
-// Mock data for demonstration
-const mockUsers = [
+// Sample data. There is no user-management API yet — user administration is
+// not implemented, so this page is presented as sample data instead of
+// offering Edit/Delete/Add actions that would do nothing.
+const sampleUsers = [
   {
     id: "1",
     name: "Admin User",
@@ -54,7 +52,7 @@ const mockUsers = [
   }
 ]
 
-const mockSystemStats = {
+const sampleSystemStats = {
   totalUsers: 3,
   activeUsers: 2,
   totalConfigs: 15,
@@ -66,8 +64,6 @@ const mockSystemStats = {
 export default function AdminPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [users, setUsers] = useState(mockUsers)
-  const [systemStats, setSystemStats] = useState(mockSystemStats)
 
   // Redirect if not admin
   useEffect(() => {
@@ -89,19 +85,8 @@ export default function AdminPage() {
     }
   }
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-      case "EDITOR":
-      case "VIEWER":
-        return "bg-muted text-foreground"
-      default:
-        return "bg-muted text-muted-foreground"
-    }
-  }
-
   const getStatusColor = (status: string) => {
-    return status === "active" 
+    return status === "active"
       ? "bg-muted text-foreground"
       : "bg-muted text-muted-foreground"
   }
@@ -150,25 +135,18 @@ export default function AdminPage() {
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <Badge className="bg-muted text-foreground border-border px-3 py-1.5 font-semibold text-sm">
+                  <Badge variant="outline" className="border-border px-3 py-1.5 font-semibold text-sm">
                     <HugeiconsIcon icon={Shield01Icon} className="h-3.5 w-3.5 mr-1" />
-                    Administration
+                    Sample data
                   </Badge>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 border-t border-border">
-              <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" className="gap-2 h-9 sm:h-10 bg-card border-border hover:bg-muted">
-                  <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
-                  <span className="hidden sm:inline">Refresh</span>
-                  <span className="sm:hidden">Sync</span>
-                </Button>
-                <Button size="sm" className="gap-2 h-9 sm:h-10">
-                  <HugeiconsIcon icon={PlusSignIcon} className="h-4 w-4" />
-                  Add User
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                User administration is not implemented yet — the listing below shows sample data.
+                Configure authentication providers and roles via the environment instead.
+              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -190,11 +168,11 @@ export default function AdminPage() {
               <HugeiconsIcon icon={UserGroupIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
-              {systemStats.totalUsers}
+              {sampleSystemStats.totalUsers}
             </div>
             <div className="text-xs sm:text-sm text-foreground">Total Users</div>
             <div className="text-xs text-muted-foreground mt-1">
-              {systemStats.activeUsers} active
+              {sampleSystemStats.activeUsers} active
             </div>
           </motion.div>
 
@@ -208,7 +186,7 @@ export default function AdminPage() {
               <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
-              {systemStats.totalConfigs}
+              {sampleSystemStats.totalConfigs}
             </div>
             <div className="text-xs sm:text-sm text-foreground">Configurations</div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -226,7 +204,7 @@ export default function AdminPage() {
               <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
-              {systemStats.totalDashboards}
+              {sampleSystemStats.totalDashboards}
             </div>
             <div className="text-xs sm:text-sm text-foreground">Dashboards</div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -244,7 +222,7 @@ export default function AdminPage() {
               <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
             </div>
             <div className="text-lg sm:text-xl font-bold text-foreground">
-              {systemStats.uptime}
+              {sampleSystemStats.uptime}
             </div>
             <div className="text-xs sm:text-sm text-foreground">System Health</div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -281,12 +259,12 @@ export default function AdminPage() {
                           User Management
                         </CardTitle>
                         <CardDescription className="mt-1 text-muted-foreground">
-                          Manage user accounts, roles, and permissions
+                          Sample listing of user accounts, roles, and permissions
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="p-4 sm:p-6">
                         <div className="space-y-4">
-                          {users.map((user) => (
+                          {sampleUsers.map((user) => (
                             <motion.div
                               key={user.id}
                               initial={{ opacity: 0, x: -20 }}
@@ -312,20 +290,7 @@ export default function AdminPage() {
                                     </Badge>
                                   </div>
                                   <p className="text-xs sm:text-sm text-muted-foreground break-words">{user.email}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    Last login: {new Date(user.lastLogin).toLocaleDateString()}
-                                  </p>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <Button variant="outline" size="sm" className="h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted">
-                                  <HugeiconsIcon icon={Edit02Icon} className="h-4 w-4 mr-1.5 sm:mr-0" />
-                                  <span className="sm:hidden">Edit</span>
-                                </Button>
-                                <Button variant="outline" size="sm" className="h-9 text-destructive flex-1 sm:flex-initial bg-card border-border hover:bg-destructive/10">
-                                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-1.5 sm:mr-0" />
-                                  <span className="sm:hidden">Delete</span>
-                                </Button>
                               </div>
                             </motion.div>
                           ))}

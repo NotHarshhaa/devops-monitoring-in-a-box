@@ -45,12 +45,10 @@ interface MetricsChartProps {
   isError?: boolean;
   errorMessage?: string;
   onRefresh?: () => void;
-  onRefreshIntervalChange?: (interval: number) => void;
   className?: string;
   chartType?: 'line' | 'area' | 'bar' | 'composed' | 'stacked';
   height?: number;
   showLegend?: boolean;
-  showRefreshInterval?: boolean;
   yAxisDomain?: [number, number];
   formatYAxis?: (value: number) => string;
   formatTooltip?: (value: number, name: string) => [string, string];
@@ -67,33 +65,20 @@ export function MetricsChart({
   isError = false,
   errorMessage = 'Failed to load chart data',
   onRefresh,
-  onRefreshIntervalChange,
   className,
   chartType = 'line',
   height = 300,
   showLegend = true,
-  showRefreshInterval = true,
   yAxisDomain,
   formatYAxis,
   formatTooltip,
   stacked = false,
   animationDuration = 1000,
 }: MetricsChartProps) {
-  const [refreshInterval, setRefreshInterval] = React.useState(15000); // 15 seconds default
 
-  const refreshIntervals = [
-    { label: '5 seconds', value: 5000 },
-    { label: '15 seconds', value: 15000 },
-    { label: '1 minute', value: 60000 },
-    { label: '5 minutes', value: 300000 },
-    { label: 'Manual', value: 0 },
-  ];
 
-  const handleRefreshIntervalChange = (value: string) => {
-    const interval = parseInt(value);
-    setRefreshInterval(interval);
-    onRefreshIntervalChange?.(interval);
-  };
+
+
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('en-US', { 
@@ -125,26 +110,7 @@ export function MetricsChart({
                 <CardDescription>{description}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                {showRefreshInterval && (
-                  <div className="flex items-center gap-2">
-                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
-                    <Select
-                      value={refreshInterval.toString()}
-                      onValueChange={handleRefreshIntervalChange}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {refreshIntervals.map((interval) => (
-                          <SelectItem key={interval.value} value={interval.value.toString()}>
-                            {interval.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                
                 {onRefresh && (
                   <Button variant="outline" size="sm" onClick={onRefresh} disabled>
                     <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
@@ -184,26 +150,7 @@ export function MetricsChart({
                 <CardDescription>{description}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                {showRefreshInterval && (
-                  <div className="flex items-center gap-2">
-                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
-                    <Select
-                      value={refreshInterval.toString()}
-                      onValueChange={handleRefreshIntervalChange}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {refreshIntervals.map((interval) => (
-                          <SelectItem key={interval.value} value={interval.value.toString()}>
-                            {interval.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                
                 {onRefresh && (
                   <Button variant="outline" size="sm" onClick={onRefresh}>
                     <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
@@ -244,26 +191,7 @@ export function MetricsChart({
                 <CardDescription>{description}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                {showRefreshInterval && (
-                  <div className="flex items-center gap-2">
-                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
-                    <Select
-                      value={refreshInterval.toString()}
-                      onValueChange={handleRefreshIntervalChange}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {refreshIntervals.map((interval) => (
-                          <SelectItem key={interval.value} value={interval.value.toString()}>
-                            {interval.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                
                 {onRefresh && (
                   <Button variant="outline" size="sm" onClick={onRefresh}>
                     <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
@@ -530,26 +458,7 @@ export function MetricsChart({
               <CardDescription>{description}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {showRefreshInterval && (
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 text-muted-foreground" />
-                  <Select
-                    value={refreshInterval.toString()}
-                    onValueChange={handleRefreshIntervalChange}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {refreshIntervals.map((interval) => (
-                        <SelectItem key={interval.value} value={interval.value.toString()}>
-                          {interval.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              
               {onRefresh && (
                 <Button 
                   variant="outline" 

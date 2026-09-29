@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
+import { toast } from "@/hooks/use-toast"
 import {
   Select,
   SelectContent,
@@ -32,15 +33,67 @@ import { ConfigLoader } from "@/components/config-loader"
 import { NotificationSettings } from "@/components/notification-settings"
 import { SiteConfigManager } from "@/components/site-config-manager"
 
+const GENERAL_SETTINGS_KEY = 'general-settings'
+
+interface GeneralSettings {
+  instanceName: string
+  baseUrl: string
+  isAdvancedUser: boolean
+}
+
+const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
+  instanceName: 'DevOps Monitor',
+  baseUrl: 'http://localhost:4000',
+  isAdvancedUser: false,
+}
+
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
-  const [passwordVisible, setPasswordVisible] = React.useState(false)
-  const [backupFrequency, setBackupFrequency] = React.useState("daily")
-  const [alertNotifications, setAlertNotifications] = React.useState(true)
-  const [emailNotifications, setEmailNotifications] = React.useState(true)
-  const [slackNotifications, setSlackNotifications] = React.useState(true)
-  const [dataRetentionDays, setDataRetentionDays] = React.useState("30")
-  const [isAdvancedUser, setIsAdvancedUser] = React.useState(false)
+  const [general, setGeneral] = useState<GeneralSettings>(DEFAULT_GENERAL_SETTINGS)
+
+  // Load saved general settings on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(GENERAL_SETTINGS_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed && typeof parsed === 'object') {
+          setGeneral({ ...DEFAULT_GENERAL_SETTINGS, ...parsed })
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load general settings:', err)
+    }
+  }, [])
+
+  const handleSaveGeneral = () => {
+    try {
+      localStorage.setItem(GENERAL_SETTINGS_KEY, JSON.stringify(general))
+      toast({
+        title: 'Settings saved',
+        description: 'General settings have been saved.',
+      })
+    } catch {
+      toast({
+        title: 'Save failed',
+        description: 'Could not persist the general settings in this browser.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleResetGeneral = () => {
+    setGeneral(DEFAULT_GENERAL_SETTINGS)
+    try {
+      localStorage.removeItem(GENERAL_SETTINGS_KEY)
+    } catch {
+      // ignore storage errors on reset
+    }
+    toast({
+      title: 'Settings reset',
+      description: 'General settings were restored to their defaults.',
+    })
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -181,7 +234,12 @@ export default function SettingsPage() {
                         <div className="space-y-4 sm:space-y-6">
                           <div className="space-y-2">
                             <Label htmlFor="instance-name" className="text-sm font-medium text-foreground">Instance Name</Label>
-                            <Input id="instance-name" defaultValue="DevOps Monitor" className="h-10 sm:h-11 bg-card border-border" />
+                            <Input
+                              id="instance-name"
+                              value={general.instanceName}
+                              onChange={(e) => setGeneral(prev => ({ ...prev, instanceName: e.target.value }))}
+                              className="h-10 sm:h-11 bg-card border-border"
+                            />
                             <p className="text-xs sm:text-sm text-muted-foreground">
                               The name of your monitoring instance
                             </p>
@@ -189,7 +247,13 @@ export default function SettingsPage() {
 
                           <div className="space-y-2">
                             <Label htmlFor="base-url" className="text-sm font-medium text-foreground">Base URL</Label>
-                            <Input id="base-url" defaultValue="http://localhost:4000" className="h-10 sm:h-11 bg-card border-border" />
+                            <Input
+                              id="base-url"
+                              type="url"
+                              value={general.baseUrl}
+                              onChange={(e) => setGeneral(prev => ({ ...prev, baseUrl: e.target.value }))}
+                              className="h-10 sm:h-11 bg-card border-border"
+                            />
                             <p className="text-xs sm:text-sm text-muted-foreground">
                               The base URL for generating links and webhooks
                             </p>
@@ -205,8 +269,8 @@ export default function SettingsPage() {
                                 </p>
                               </div>
                               <Switch
-                                checked={isAdvancedUser}
-                                onCheckedChange={setIsAdvancedUser}
+                                checked={general.isAdvancedUser}
+                                onCheckedChange={(checked) => setGeneral(prev => ({ ...prev, isAdvancedUser: checked }))}
                               />
                             </div>
                           </div>
@@ -224,11 +288,11 @@ export default function SettingsPage() {
                         </div>
                       </CardContent>
                       <CardFooter className="flex flex-col sm:flex-row justify-between gap-3 pt-6 p-4 sm:p-6 border-t border-border">
-                        <Button variant="outline" className="gap-2 w-full sm:w-auto h-10 sm:h-11 bg-card border-border hover:bg-muted">
+                        <Button variant="outline" onClick={handleResetGeneral} className="gap-2 w-full sm:w-auto h-10 sm:h-11 bg-card border-border hover:bg-muted">
                           <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
                           Reset to Defaults
                         </Button>
-                        <Button className="gap-2 w-full sm:w-auto h-10 sm:h-11">
+                        <Button onClick={handleSaveGeneral} className="gap-2 w-full sm:w-auto h-10 sm:h-11">
                           <HugeiconsIcon icon={FloppyDiskIcon} className="h-4 w-4" />
                           Save Changes
                         </Button>

@@ -1,6 +1,8 @@
 "use client"
 
-import React, { Suspense, lazy, useState } from "react"
+import React, { Suspense, lazy, useState, useEffect, useCallback } from "react"
+import Link from "next/link"
+import { useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -19,16 +21,15 @@ import {
   GlobeIcon,
   WifiIcon,
   RefreshIcon,
-  Download01Icon,
   EyeIcon,
   FilterIcon,
   Calendar01Icon,
   ArrowUpRight01Icon,
   ArrowDownRight01Icon,
-  MoreHorizontalIcon,
   AlertCircleIcon,
   InformationCircleIcon,
-  Cancel01Icon
+  Cancel01Icon,
+  Loading03Icon
 } from "@hugeicons/core-free-icons"
 import {
   AreaChart,
@@ -57,6 +58,9 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMultiTenantDashboardConfig } from "@/lib/hooks/use-multi-tenant-config"
+import { useAllCurrentMetrics, useAllMetricsRange } from "@/lib/hooks/use-prometheus-metrics"
+import { useAlertmanagerAlerts } from "@/lib/hooks/use-alertmanager-alerts"
+import { alertmanagerAPI } from "@/lib/alertmanager-api"
 import { VersionBadge } from "@/components/version-badge"
 
 // Lazy load heavy components for better performance
@@ -64,28 +68,16 @@ const DynamicMetrics = lazy(() => import("@/components/dynamic-metrics").then(mo
 const MetricsConfigSummary = lazy(() => import("@/components/dynamic-metrics").then(module => ({ default: module.MetricsConfigSummary })))
 const VersionMonitor = lazy(() => import("@/components/version-monitor").then(module => ({ default: module.VersionMonitor })))
 
-// Enhanced mock data with more realistic metrics
-const systemMetrics = {
-  cpu: 45,
-  memory: 67,
-  disk: 23,
-  network: 12,
-  uptime: 99.9,
-  requests: 12543,
-  errors: 0.02,
-  responseTime: 145
+// Selected via the header dropdown; the metric range hooks take hours as a string
+const TIME_RANGE_HOURS: Record<string, string> = {
+  '1h': '1',
+  '24h': '24',
+  '7d': '168',
+  '30d': '720',
 }
 
-const performanceData = [
-  { time: "00:00", cpu: 30, memory: 50, disk: 20, network: 15 },
-  { time: "04:00", cpu: 45, memory: 60, disk: 22, network: 18 },
-  { time: "08:00", cpu: 65, memory: 70, disk: 25, network: 25 },
-  { time: "12:00", cpu: 80, memory: 75, disk: 28, network: 35 },
-  { time: "16:00", cpu: 70, memory: 72, disk: 26, network: 30 },
-  { time: "20:00", cpu: 55, memory: 65, disk: 24, network: 20 },
-  { time: "24:00", cpu: 40, memory: 58, disk: 21, network: 12 },
-]
-
+// Sample distributions with no live data source — explicitly labelled as
+// sample data in the UI instead of being presented as real-time metrics.
 const trafficData = [
   { name: "Mon", requests: 4000, errors: 240 },
   { name: "Tue", requests: 3000, errors: 139 },
@@ -104,44 +96,30 @@ const serviceDistribution = [
   { name: "Other", value: 5, color: "#6b7280" },
 ]
 
-const recentAlerts = [
-  { id: 1, severity: "critical", message: "Database connection pool exhausted", time: "2 minutes ago", service: "Database" },
-  { id: 2, severity: "warning", message: "High memory usage detected", time: "15 minutes ago", service: "API Server" },
-  { id: 3, severity: "info", message: "System backup completed successfully", time: "1 hour ago", service: "Backup Service" },
-  { id: 4, severity: "error", message: "Failed to connect to external service", time: "3 hours ago", service: "Integration" },
-]
-
-const services = [
-  { name: "API Gateway", status: "healthy", uptime: 99.9, responseTime: 45, requests: 1234 },
-  { name: "Database", status: "healthy", uptime: 99.8, responseTime: 23, requests: 567 },
-  { name: "Cache Service", status: "warning", uptime: 98.5, responseTime: 12, requests: 890 },
-  { name: "File Storage", status: "healthy", uptime: 99.7, responseTime: 67, requests: 234 },
-]
-
 // Enhanced Stat Card with mobile-responsive design
-function StatCard({ 
-  title, 
-  value, 
-  trend, 
-  trendValue, 
-  icon, 
-  iconColor, 
+function StatCard({
+  title,
+  value,
+  trend,
+  trendValue,
+  icon,
+  iconColor,
   iconBgColor,
   description,
   progress
 }: {
   title: string
   value: string | number
-  trend: string
-  trendValue: string
+  trend?: string
+  trendValue?: string
   icon: React.ReactNode
   iconColor: string
   iconBgColor: string
   description?: string
   progress?: number
 }) {
-  const isPositive = trend === "up"
-  
+  const isPositive = trend === "up" && !!trendValue
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -156,16 +134,18 @@ function StatCard({
             <div className={`flex size-9 shrink-0 items-center justify-center border border-border bg-background sm:size-10 ${iconBgColor}`}>
               <div className={iconColor}>{icon}</div>
             </div>
-            <div
-              className={`flex items-center border px-2 py-1 text-[11px] font-semibold ${ isPositive ? 'border-border text-foreground' : 'border-destructive/40 text-destructive' }`}
-            >
-              {isPositive ? (
-                <HugeiconsIcon icon={ArrowUpRight01Icon} className="mr-1 size-3" />
-              ) : (
-                <HugeiconsIcon icon={ArrowDownRight01Icon} className="mr-1 size-3" />
-              )}
-              <span>{trendValue}</span>
-            </div>
+            {trendValue && (
+              <div
+                className={`flex items-center border px-2 py-1 text-[11px] font-semibold ${ isPositive ? 'border-border text-foreground' : 'border-destructive/40 text-destructive' }`}
+              >
+                {isPositive ? (
+                  <HugeiconsIcon icon={ArrowUpRight01Icon} className="mr-1 size-3" />
+                ) : (
+                  <HugeiconsIcon icon={ArrowDownRight01Icon} className="mr-1 size-3" />
+                )}
+                <span>{trendValue}</span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2 sm:space-y-3">
@@ -205,10 +185,15 @@ function StatCard({
   )
 }
 
-// Enhanced Alert Card with mobile-responsive design
-function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
-  const getSeverityIcon = (severity: string) => {
-    switch (severity) {
+// Enhanced Alert Card fed by real Alertmanager alerts
+function AlertCard({ alert }: { alert: any }) {
+  const alertName = alertmanagerAPI.extractAlertName(alert.labels)
+  const severity = alertmanagerAPI.extractSeverity(alert.labels)
+  const message = alertmanagerAPI.getAlertSummary(alert.annotations)
+  const service = alertmanagerAPI.extractServiceName(alert.labels)
+
+  const getSeverityIcon = (sev: string) => {
+    switch (sev) {
       case "critical":
         return <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
       case "error":
@@ -222,12 +207,8 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
     }
   }
 
-  const getSeverityColor = (severity: string) => {
-    return 'border-border bg-muted text-foreground'
-  }
-
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
+  const getSeverityBadge = (sev: string) => {
+    switch (sev) {
       case "critical":
         return <Badge variant="destructive" className="text-xs">Critical</Badge>
       case "error":
@@ -237,7 +218,7 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
       case "info":
         return <Badge variant="default" className="text-xs">Info</Badge>
       default:
-        return <Badge variant="outline" className="text-xs">Unknown</Badge>
+        return <Badge variant="outline" className="text-xs">{sev || 'Unknown'}</Badge>
     }
   }
 
@@ -248,50 +229,59 @@ function AlertCard({ alert }: { alert: typeof recentAlerts[0] }) {
       transition={{ duration: 0.3 }}
       whileHover={{ x: 4 }}
     >
-      <div className={`p-2 sm:p-3 border border-border ${getSeverityColor(alert.severity)} transition-all duration-200`}>
+      <div className="p-2 sm:p-3 border border-border bg-muted/40 transition-all duration-200">
         <div className="flex items-start gap-2 sm:gap-3">
-          <div className={`p-1.5 sm:p-2 border border-border flex-shrink-0 ${getSeverityColor(alert.severity)}`}>
-            {getSeverityIcon(alert.severity)}
+          <div className="p-1.5 sm:p-2 border border-border bg-muted flex-shrink-0">
+            {getSeverityIcon(severity)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1 sm:gap-2 mb-1">
-              {getSeverityBadge(alert.severity)}
-              <span className="text-xs text-muted-foreground hidden sm:inline">{alert.service}</span>
+              {getSeverityBadge(severity)}
+              <span className="text-xs text-muted-foreground hidden sm:inline">{service}</span>
             </div>
-            <p className="text-xs sm:text-sm font-medium break-words">{alert.message}</p>
-            <p className="text-xs text-muted-foreground mt-1">{alert.time}</p>
+            <p className="text-xs sm:text-sm font-medium break-words">{message}</p>
+            <p className="text-xs text-muted-foreground mt-1">{alertName} · since {alertmanagerAPI.formatTimestamp(alert.startsAt)}</p>
           </div>
-          <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0">
-            <HugeiconsIcon icon={MoreHorizontalIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
         </div>
       </div>
     </motion.div>
   )
 }
 
-// Enhanced Service Status Card with mobile-responsive design
-function ServiceStatusCard({ service }: { service: typeof services[0] }) {
-  const getStatusColor = (_status: string) => 'bg-foreground'
+// Enhanced Service Status Card fed by the /api/health upstream report
+interface HealthService {
+  key: string;
+  name: string;
+  description: string;
+  status: 'up' | 'down' | 'disabled';
+  responseTime: number;
+}
 
-  const getStatusBadge = (status: string) => {
+function ServiceStatusCard({ service }: { service: HealthService }) {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "healthy":
-        return <Badge className="bg-muted text-foreground border-border text-xs">Healthy</Badge>
-      case "warning":
-        return <Badge className="bg-muted text-foreground border-border text-xs">Warning</Badge>
-      case "error":
-        return <Badge variant="destructive" className="text-xs">Error</Badge>
-      default:
-        return <Badge variant="outline" className="text-xs">Unknown</Badge>
+      case "up": return 'bg-foreground'
+      case "down": return 'bg-destructive'
+      default: return 'bg-muted-foreground'
     }
   }
 
-  const getServiceIcon = (name: string) => {
-    if (name.includes("API")) return <HugeiconsIcon icon={GlobeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-    if (name.includes("Database")) return <HugeiconsIcon icon={DatabaseIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-    if (name.includes("Cache")) return <HugeiconsIcon icon={FlashIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-    if (name.includes("Storage")) return <HugeiconsIcon icon={HardDriveIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "up":
+        return <Badge className="bg-muted text-foreground border-border text-xs">Up</Badge>
+      case "down":
+        return <Badge variant="destructive" className="text-xs">Down</Badge>
+      default:
+        return <Badge variant="outline" className="text-xs">Disabled</Badge>
+    }
+  }
+
+  const getServiceIcon = (key: string) => {
+    if (key.includes("grafana")) return <HugeiconsIcon icon={PieChartIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+    if (key.includes("loki")) return <HugeiconsIcon icon={DatabaseIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+    if (key.includes("alertmanager")) return <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
+    if (key.includes("blackbox")) return <HugeiconsIcon icon={FlashIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
     return <HugeiconsIcon icon={CloudServerIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
   }
 
@@ -315,7 +305,7 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
               <div className="flex items-center gap-2">
                 <div className={`p-1.5 sm:p-2 border border-border bg-background`}>
                   <div className="text-foreground">
-                    {getServiceIcon(service.name)}
+                    {getServiceIcon(service.key)}
                   </div>
                 </div>
                 <div>
@@ -330,23 +320,6 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
 
           {/* Service Metrics */}
           <div className="space-y-2 sm:space-y-3">
-            {/* Uptime */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
-                <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Uptime</span>
-              </div>
-              <div className="text-right">
-                <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{service.uptime}%</div>
-                <div className="w-12 sm:w-16 h-1 bg-muted dark:bg-muted mt-1">
-                  <div 
-                    className="h-full bg-foreground"
-                    style={{ width: `${service.uptime}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-
             {/* Response Time */}
             <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border">
               <div className="flex items-center gap-1 sm:gap-2">
@@ -354,22 +327,14 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Response</span>
               </div>
               <div className="text-right">
-                <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{service.responseTime}ms</div>
-                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">
-                  {service.responseTime < 50 ? 'Excellent' : service.responseTime < 100 ? 'Good' : 'Slow'}
+                <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">
+                  {service.status === 'up' ? `${service.responseTime}ms` : '--'}
                 </div>
-              </div>
-            </div>
-
-            {/* Requests */}
-            <div className="flex items-center justify-between p-2 sm:p-3 bg-muted dark:bg-muted border border-border dark:border-border">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted rounded-full"></div>
-                <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">Requests</span>
-              </div>
-              <div className="text-right">
-                <div className="text-xs sm:text-sm font-bold text-muted-foreground dark:text-foreground">{service.requests.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">Last 24h</div>
+                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">
+                  {service.status !== 'up'
+                    ? 'Unreachable'
+                    : service.responseTime < 50 ? 'Excellent' : service.responseTime < 200 ? 'Good' : 'Slow'}
+                </div>
               </div>
             </div>
 
@@ -381,18 +346,9 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
               </div>
               <div className="text-right">
                 <div className="text-xs sm:text-sm font-bold capitalize text-muted-foreground dark:text-foreground">{service.status}</div>
-                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">Real-time</div>
+                <div className="text-xs text-muted-foreground dark:text-muted-foreground hidden sm:block">Health probe</div>
               </div>
             </div>
-          </div>
-
-          {/* Action Button */}
-          <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border dark:border-border">
-            <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
-              <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">View Details</span>
-              <span className="sm:hidden">Details</span>
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -403,6 +359,70 @@ function ServiceStatusCard({ service }: { service: typeof services[0] }) {
 export default function DashboardPage() {
   const { dashboardConfig, isLoading, error } = useMultiTenantDashboardConfig();
   const [selectedTimeRange, setSelectedTimeRange] = useState("24h");
+  const queryClient = useQueryClient();
+
+  // Real system metrics from Prometheus
+  const allCurrentMetrics = useAllCurrentMetrics();
+  const metricsRange = useAllMetricsRange(TIME_RANGE_HOURS[selectedTimeRange] ?? '24');
+
+  // Real alerts from Alertmanager
+  const { alerts, refresh: refreshAlerts } = useAlertmanagerAlerts();
+
+  // Real upstream service health from the dashboard's own health endpoint
+  const [healthServices, setHealthServices] = useState<HealthService[]>([]);
+  const [healthLoading, setHealthLoading] = useState(true);
+
+  const fetchHealth = useCallback(async () => {
+    try {
+      const response = await fetch('/api/health', { cache: 'no-store' });
+      if (!response.ok) return;
+      const report = await response.json();
+      setHealthServices(Array.isArray(report?.services) ? report.services : []);
+    } catch (err) {
+      console.error('Failed to fetch service health:', err);
+    } finally {
+      setHealthLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHealth();
+  }, [fetchHealth]);
+
+  // Merge CPU/memory/network range series into one chart dataset
+  const performanceData = (() => {
+    const timeMap = new Map<number, any>();
+    const series: Array<[any[], keyof Omit<any, 'time'>]> = [
+      [metricsRange.cpuRange.data ?? [], 'cpu'],
+      [metricsRange.memoryRange.data ?? [], 'memory'],
+      [metricsRange.networkRange.data ?? [], 'network'],
+    ];
+    series.forEach(([dataArray, key]) => {
+      (dataArray as any[]).forEach((item) => {
+        if (!timeMap.has(item.time)) timeMap.set(item.time, { time: item.time });
+        timeMap.get(item.time)[key] = item.value;
+      });
+    });
+    return Array.from(timeMap.values())
+      .sort((a, b) => a.time - b.time)
+      .map((entry) => ({
+        ...entry,
+        label: new Date(entry.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }));
+  })();
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['all-current-metrics'] });
+    queryClient.invalidateQueries({ queryKey: ['cpu-usage-range'] });
+    queryClient.invalidateQueries({ queryKey: ['memory-usage-range'] });
+    queryClient.invalidateQueries({ queryKey: ['disk-usage-range'] });
+    queryClient.invalidateQueries({ queryKey: ['network-traffic-range'] });
+    refreshAlerts();
+    fetchHealth();
+  };
+
+  const formatMetric = (value: number | undefined | null, suffix = '', digits = 1) =>
+    value == null ? '--' : `${value.toFixed(digits)}${suffix}`;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -417,8 +437,8 @@ export default function DashboardPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <VersionBadge variant="compact" />
-                <select 
-                  value={selectedTimeRange} 
+                <select
+                  value={selectedTimeRange}
                   onChange={(e) => setSelectedTimeRange(e.target.value)}
                   className="h-9 border border-border bg-background px-3 text-xs sm:text-sm"
                 >
@@ -427,7 +447,7 @@ export default function DashboardPage() {
                   <option value="7d">Last 7 Days</option>
                   <option value="30d">Last 30 Days</option>
                 </select>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh}>
                   <HugeiconsIcon icon={RefreshIcon} className="size-3.5" />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
@@ -443,46 +463,40 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             <StatCard
               title="CPU"
-              value={`${systemMetrics.cpu}%`}
-              trend="up"
-              trendValue="+5%"
+              value={allCurrentMetrics.data ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
               icon={<HugeiconsIcon icon={CpuIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
-              description="Average"
-              progress={systemMetrics.cpu}
+              description="Current"
+              progress={allCurrentMetrics.data?.cpu}
             />
             <StatCard
               title="Memory"
-              value={`${systemMetrics.memory}%`}
-              trend="down"
-              trendValue="-3%"
+              value={allCurrentMetrics.data ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
               icon={<HugeiconsIcon icon={DatabaseIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
-              description="8GB/12GB"
-              progress={systemMetrics.memory}
+              description="Current"
+              progress={allCurrentMetrics.data?.memory}
             />
             <StatCard
               title="Disk"
-              value={`${systemMetrics.disk}%`}
-              trend="up"
-              trendValue="+2%"
+              value={allCurrentMetrics.data ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
               icon={<HugeiconsIcon icon={HardDriveIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
-              description="120GB/500GB"
-              progress={systemMetrics.disk}
+              description="Current"
+              progress={allCurrentMetrics.data?.disk}
             />
             <StatCard
               title="Network"
-              value={`${systemMetrics.network}MB/s`}
-              trend="up"
-              trendValue="+12%"
+              value={allCurrentMetrics.data?.network
+                ? `${(allCurrentMetrics.data.network.inbound + allCurrentMetrics.data.network.outbound).toFixed(1)} MB/s`
+                : '--'}
               icon={<HugeiconsIcon icon={WifiIcon} className="h-5 w-5 sm:h-6 sm:w-6" />}
               iconColor="text-foreground"
               iconBgColor=""
-              description="Total"
+              description="In + Out"
             />
           </div>
         </motion.div>
@@ -507,14 +521,10 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Performance</span>
                     </CardTitle>
                     <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
-                      <span className="hidden sm:inline">System metrics over time</span>
+                      <span className="hidden sm:inline">System metrics over the selected period</span>
                       <span className="sm:hidden">Metrics over time</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">View Details</span>
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
@@ -522,7 +532,7 @@ export default function DashboardPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={performanceData}>
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                      <XAxis dataKey="label" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} />
                       <Tooltip contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "0px" }} />
                       <Legend />
@@ -539,7 +549,7 @@ export default function DashboardPage() {
                       <span className="text-xs sm:text-sm font-medium text-foreground">CPU</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
-                      {systemMetrics.cpu}%
+                      {formatMetric(allCurrentMetrics.data?.cpu, '%')}
                     </div>
                     <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
@@ -549,7 +559,7 @@ export default function DashboardPage() {
                       <span className="text-xs sm:text-sm font-medium text-foreground">Memory</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
-                      {systemMetrics.memory}%
+                      {formatMetric(allCurrentMetrics.data?.memory, '%')}
                     </div>
                     <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
@@ -559,7 +569,9 @@ export default function DashboardPage() {
                       <span className="text-xs sm:text-sm font-medium text-foreground">Network</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground mt-1">
-                      {systemMetrics.network}MB/s
+                      {allCurrentMetrics.data?.network
+                        ? `${(allCurrentMetrics.data.network.inbound + allCurrentMetrics.data.network.outbound).toFixed(1)} MB/s`
+                        : '--'}
                     </div>
                     <div className="text-xs text-foreground hidden sm:block">Current</div>
                   </div>
@@ -586,12 +598,12 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Traffic</span>
                     </CardTitle>
                     <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
-                      <span className="hidden sm:inline">Weekly request volume and error rates</span>
-                      <span className="sm:hidden">Weekly requests & errors</span>
+                      <span className="hidden sm:inline">Sample data — needs an app exporting http_requests_total</span>
+                      <span className="sm:hidden">Sample data</span>
                     </CardDescription>
                   </div>
-                  <Badge className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
-                    7 days
+                  <Badge variant="outline" className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
+                    Sample data
                   </Badge>
                 </div>
               </CardHeader>
@@ -655,22 +667,36 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Services</span>
                     </CardTitle>
                     <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
-                      <span className="hidden sm:inline">Real-time service health monitoring</span>
+                      <span className="hidden sm:inline">Live upstream health from the service probes</span>
                       <span className="sm:hidden">Service health</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Configure</span>
-                  </Button>
+                  <Link href="/settings">
+                    <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                      <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Configure</span>
+                    </Button>
+                  </Link>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                  {services.map((service, index) => (
-                    <ServiceStatusCard key={index} service={service} />
-                  ))}
-                </div>
+                {healthLoading ? (
+                  <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
+                    <HugeiconsIcon icon={Loading03Icon} className="size-4 animate-spin" />
+                    Checking services…
+                  </div>
+                ) : healthServices.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <HugeiconsIcon icon={AlertCircleIcon} className="size-8 mx-auto mb-2" />
+                    <p className="text-sm">Service health is unavailable right now.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    {healthServices.map((service) => (
+                      <ServiceStatusCard key={service.key} service={service} />
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -698,22 +724,31 @@ export default function DashboardPage() {
                     </CardDescription>
                   </div>
                   <Badge className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
-                    {recentAlerts.length} active
+                    {alerts.length} active
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
                 <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
-                  {recentAlerts.map((alert) => (
-                    <AlertCard key={alert.id} alert={alert} />
-                  ))}
+                  {alerts.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <HugeiconsIcon icon={Clock01Icon} className="size-8 mx-auto mb-2" />
+                      <p className="text-sm">No active alerts. All systems nominal.</p>
+                    </div>
+                  ) : (
+                    alerts.map((alert: any) => (
+                      <AlertCard key={alert.fingerprint || alert.id} alert={alert} />
+                    ))
+                  )}
                 </div>
                 <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border dark:border-border">
-                  <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
-                    <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">View All Alerts</span>
-                    <span className="sm:hidden">All Alerts</span>
-                  </Button>
+                  <Link href="/alerts">
+                    <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
+                      <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">View All Alerts</span>
+                      <span className="sm:hidden">All Alerts</span>
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -744,10 +779,12 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Real-time metrics</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Configure</span>
-                  </Button>
+                  <Link href="/settings">
+                    <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                      <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Configure</span>
+                    </Button>
+                  </Link>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
@@ -764,7 +801,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 }>
-                  <DynamicMetrics 
+                  <DynamicMetrics
                     showCards={true}
                     showCharts={false}
                     groupBy={false}
@@ -792,14 +829,13 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Distribution</span>
                     </CardTitle>
                     <CardDescription className="mt-1 sm:mt-2 text-muted-foreground text-xs sm:text-sm">
-                      <span className="hidden sm:inline">Resource allocation across services</span>
-                      <span className="sm:hidden">Resource allocation</span>
+                      <span className="hidden sm:inline">Sample breakdown — configure real allocation sources</span>
+                      <span className="sm:hidden">Sample breakdown</span>
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
-                    <HugeiconsIcon icon={FilterIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Filter</span>
-                  </Button>
+                  <Badge variant="outline" className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
+                    Sample data
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">

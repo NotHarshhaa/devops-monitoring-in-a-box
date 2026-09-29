@@ -65,6 +65,35 @@ export class PrometheusAPI {
     return this.httpClient.get<T>('/api/v1/query_range', { params });
   }
 
+  /**
+   * Raw instant query returning one series per matching label set.
+   * Used by config-driven components (dynamic metrics, SLA tracker) whose
+   * PromQL expressions come from configuration rather than fixed code.
+   */
+  async getInstantVector(query: string): Promise<Array<{ metric: Record<string, string>; value: [number, string] }>> {
+    const response = await this.query<PrometheusQueryResponse>(query);
+    if (response.status !== 'success') {
+      throw new Error(`Prometheus query failed: ${response.status}`);
+    }
+    return response.data.result;
+  }
+
+  /**
+   * Raw range query returning one series per matching label set.
+   */
+  async getRangeMatrix(
+    query: string,
+    start: number,
+    end: number,
+    step?: string
+  ): Promise<Array<{ metric: Record<string, string>; values: Array<[number, string]> }>> {
+    const response = await this.queryRange<PrometheusRangeResponse>(query, start, end, step);
+    if (response.status !== 'success') {
+      throw new Error(`Prometheus range query failed: ${response.status}`);
+    }
+    return response.data.result;
+  }
+
   // CPU Usage
   async getCPUUsage(): Promise<number> {
     const response = await this.query<PrometheusQueryResponse>(
