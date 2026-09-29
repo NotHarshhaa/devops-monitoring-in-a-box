@@ -45,6 +45,17 @@ if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_URL) {
   )
 }
 
+// Demo credentials are a convenience for local development and self-hosted
+// demos, but they must never be silently active in production. They are
+// enabled by default outside production and can be controlled explicitly
+// with ENABLE_DEMO_AUTH=true|false in any environment.
+const isDemoAuthEnabled = () => {
+  if (process.env.ENABLE_DEMO_AUTH !== undefined) {
+    return process.env.ENABLE_DEMO_AUTH === 'true'
+  }
+  return process.env.NODE_ENV !== 'production'
+}
+
 export const authOptions: NextAuthOptions = {
   secret: getAuthSecret(),
   debug: process.env.NODE_ENV === "development",
@@ -58,6 +69,14 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        if (!isDemoAuthEnabled()) {
+          console.warn(
+            "[Auth] Login attempt rejected: demo credentials are disabled " +
+            "(set ENABLE_DEMO_AUTH=true to allow them in this environment)."
+          )
           return null
         }
 

@@ -27,7 +27,10 @@ scrape_configs:
           job: varlogs
           environment: production
           service: system
+          # Dedicated jobs below already scrape syslog, auth.log and the
+          # nginx logs; exclude them here so those lines are not ingested twice.
           __path__: /var/log/*log
+          __path_exclude__: /var/log/{syslog,auth.log}
     pipeline_stages:
       - match:
           selector: '{job="varlogs"}'

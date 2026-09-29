@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { NotificationService } from '@/lib/notification-service'
+import { getNotificationService } from '@/lib/notification-service'
 import { requireAuth, WRITE_ROLES } from '@/lib/server/api-auth'
 import {
   mergeNotificationSecrets,
@@ -17,7 +17,7 @@ import {
 
 export const dynamic = 'force-dynamic'
 
-const notificationService = new NotificationService()
+const notificationService = getNotificationService()
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const
 

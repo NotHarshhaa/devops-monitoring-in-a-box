@@ -48,12 +48,15 @@ receivers:
             credentials_file: /etc/alertmanager/webhook_token
 
 inhibit_rules:
-  # A critical alert makes the matching warning redundant.
+  # A critical alert makes the matching warning redundant. Do NOT include
+  # 'alertname' here: critical/warning pairs in alert_rules.yml use different
+  # names (CriticalCPUUsage vs HighCPUUsage), so an alertname match would
+  # never fire and warnings would stay un-inhibited.
   - source_matchers:
       - severity = "critical"
     target_matchers:
       - severity = "warning"
-    equal: ['alertname', 'instance']
+    equal: ['instance']
 
   # If a target is unreachable, suppress the noisy symptom alerts for it.
   - source_matchers:

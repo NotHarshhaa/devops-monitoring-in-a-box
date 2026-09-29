@@ -1,9 +1,10 @@
 // Configuration loader component for importing/exporting config files
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMultiTenantConfig } from "@/lib/hooks/use-multi-tenant-config";
+import { ConfigParser } from "@/lib/config/parser";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,14 +29,14 @@ interface ConfigLoaderProps {
 }
 
 export function ConfigLoader({ className }: ConfigLoaderProps) {
-  const { 
-    config, 
-    loadFromJson, 
-    exportConfig, 
-    resetToDefault, 
-    isLoading, 
+  const {
+    config,
+    loadFromJson,
+    exportConfig,
+    resetToDefault,
+    isLoading,
     error,
-    getConfigSummary 
+    getConfigSummary
   } = useMultiTenantConfig();
   
   const [jsonInput, setJsonInput] = useState("");
@@ -47,6 +48,16 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const validationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cancel any pending debounced validation on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimerRef.current) {
+        clearTimeout(validationTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -65,12 +76,15 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
     }
   };
 
+  // Validate without applying: parse + validate only, never mutate the
+  // live config. Mutating load happens explicitly via "Load Configuration".
   const validateJson = async (jsonString: string) => {
     setIsValidating(true);
     setValidationResult(null);
 
     try {
-      const result = await loadFromJson(jsonString);
+      const parsed = ConfigParser.parseConfig(jsonString);
+      const result = ConfigParser.validateConfig(parsed);
       setValidationResult(result);
     } catch (err) {
       setValidationResult({
@@ -85,11 +99,13 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
 
   const handleJsonChange = (value: string) => {
     setJsonInput(value);
+    if (validationTimerRef.current) {
+      clearTimeout(validationTimerRef.current);
+    }
     if (value.trim()) {
-      const timeoutId = setTimeout(() => {
+      validationTimerRef.current = setTimeout(() => {
         validateJson(value);
       }, 500);
-      return () => clearTimeout(timeoutId);
     } else {
       setValidationResult(null);
     }
@@ -97,7 +113,9 @@ export function ConfigLoader({ className }: ConfigLoaderProps) {
 
   const handleLoadConfig = async () => {
     if (!jsonInput.trim()) return;
-    await validateJson(jsonInput);
+    // Explicit load: this applies the parsed config to the live manager
+    const result = await loadFromJson(jsonInput);
+    setValidationResult(result);
   };
 
   const handleExportConfig = () => {

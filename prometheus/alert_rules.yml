@@ -107,7 +107,9 @@ groups:
 
       # Network interface down
       - alert: NetworkInterfaceDown
-        expr: node_network_up == 0
+        # Only physical interfaces: loopback, veth pairs, docker bridges etc. are
+        # routinely down by design and must not page anyone.
+        expr: node_network_up{device!~"lo|veth.*|docker.*|br-.*|tun.*|tap.*"} == 0
         for: 2m
         labels:
           severity: critical
@@ -243,7 +245,9 @@ groups:
     rules:
       # High HTTP error rate
       - alert: HighHTTPErrorRate
-        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        # Aggregate over all labels: dividing per-series (including the status
+        # label) would make any single 5xx request report a 100% error rate.
+        expr: 100 * sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 5
         for: 5m
         labels:
           severity: warning
@@ -256,7 +260,7 @@ groups:
 
       # Critical HTTP error rate
       - alert: CriticalHTTPErrorRate
-        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100 > 10
+        expr: 100 * sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 10
         for: 2m
         labels:
           severity: critical

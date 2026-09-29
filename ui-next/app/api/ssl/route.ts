@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import tls from 'tls';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/lib/auth-simple';
 
 export interface SSLCertificateInfo {
   host: string;
@@ -86,7 +86,7 @@ function probeSSLCertificate(host: string, port = 443, timeoutMs = 8000): Promis
             fingerprint: cert.fingerprint || '',
             serialNumber: cert.serialNumber || '',
           });
-        } catch (err: any) {
+        } catch {
           resolve({
             host: cleanHost,
             port,
@@ -99,13 +99,13 @@ function probeSSLCertificate(host: string, port = 443, timeoutMs = 8000): Promis
             subjectAltNames: [],
             fingerprint: '',
             serialNumber: '',
-            error: err.message || 'Failed to parse certificate',
+            error: 'Failed to parse certificate',
           });
         }
       }
     );
 
-    socket.on('error', (err) => {
+    socket.on('error', () => {
       if (resolved) return;
       resolved = true;
       socket.destroy();
@@ -121,7 +121,9 @@ function probeSSLCertificate(host: string, port = 443, timeoutMs = 8000): Promis
         subjectAltNames: [],
         fingerprint: '',
         serialNumber: '',
-        error: err.message || 'Connection failed',
+        // Deliberately generic: echoing the raw socket error would let callers
+        // probe internal hosts/ports by distinguishing error classes.
+        error: 'Unable to establish a TLS connection to the target host',
       });
     });
 
@@ -155,11 +157,37 @@ const DEFAULT_HOSTS = [
   'grafana.com',
 ];
 
+function parsePort(raw: string | null | undefined): number | null {
+  const port = parseInt(raw || '443', 10);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) return null;
+  return port;
+}
+
+async function requireSession(): Promise<NextResponse | null> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return null;
+}
+
 export async function GET(request: NextRequest) {
+  // SSL probing opens arbitrary server-side connections, so it must never be
+  // callable anonymously (it would otherwise enable internal port scanning).
+  const unauthorized = await requireSession();
+  if (unauthorized) return unauthorized;
+
   try {
     const { searchParams } = new URL(request.url);
     const target = searchParams.get('target');
-    const port = parseInt(searchParams.get('port') || '443', 10);
+    const port = parsePort(searchParams.get('port'));
+
+    if (port === null) {
+      return NextResponse.json(
+        { success: false, error: 'Port must be an integer between 1 and 65535' },
+        { status: 400 }
+      );
+    }
 
     if (target) {
       const info = await probeSSLCertificate(target, port);
@@ -169,33 +197,39 @@ export async function GET(request: NextRequest) {
     // Probe default list
     const results = await Promise.all(DEFAULT_HOSTS.map((h) => probeSSLCertificate(h)));
     return NextResponse.json({ success: true, certificates: results });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
-      { success: false, error: error.message || 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: NextRequest) {
+  const unauthorized = await requireSession();
+  if (unauthorized) return unauthorized;
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
-    const { target, port = 443 } = body;
+    const { target, port } = body;
 
-    if (!target) {
+    if (!target || typeof target !== 'string') {
       return NextResponse.json({ error: 'Missing target hostname' }, { status: 400 });
     }
 
-    const info = await probeSSLCertificate(target, port);
+    const parsedPort = parsePort(port ? String(port) : null);
+    if (parsedPort === null) {
+      return NextResponse.json(
+        { error: 'Port must be an integer between 1 and 65535' },
+        { status: 400 }
+      );
+    }
+
+    const info = await probeSSLCertificate(target, parsedPort);
     return NextResponse.json({ success: true, certificate: info });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to inspect SSL certificate' },
+      { success: false, error: 'Failed to inspect SSL certificate' },
       { status: 500 }
     );
   }

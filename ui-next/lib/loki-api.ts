@@ -190,9 +190,11 @@ export class LokiAPI {
 
     query += '}';
 
-    // Add text search filter
+    // Add text search filter (escape backslashes and quotes so the
+    // user input cannot break out of the LogQL string literal)
     if (filters.searchQuery && filters.searchQuery.trim()) {
-      query += ` |= "${filters.searchQuery.trim()}"`;
+      const safe = filters.searchQuery.trim().replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      query += ` |= "${safe}"`;
     }
 
     return query;
@@ -202,28 +204,19 @@ export class LokiAPI {
    * Get time range in nanoseconds from human readable format
    */
   getTimeRange(timeRange: string): { start: number; end: number } {
-    const end = Date.now() * 1000000; // Current time in nanoseconds
-    let start: number;
+    const minutesByRange: Record<string, number> = {
+      '15m': 15,
+      '1h': 60,
+      '6h': 360,
+      '12h': 720,
+      '24h': 1440,
+      '1d': 1440,
+      '7d': 7 * 1440,
+    };
+    const minutes = minutesByRange[timeRange] ?? 60;
 
-    switch (timeRange) {
-      case '15m':
-        start = end - (15 * 60 * 1000 * 1000000);
-        break;
-      case '1h':
-        start = end - (60 * 60 * 1000 * 1000000);
-        break;
-      case '6h':
-        start = end - (6 * 60 * 60 * 1000 * 1000000);
-        break;
-      case '24h':
-        start = end - (24 * 60 * 60 * 1000 * 1000000);
-        break;
-      case '7d':
-        start = end - (7 * 24 * 60 * 60 * 1000 * 1000000);
-        break;
-      default:
-        start = end - (60 * 60 * 1000 * 1000000); // Default to 1 hour
-    }
+    const end = Date.now() * 1000000; // Current time in nanoseconds
+    const start = end - minutes * 60 * 1000 * 1000000;
 
     return { start, end };
   }

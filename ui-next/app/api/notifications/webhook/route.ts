@@ -10,12 +10,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { NotificationService } from '@/lib/notification-service'
+import { getNotificationService } from '@/lib/notification-service'
 import { verifyWebhookToken } from '@/lib/server/api-auth'
 
 export const dynamic = 'force-dynamic'
 
-const notificationService = new NotificationService()
+const notificationService = getNotificationService()
 
 /** Alertmanager batches alerts; refuse absurd payloads outright. */
 const MAX_ALERTS = 500

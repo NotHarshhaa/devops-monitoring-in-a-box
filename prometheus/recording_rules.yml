@@ -43,7 +43,7 @@ groups:
 
       # HTTP error rate percentage
       - record: http_error_rate_percent
-        expr: (rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])) * 100
+        expr: 100 * sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
 
       # HTTP response time 95th percentile
       - record: http_response_time_95th
@@ -95,13 +95,16 @@ groups:
 
   - name: alerting_recording_rules
     rules:
-      # Alert firing rate
-      - record: alert_firing_rate
-        expr: rate(alertmanager_alerts[5m])
+      # Currently firing alerts (gauge snapshot; rate() on this gauge is
+      # meaningless, so record the value itself)
+      - record: alert_firing_count
+        expr: alertmanager_alerts{state="active"}
 
-      # Alert resolution rate
-      - record: alert_resolution_rate
-        expr: rate(alertmanager_alerts{state="resolved"}[5m])
+      # Notification failure rate - a proxy for delivery problems; the old
+      # alertmanager_alerts{state="resolved"} series never exists because the
+      # state label only takes active/suppressed.
+      - record: notification_failure_rate
+        expr: rate(alertmanager_notifications_total{status="failed"}[5m])
 
       # Notification success rate
       - record: notification_success_rate
@@ -111,12 +114,12 @@ groups:
     rules:
       # Log ingestion rate
       - record: log_ingestion_rate
-        expr: rate(loki_distributor_received_bytes_total[5m])
+        expr: rate(loki_distributor_bytes_received_total[5m])
 
       # Log query rate
       - record: log_query_rate
         expr: rate(loki_query_frontend_queries_total[5m])
 
-      # Log error rate
+      # Log ingestion error rate (5xx responses from the Loki HTTP API)
       - record: log_error_rate
-        expr: rate(loki_distributor_errors_total[5m])
+        expr: rate(loki_request_duration_seconds_count{status_code=~"5.."}[5m])

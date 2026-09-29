@@ -77,7 +77,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_INSTALL_PLUGINS=
-      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_COOKIE_SECURE=$${GRAFANA_COOKIE_SECURE:-false}
       - GF_SECURITY_COOKIE_SAMESITE=strict
       - GF_SECURITY_CONTENT_TYPE_PROTECTION=true
       - GF_SECURITY_X_CONTENT_TYPE_OPTIONS=nosniff
@@ -222,9 +222,11 @@ services:
       - '--path.rootfs=/rootfs'
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      # Keep the netdev collector enabled and just exclude virtual devices:
+      # disabling it entirely removes node_network_receive/transmit_bytes_total,
+      # which the Grafana dashboard and recording rules depend on.
       - '--collector.netdev.device-exclude=^(veth.*|docker.*|br-.*|lo)$$'
       - '--no-collector.ipvs'
-      - '--no-collector.netdev'
       - '--no-collector.bonding'
       - '--no-collector.infiniband'
       - '--no-collector.wifi'
@@ -350,6 +352,9 @@ services:
       - NEXT_PUBLIC_BLACKBOX_URL=${NEXT_PUBLIC_BLACKBOX_URL:-http://localhost:9115}
       # Shared secret required on /api/notifications/webhook when set.
       - ALERT_WEBHOOK_TOKEN=${ALERT_WEBHOOK_TOKEN:?ALERT_WEBHOOK_TOKEN must be set - run scripts/setup-env.sh or devops-monitor.ps1 init-env}
+      # Demo sign-in accounts are disabled in production builds unless this is
+      # explicitly set to "true". Set to "false" to force them off anywhere.
+      - ENABLE_DEMO_AUTH=${ENABLE_DEMO_AUTH:-true}
     restart: unless-stopped
     deploy:
       resources:

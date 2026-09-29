@@ -32,7 +32,7 @@ echo ""
 echo "📋 Copy these to your .env.local file:"
 echo "======================================"
 echo "NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\""
-echo "NEXTAUTH_URL=\"http://localhost:3000\""
+echo "NEXTAUTH_URL=\"${NEXTAUTH_URL:-http://localhost:4000}\""
 echo "DATABASE_URL=\"file:./dev.db\""
 echo ""
 

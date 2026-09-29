@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
@@ -39,6 +39,19 @@ function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("from") || "/dashboard"
+
+  // Restore the remembered email saved by a previous "Remember me" login
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('remember-email')
+      if (saved) {
+        setEmail(saved)
+        setRememberMe(true)
+      }
+    } catch {
+      // localStorage unavailable (e.g. storage disabled)
+    }
+  }, [])
 
   const copyToClipboard = async (text: string, type: 'email' | 'password') => {
     try {

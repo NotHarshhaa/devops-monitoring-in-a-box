@@ -88,7 +88,7 @@
     },
     {
       "name": "Error Rate",
-      "query": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m]) * 100",
+      "query": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
       "unit": "%",
       "chart": "line",
       "description": "HTTP error rate percentage",

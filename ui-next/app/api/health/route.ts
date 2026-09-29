@@ -56,12 +56,15 @@ export async function GET(request: NextRequest) {
   try {
     report = await collectHealth({ force });
   } catch (error) {
-    // The dashboard is still alive; report the probing failure explicitly.
+    // The dashboard is still alive; log the detail server-side and return a
+    // generic message — this path runs before the caller's identity is known,
+    // so error details (which can embed internal hostnames) must not leak.
+    console.error('Health probing failed:', error);
     return NextResponse.json(
       {
         status: 'ok',
         upstreamStatus: 'unhealthy',
-        error: error instanceof Error ? error.message : 'Health probing failed',
+        error: 'Health probing failed',
         timestamp: new Date().toISOString(),
       },
       { status: strict ? 503 : 200, headers: NO_STORE }

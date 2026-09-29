@@ -35,6 +35,7 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { useLokiLogs } from "@/lib/hooks/use-loki-logs"
+import { lokiAPI } from "@/lib/loki-api"
 
 // Time range options
 const timeRangeData = [
@@ -112,8 +113,33 @@ export default function LogsPage() {
     setExpandedLogs(newExpanded)
   }
 
+  // Loki timestamps are nanosecond epoch strings — use the converter that
+  // handles them instead of new Date(nanoseconds-string), which is Invalid Date
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString()
+    return lokiAPI.formatTimestamp(timestamp)
+  }
+
+  const exportLogs = () => {
+    if (logs.length === 0) return
+    const header = 'timestamp,level,job,namespace,line'
+    const rows = logs.map((log) => {
+      const level = lokiAPI.extractLogLevel(log.line, log.labels)
+      const escape = (value: string) => `"${String(value ?? '').replace(/"/g, '""')}"`
+      return [
+        escape(lokiAPI.formatTimestamp(log.timestamp)),
+        escape(level),
+        escape(log.labels?.job || ''),
+        escape(log.labels?.namespace || log.labels?.container_name || ''),
+        escape(log.line)
+      ].join(',')
+    })
+    const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `logs-${filters.timeRange}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   const getLogId = (log: any, index: number) => {
@@ -306,10 +332,12 @@ export default function LogsPage() {
                   <span className="sm:hidden">Sync</span>
                 </Button>
 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
+                  onClick={exportLogs}
+                  disabled={logs.length === 0}
                 >
                   <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
                   <span className="hidden sm:inline">Export</span>
@@ -404,8 +432,8 @@ export default function LogsPage() {
                   {logs.map((log, index) => {
                     const logId = getLogId(log, index)
                     const isExpanded = expandedLogs.has(logId)
-                    const severityIconName = getSeverityIcon(log.labels?.severity || 'info')
-                    const severity = log.labels?.severity || 'info'
+                    const severity = lokiAPI.extractLogLevel(log.line, log.labels)
+                    const severityIconName = getSeverityIcon(severity)
                     
                     return (
                       <motion.div

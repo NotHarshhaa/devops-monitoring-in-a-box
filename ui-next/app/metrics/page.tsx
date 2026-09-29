@@ -68,6 +68,23 @@ export default function MetricsPage() {
     queryClient.invalidateQueries({ queryKey: ['network-traffic-range'] })
   }
 
+  const exportMetrics = () => {
+    if (systemResourceData.length === 0) return
+    const header = 'timestamp,cpu,memory,disk'
+    const rows = systemResourceData.map((entry: any) => {
+      const time = new Date(entry.time).toISOString()
+      const fmt = (v: any) => (v == null ? '' : String(v))
+      return [time, fmt(entry.cpu), fmt(entry.memory), fmt(entry.disk)].join(',')
+    })
+    const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `metrics-${timeRange}h-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   // Prepare chart data
   const prepareChartData = (cpuData: any[], memoryData: any[], diskData: any[]) => {
     const timeMap = new Map()
@@ -144,7 +161,7 @@ export default function MetricsPage() {
                     <HugeiconsIcon icon={CpuIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {allCurrentMetrics.data?.cpu ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
+                    {allCurrentMetrics.data != null ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">CPU Usage</div>
                 </motion.div>
@@ -159,7 +176,7 @@ export default function MetricsPage() {
                     <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {allCurrentMetrics.data?.memory ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
+                    {allCurrentMetrics.data != null ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Memory</div>
                 </motion.div>
@@ -174,7 +191,7 @@ export default function MetricsPage() {
                     <HugeiconsIcon icon={HardDriveIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {allCurrentMetrics.data?.disk ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
+                    {allCurrentMetrics.data != null ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Disk Usage</div>
                 </motion.div>
@@ -191,8 +208,7 @@ export default function MetricsPage() {
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     {allCurrentMetrics.data?.network ? `${(allCurrentMetrics.data.network.inbound + allCurrentMetrics.data.network.outbound).toFixed(1)} MB/s` : '--'}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Network</div>
-                </motion.div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Network</div>                </motion.div>
               </div>
             </CardContent>
           </Card>
@@ -230,10 +246,12 @@ export default function MetricsPage() {
               <span className="sm:hidden">Sync</span>
             </Button>
 
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
+              onClick={exportMetrics}
+              disabled={systemResourceData.length === 0}
             >
               <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
               <span className="hidden sm:inline">Export</span>
@@ -526,7 +544,7 @@ export default function MetricsPage() {
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex items-center justify-between">
                         <div className="text-2xl sm:text-3xl font-bold text-foreground">
-                          {allCurrentMetrics.data?.cpu ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
+                          {allCurrentMetrics.data != null ? `${allCurrentMetrics.data.cpu.toFixed(1)}%` : '--'}
                         </div>
                         <div className="flex items-center text-foreground">
                           <HugeiconsIcon icon={ArrowDownRight01Icon} className="h-4 w-4 mr-1" />
@@ -547,19 +565,19 @@ export default function MetricsPage() {
                       <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
                         <div>
                           <div className="text-lg sm:text-xl font-bold text-foreground">
-                            {allCurrentMetrics.data?.load.load1 ? allCurrentMetrics.data.load.load1.toFixed(1) : '--'}
+                            {allCurrentMetrics.data?.load ? allCurrentMetrics.data.load.load1.toFixed(1) : '--'}
                           </div>
                           <div className="text-xs sm:text-sm text-muted-foreground">1 min</div>
                         </div>
                         <div>
                           <div className="text-lg sm:text-xl font-bold text-foreground">
-                            {allCurrentMetrics.data?.load.load5 ? allCurrentMetrics.data.load.load5.toFixed(1) : '--'}
+                            {allCurrentMetrics.data?.load ? allCurrentMetrics.data.load.load5.toFixed(1) : '--'}
                           </div>
                           <div className="text-xs sm:text-sm text-muted-foreground">5 min</div>
                         </div>
                         <div>
                           <div className="text-lg sm:text-xl font-bold text-foreground">
-                            {allCurrentMetrics.data?.load.load15 ? allCurrentMetrics.data.load.load15.toFixed(1) : '--'}
+                            {allCurrentMetrics.data?.load ? allCurrentMetrics.data.load.load15.toFixed(1) : '--'}
                           </div>
                           <div className="text-xs sm:text-sm text-muted-foreground">15 min</div>
                         </div>
@@ -631,7 +649,7 @@ export default function MetricsPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Total Usage</span>
                           <span className="font-medium text-foreground">
-                            {allCurrentMetrics.data?.memory ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
+                            {allCurrentMetrics.data != null ? `${allCurrentMetrics.data.memory.toFixed(1)}%` : '--'}
                           </span>
                         </div>
                         <div className="w-full bg-muted h-2 sm:h-2.5">
@@ -720,7 +738,7 @@ export default function MetricsPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Storage Used</span>
                           <span className="font-medium text-foreground">
-                            {allCurrentMetrics.data?.disk ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
+                            {allCurrentMetrics.data != null ? `${allCurrentMetrics.data.disk.toFixed(1)}%` : '--'}
                           </span>
                         </div>
                         <div className="w-full bg-muted h-2 sm:h-2.5">

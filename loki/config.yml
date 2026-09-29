@@ -74,19 +74,13 @@ limits_config:
 
 chunk_store_config:
   max_look_back_period: 0s
+  # embedded_cache replaced the deprecated enable_fifocache/fifocache keys,
+  # which are rejected by newer Loki releases.
   chunk_cache_config:
-    enable_fifocache: true
-    fifocache:
+    embedded_cache:
+      enabled: true
       max_size_bytes: 1GB
-      validity: 24h
-
-query_scheduler:
-  max_outstanding_requests_per_tenant: 2048
-
-frontend:
-  max_outstanding_per_tenant: 2048
-  compress_responses: true
-  downstream_url: http://loki:3100
+      ttl: 24h
 
 ruler:
   storage:

@@ -4,10 +4,11 @@ import { NotificationsConfig, NotificationChannelConfig } from './config/types'
 
 export class NotificationService {
   private config: NotificationsConfig | null = null
+  private configPromise: Promise<void> | null = null
   private emailTransporter: nodemailer.Transporter | null = null
 
   constructor() {
-    this.loadConfiguration()
+    this.configPromise = this.loadConfiguration()
   }
 
   private async loadConfiguration() {
@@ -82,13 +83,16 @@ export class NotificationService {
   }
 
   async getConfiguration(): Promise<NotificationsConfig> {
-    if (!this.config) {
-      await this.loadConfiguration()
+    if (this.configPromise) {
+      await this.configPromise
+      this.configPromise = null
     }
     return this.config || this.getDefaultConfig()
   }
 
   async updateConfiguration(newConfig: NotificationsConfig): Promise<void> {
+    // Make sure any pending initial load cannot overwrite this update
+    this.configPromise = null
     this.config = newConfig
     this.setupEmailTransporter()
     
@@ -111,10 +115,16 @@ export class NotificationService {
   }
 
   async sendNotification(channel: string, message: any, severity = 'info', metadata = {}): Promise<any[]> {
+    await this.getConfiguration()
     const results = []
 
+    // When a specific channel is requested (e.g. POST /api/notifications/send
+    // { "channel": "slack" }), only that channel is used; 'all' fans out to
+    // every enabled channel.
+    const target = channel && channel !== 'all' ? channel : null
+
     // Send to Slack
-    if (this.config?.channels?.slack?.enabled) {
+    if (this.config?.channels?.slack?.enabled && (!target || target === 'slack')) {
       try {
         const slackResult = await this.sendSlackNotification(message, severity, metadata)
         results.push({ channel: 'slack', success: true, result: slackResult })
@@ -125,7 +135,7 @@ export class NotificationService {
     }
 
     // Send to Teams
-    if (this.config?.channels?.teams?.enabled) {
+    if (this.config?.channels?.teams?.enabled && (!target || target === 'teams')) {
       try {
         const teamsResult = await this.sendTeamsNotification(message, severity, metadata)
         results.push({ channel: 'teams', success: true, result: teamsResult })
@@ -136,7 +146,7 @@ export class NotificationService {
     }
 
     // Send to Discord
-    if (this.config?.channels?.discord?.enabled) {
+    if (this.config?.channels?.discord?.enabled && (!target || target === 'discord')) {
       try {
         const discordResult = await this.sendDiscordNotification(message, severity, metadata)
         results.push({ channel: 'discord', success: true, result: discordResult })
@@ -147,7 +157,7 @@ export class NotificationService {
     }
 
     // Send Email
-    if (this.config?.channels?.email?.enabled) {
+    if (this.config?.channels?.email?.enabled && (!target || target === 'email')) {
       try {
         const emailResult = await this.sendEmailNotification(message, severity, metadata)
         results.push({ channel: 'email', success: true, result: emailResult })
@@ -158,7 +168,7 @@ export class NotificationService {
     }
 
     // Send to Webhooks
-    if (this.config?.channels?.webhook?.enabled) {
+    if (this.config?.channels?.webhook?.enabled && (!target || target === 'webhook')) {
       try {
         const webhookResult = await this.sendWebhookNotification(message, severity, metadata)
         results.push({ channel: 'webhook', success: true, result: webhookResult })
@@ -278,7 +288,7 @@ export class NotificationService {
       }]
     }
 
-    const response = await axios.post(slackConfig.webhook_url, payload)
+    const response = await axios.post(slackConfig.webhook_url, payload, { timeout: 5000 })
     return response.data
   }
 
@@ -338,7 +348,7 @@ export class NotificationService {
       }]
     }
 
-    const response = await axios.post(teamsConfig.webhook_url, payload)
+    const response = await axios.post(teamsConfig.webhook_url, payload, { timeout: 5000 })
     return response.data
   }
 
@@ -389,7 +399,7 @@ export class NotificationService {
       })
     }
 
-    const response = await axios.post(discordConfig.webhook_url, payload)
+    const response = await axios.post(discordConfig.webhook_url, payload, { timeout: 5000 })
     return response.data
   }
 
@@ -419,6 +429,17 @@ export class NotificationService {
     const results = []
 
     for (const endpoint of webhookConfig.endpoints) {
+      // Only http(s) targets are allowed: arbitrary schemes (file:, etc.)
+      // or requests to internal services must not be forwarded.
+      if (!endpoint.url || !/^https?:\/\//i.test(endpoint.url)) {
+        results.push({
+          endpoint: endpoint.name || endpoint.url || 'unnamed',
+          success: false,
+          error: 'Webhook endpoint URL must be a valid http(s) URL'
+        })
+        continue
+      }
+
       try {
         const payload = {
           message: message,
@@ -451,9 +472,36 @@ export class NotificationService {
     return results
   }
 
+  private escapeHtml(value: string): string {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+  }
+
+  private safeUrl(url: string): string | null {
+    // Only http(s) URLs may be embedded as links in notification output
+    try {
+      const parsed = new URL(url)
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.toString() : null
+    } catch {
+      return null
+    }
+  }
+
   private generateEmailHTML(message: any, severity: string, metadata: any): string {
     const color = this.getSeverityColor(severity)
-    
+    // Alert content comes from external sources (webhook payloads), so every
+    // interpolation must be escaped to prevent HTML injection in mail clients.
+    const title = this.escapeHtml(message.title || 'DevOps Monitor Alert')
+    const body = this.escapeHtml(message.message || message.description || '')
+    const instance = this.escapeHtml(metadata.instance ?? '')
+    const service = this.escapeHtml(metadata.service ?? '')
+    const component = this.escapeHtml(metadata.component ?? '')
+    const runbookUrl = metadata.runbook_url ? this.safeUrl(metadata.runbook_url) : null
+
     return `
       <!DOCTYPE html>
       <html>
@@ -474,23 +522,23 @@ export class NotificationService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>${message.title || 'DevOps Monitor Alert'}</h1>
-            <p>Severity: ${severity.toUpperCase()}</p>
+            <h1>${title}</h1>
+            <p>Severity: ${this.escapeHtml(severity.toUpperCase())}</p>
           </div>
           <div class="content">
-            <p>${message.message || message.description || ''}</p>
+            <p>${body}</p>
             <div class="metadata">
               <div class="metadata-item">
                 <span class="metadata-label">Timestamp:</span> ${new Date().toISOString()}
               </div>
-              ${metadata.instance ? `<div class="metadata-item"><span class="metadata-label">Instance:</span> ${metadata.instance}</div>` : ''}
-              ${metadata.service ? `<div class="metadata-item"><span class="metadata-label">Service:</span> ${metadata.service}</div>` : ''}
-              ${metadata.component ? `<div class="metadata-item"><span class="metadata-label">Component:</span> ${metadata.component}</div>` : ''}
+              ${metadata.instance ? `<div class="metadata-item"><span class="metadata-label">Instance:</span> ${instance}</div>` : ''}
+              ${metadata.service ? `<div class="metadata-item"><span class="metadata-label">Service:</span> ${service}</div>` : ''}
+              ${metadata.component ? `<div class="metadata-item"><span class="metadata-label">Component:</span> ${component}</div>` : ''}
             </div>
           </div>
           <div class="footer">
             <p>This alert was generated by DevOps Monitor</p>
-            ${metadata.runbook_url ? `<p><a href="${metadata.runbook_url}">View Runbook</a></p>` : ''}
+            ${runbookUrl ? `<p><a href="${this.escapeHtml(runbookUrl)}">View Runbook</a></p>` : ''}
           </div>
         </div>
       </body>
@@ -527,4 +575,19 @@ export class NotificationService {
     }
     return emojis[severity as keyof typeof emojis] || 'ℹ️'
   }
+}
+
+/**
+ * Process-wide shared instance. Each API route must use this instead of
+ * constructing its own NotificationService: configuration written by
+ * PUT /api/notifications would otherwise stay invisible to the send, test
+ * and webhook routes until the process restarted.
+ */
+let sharedNotificationService: NotificationService | null = null
+
+export function getNotificationService(): NotificationService {
+  if (!sharedNotificationService) {
+    sharedNotificationService = new NotificationService()
+  }
+  return sharedNotificationService
 }

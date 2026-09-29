@@ -4,7 +4,7 @@
 # This script checks the health of all monitoring services
 
 # Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Get the project root directory (parent of scripts directory)
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
@@ -52,7 +52,8 @@ check_service() {
     print_info "Checking $service_name at $url..."
     
     # Use curl with timeout and follow redirects
-    local response=$(curl -s --max-time "$timeout" -L -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
+    local response
+    response=$(curl -s --max-time "$timeout" -L -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
     local curl_exit_code=$?
     
     if [ $curl_exit_code -eq 0 ] && echo "$response" | grep -q "$expected_status"; then
@@ -138,7 +139,6 @@ check_endpoints() {
         ["DevOps Monitor UI"]="http://localhost:4000"
         ["cAdvisor"]="http://localhost:8080/healthz"
         ["Node Exporter"]="http://localhost:9100/metrics"
-        ["Promtail"]="http://localhost:9080/metrics"
     )
     
     for service in "${!services[@]}"; do
@@ -169,7 +169,8 @@ check_metrics() {
     # Check if Prometheus is collecting metrics
     print_info "Checking Prometheus metrics collection..."
     
-    local prometheus_response=$(curl -s --max-time 10 "http://localhost:9090/api/v1/query?query=up" 2>/dev/null)
+    local prometheus_response
+    prometheus_response=$(curl -s --max-time 10 "http://localhost:9090/api/v1/query?query=up" 2>/dev/null)
     local curl_exit_code=$?
     
     if [ $curl_exit_code -ne 0 ]; then
@@ -327,7 +328,6 @@ check_ports() {
         ["DevOps Monitor UI"]="4000"
         ["cAdvisor"]="8080"
         ["Node Exporter"]="9100"
-        ["Promtail"]="9080"
     )
     
     local all_available=true
@@ -433,7 +433,6 @@ main() {
         echo "   🚨 Alertmanager:      http://localhost:9093"
         echo "   📊 cAdvisor:          http://localhost:8080"
         echo "   🔍 Node Exporter:     http://localhost:9100"
-        echo "   📝 Promtail:          http://localhost:9080/metrics"
     else
         print_error "❌ Some health checks failed. Please review the issues above."
         echo ""

@@ -11,10 +11,8 @@ import {
   Clock01Icon,
   FilterIcon,
   RefreshIcon,
-  Calendar01Icon,
   Sorting01Icon,
   VolumeMute01Icon,
-  Message01Icon,
   AlertCircleIcon,
   Search01Icon,
   Loading03Icon,
@@ -203,14 +201,9 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle, onSi
               </>
             )}
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted">
-            <HugeiconsIcon icon={Message01Icon} className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Comment</span>
-            <span className="sm:hidden">Comment</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted"
             onClick={() => onSilence(alert, 2)}
           >
@@ -365,10 +358,36 @@ export default function AlertsPage() {
 
   const handleSilenceAlert = async (alert: any, durationHours: number) => {
     const alertName = alertmanagerAPI.extractAlertName(alert.labels)
-    toast({
-      title: `Alert Silenced: ${alertName}`,
-      description: `Silenced for ${durationHours} hour(s) in Alertmanager.`,
-    })
+    const now = new Date()
+    const endsAt = new Date(now.getTime() + durationHours * 60 * 60 * 1000)
+
+    // Match on the alert fingerprint when available so only this specific
+    // alert instance is silenced; fall back to the alert name otherwise.
+    const matchers = alert.fingerprint
+      ? [{ name: 'fingerprint', value: String(alert.fingerprint), isRegex: false }]
+      : [{ name: 'alertname', value: alertName, isRegex: false }]
+
+    try {
+      await alertmanagerAPI.createSilence({
+        matchers,
+        startsAt: now.toISOString(),
+        endsAt: endsAt.toISOString(),
+        createdBy: 'devops-monitoring-ui',
+        comment: `Silenced from UI for ${durationHours}h: ${alertName}`,
+      })
+      toast({
+        title: `Alert Silenced: ${alertName}`,
+        description: `Silenced for ${durationHours} hour(s) in Alertmanager.`,
+      })
+      refresh()
+    } catch (err) {
+      console.error('Failed to create silence:', err)
+      toast({
+        title: 'Failed to silence alert',
+        description: err instanceof Error ? err.message : 'Could not reach Alertmanager.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -433,9 +452,9 @@ export default function AlertsPage() {
                     <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {stats.total - stats.firing - stats.suppressed}
+                    {stats.total}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Resolved</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Active</div>
                 </motion.div>
 
                 <motion.div
@@ -494,26 +513,6 @@ export default function AlertsPage() {
               )}
               <span className="hidden sm:inline">Refresh</span>
               <span className="sm:hidden">Sync</span>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
-            >
-              <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4" />
-              <span className="hidden sm:inline">History</span>
-              <span className="sm:hidden">Hist</span>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
-            >
-              <HugeiconsIcon icon={VolumeMute01Icon} className="h-4 w-4" />
-              <span className="hidden sm:inline">Silences</span>
-              <span className="sm:hidden">Quiet</span>
             </Button>
           </div>
 

@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
+import crypto from 'crypto';
 import { getAuthSecret } from '../auth-secret';
 
 export type Role = 'ADMIN' | 'EDITOR' | 'VIEWER';
@@ -98,16 +99,13 @@ export async function requireAuth(
 /**
  * Constant-time string comparison, used for shared-secret checks so that a
  * timing side channel cannot be used to recover the token byte by byte.
+ * Both sides are hashed first so the comparison length is fixed and an
+ * early length mismatch cannot leak the expected token's length.
  */
 export function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i += 1) {
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return mismatch === 0;
+  const hashA = crypto.createHash('sha256').update(a).digest();
+  const hashB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
 }
 
 /**

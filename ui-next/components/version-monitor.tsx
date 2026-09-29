@@ -45,31 +45,35 @@ export function VersionMonitor({
     setIsLoading(true)
     try {
       const versionData = await VersionMonitorService.getAllVersions()
-      
-      // Check if we got any real data or if we should use demo data
+
+      // Check if we got any real data
       const hasRealData = versionData.some(v => v.currentVersion !== 'Unknown' && v.status === 'healthy')
-      
+
       if (hasRealData) {
         setVersions(versionData)
         setUseDemoData(false)
       } else {
-        // Use demo data if services are not running
-        setVersions(VersionMonitorService.getDemoVersions())
-        setUseDemoData(true)
+        // Never fabricate versions: show an empty/error state so users do
+        // not mistake unreachable services for real update recommendations.
+        setVersions([])
+        setUseDemoData(false)
+        toast({
+          title: "Services Unreachable",
+          description: "Monitoring services are not reachable — unable to verify component versions.",
+          variant: "destructive"
+        })
       }
-      
+
       setLastRefresh(new Date())
     } catch (error) {
       console.error('Failed to fetch versions:', error)
-      // Fallback to demo data
-      setVersions(VersionMonitorService.getDemoVersions())
-      setUseDemoData(true)
-      setLastRefresh(new Date())
-      
+      setVersions([])
+      setUseDemoData(false)
+
       toast({
-        title: "Using Demo Data",
-        description: "Services not running, showing demo version information",
-        variant: "default"
+        title: "Failed to Fetch Versions",
+        description: "Could not reach the monitoring services to check versions.",
+        variant: "destructive"
       })
     } finally {
       setIsLoading(false)

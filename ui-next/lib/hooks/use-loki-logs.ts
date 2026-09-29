@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { lokiAPI, LokiLogEntry } from '../loki-api';
 
 export interface LogFilters {
@@ -37,14 +37,18 @@ export function useLokiLogs(): UseLokiLogsReturn {
     timeRange: '1h',
   });
 
+  const latestRequestIdRef = useRef(0);
+
   const fetchLogs = useCallback(async () => {
+    // Guard against out-of-order responses: only the latest request wins
+    const requestId = ++latestRequestIdRef.current;
     setLoading(true);
     setError(null);
 
     try {
       const query = lokiAPI.buildQuery(filters);
       const { start, end } = lokiAPI.getTimeRange(filters.timeRange);
-      
+
       const logEntries = await lokiAPI.queryLogs({
         query,
         start,
@@ -53,12 +57,16 @@ export function useLokiLogs(): UseLokiLogsReturn {
         direction: 'backward',
       });
 
+      if (requestId !== latestRequestIdRef.current) return;
       setLogs(logEntries);
     } catch (err) {
+      if (requestId !== latestRequestIdRef.current) return;
       setError(err instanceof Error ? err.message : 'Failed to fetch logs');
       console.error('Error fetching logs:', err);
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [filters]);
 
@@ -91,9 +99,11 @@ export function useLokiLogs(): UseLokiLogsReturn {
     fetchMetadata();
   }, [fetchMetadata]);
 
-  // Fetch logs when filters change
+  // Fetch logs when filters change, debounced so typing in the search box
+  // does not fire one Loki query per keystroke
   useEffect(() => {
-    fetchLogs();
+    const timer = setTimeout(fetchLogs, 300);
+    return () => clearTimeout(timer);
   }, [fetchLogs]);
 
   return {

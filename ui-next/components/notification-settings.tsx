@@ -85,6 +85,35 @@ export function NotificationSettings({ config, onConfigChange }: NotificationSet
     }
   }, [config])
 
+  // Load the saved server config on mount so the form reflects what is
+  // stored; otherwise saving would overwrite the server config with defaults.
+  useEffect(() => {
+    if (config) return
+    let cancelled = false
+    const loadSavedConfig = async () => {
+      try {
+        const response = await fetch('/api/notifications')
+        if (!response.ok) return
+        const saved = await response.json()
+        if (cancelled || !saved || typeof saved !== 'object') return
+        setNotificationsConfig(prev => ({
+          ...prev,
+          ...saved,
+          channels: {
+            ...prev.channels,
+            ...(saved.channels || {}),
+          },
+        }))
+      } catch (error) {
+        console.error('Failed to load saved notification config:', error)
+      }
+    }
+    loadSavedConfig()
+    return () => {
+      cancelled = true
+    }
+  }, [config])
+
   const handleConfigChange = (updates: Partial<NotificationsConfig>) => {
     const newConfig = { ...notificationsConfig, ...updates }
     setNotificationsConfig(newConfig)

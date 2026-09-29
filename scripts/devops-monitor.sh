@@ -342,10 +342,10 @@ main() {
             clean_up
             ;;
         health)
-            ./scripts/health-check.sh
+            "$SCRIPT_DIR/health-check.sh"
             ;;
         setup)
-            ./scripts/setup-env.sh
+            "$SCRIPT_DIR/setup-env.sh"
             ;;
         help|--help|-h)
             show_help

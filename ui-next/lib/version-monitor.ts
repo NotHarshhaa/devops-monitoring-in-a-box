@@ -20,25 +20,36 @@ export interface VersionInfo {
 }
 
 export class VersionMonitorService {
+  /**
+   * Version probes go through the authenticated same-origin proxy
+   * (/api/proxy/<service>/...) — the container hostnames are not reachable
+   * from the browser, and direct cross-origin calls fail in Docker.
+   * `latest` endpoints are public GitHub API URLs, safe to call directly.
+   */
   private static readonly COMPONENT_ENDPOINTS = {
     prometheus: {
-      version: 'http://localhost:9090/api/v1/status/buildinfo',
+      version: '/api/proxy/prometheus/api/v1/status/buildinfo',
       latest: 'https://api.github.com/repos/prometheus/prometheus/releases/latest'
     },
     grafana: {
-      version: 'http://localhost:3000/api/health',
+      // Grafana has no proxied endpoint; its version is read from the
+      // grafana_build_info metric scraped into Prometheus instead.
+      version: '/api/proxy/prometheus/api/v1/query?query=grafana_build_info',
       latest: 'https://api.github.com/repos/grafana/grafana/releases/latest'
     },
     loki: {
-      version: 'http://localhost:3100/ready',
+      // Same approach for Loki via loki_build_info.
+      version: '/api/proxy/prometheus/api/v1/query?query=loki_build_info',
       latest: 'https://api.github.com/repos/grafana/loki/releases/latest'
     },
     alertmanager: {
-      version: 'http://localhost:9093/api/v1/status',
+      version: '/api/proxy/alertmanager/api/v2/status',
       latest: 'https://api.github.com/repos/prometheus/alertmanager/releases/latest'
     },
     'node-exporter': {
-      version: 'http://localhost:9100/metrics',
+      // Node exporter only exposes its version via its /metrics text
+      // endpoint, which is not proxied; read the scraped metric instead.
+      version: '/api/proxy/prometheus/api/v1/query?query=node_exporter_build_info',
       latest: 'https://api.github.com/repos/prometheus/node_exporter/releases/latest'
     }
   }
@@ -56,8 +67,7 @@ export class VersionMonitorService {
         headers: {
           'Accept': 'application/json',
         },
-        // Add timeout for demo purposes
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(10000)
       })
 
       if (!response.ok) {
@@ -112,45 +122,30 @@ export class VersionMonitorService {
           gitCommit: data.data?.revision,
           goVersion: data.data?.goVersion
         }
-      
+
       case 'grafana':
-        return {
-          component: 'Grafana',
-          version: data.version || 'Unknown',
-          buildDate: data.buildDate,
-          gitCommit: data.commit,
-          goVersion: data.goVersion
-        }
-      
       case 'loki':
-        // Loki doesn't provide version in /ready endpoint, we'll use a fallback
+      case 'node-exporter': {
+        // Versions are read from a Prometheus instant query on the
+        // component's *_build_info metric (see COMPONENT_ENDPOINTS).
         return {
-          component: 'Loki',
-          version: '2.9.0', // Fallback version for demo
+          component: component === 'node-exporter' ? 'Node Exporter' : component.charAt(0).toUpperCase() + component.slice(1),
+          version: this.extractVersionFromPromQuery(data) || 'Unknown',
           buildDate: undefined,
           gitCommit: undefined,
           goVersion: undefined
         }
-      
+      }
+
       case 'alertmanager':
         return {
           component: 'Alertmanager',
-          version: data.data?.version || 'Unknown',
-          buildDate: data.data?.buildDate,
-          gitCommit: data.data?.revision,
-          goVersion: data.data?.goVersion
+          version: data.data?.versionInfo?.version || 'Unknown',
+          buildDate: data.data?.versionInfo?.buildDate,
+          gitCommit: data.data?.versionInfo?.revision,
+          goVersion: data.data?.versionInfo?.goVersion
         }
-      
-      case 'node-exporter':
-        // Node exporter version is in metrics endpoint
-        return {
-          component: 'Node Exporter',
-          version: this.extractVersionFromMetrics(data) || 'Unknown',
-          buildDate: undefined,
-          gitCommit: undefined,
-          goVersion: undefined
-        }
-      
+
       default:
         return {
           component: component,
@@ -163,11 +158,12 @@ export class VersionMonitorService {
   }
 
   /**
-   * Extract version from node exporter metrics
+   * Extract the version label from a Prometheus instant query response
+   * on a *_build_info metric.
    */
-  private static extractVersionFromMetrics(metricsText: string): string | null {
-    const versionMatch = metricsText.match(/node_exporter_build_info{version="([^"]+)"}/)
-    return versionMatch ? versionMatch[1] : null
+  private static extractVersionFromPromQuery(data: any): string | null {
+    const sample = data?.data?.result?.[0]
+    return sample?.metric?.version || null
   }
 
   /**

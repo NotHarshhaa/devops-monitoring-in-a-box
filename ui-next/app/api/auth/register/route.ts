@@ -19,14 +19,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For demo purposes, we'll just return a success message
-    // In production, you would save to database here
+    // Self-service registration is not implemented; do not advertise any
+    // credentials here — they would be visible to unauthenticated callers.
     return NextResponse.json(
-      { 
-        message: "Registration is disabled in demo mode. Please use the demo credentials: demo@example.com / demo123",
+      {
+        message: "Registration is not available. Sign in with the credentials configured for this deployment.",
         demo: true
       },
-      { status: 200 }
+      { status: 403 }
     )
 
   } catch (error) {

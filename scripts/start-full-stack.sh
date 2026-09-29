@@ -33,15 +33,32 @@ fi
 # Check if .env file exists
 if [ ! -f .env ]; then
     echo "⚠️  No .env file found. Creating from example..."
-    if [ -f docker-compose.env.example ]; then
+    if [ -f env.example ]; then
+        # env.example (not docker-compose.env.example) carries the secrets the
+        # stack hard-requires: NEXTAUTH_SECRET and ALERT_WEBHOOK_TOKEN.
+        cp env.example .env
+        echo "✏️  Generated secrets placeholder .env. Please edit .env, or run scripts/setup-env.sh to generate the required secrets."
+        echo ""
+        read -p "Press Enter to continue, or Ctrl+C to edit .env first..."
+    elif [ -f docker-compose.env.example ]; then
         cp docker-compose.env.example .env
         echo "📝 Please edit .env file with your Docker Hub username and other settings."
         echo "   Current DOCKERHUB_USERNAME: $(grep DOCKERHUB_USERNAME .env | cut -d'=' -f2)"
         echo ""
         read -p "Press Enter to continue with default settings, or Ctrl+C to edit .env first..."
     else
-        echo "❌ docker-compose.env.example not found. Please create .env file manually."
+        echo "❌ env.example not found. Please create .env file manually."
         exit 1
+    fi
+fi
+
+# The compose file mounts ./alertmanager/webhook_token read-only; create it
+# from ALERT_WEBHOOK_TOKEN if it is missing so startup does not fail.
+if [ ! -f alertmanager/webhook_token ] && [ -f .env ]; then
+    TOKEN_VALUE="$(grep -E '^ALERT_WEBHOOK_TOKEN=' .env | head -1 | cut -d'=' -f2- | tr -d '\"')"
+    if [ -n "$TOKEN_VALUE" ]; then
+        printf '%s' "$TOKEN_VALUE" > alertmanager/webhook_token
+        echo "🔑 Created alertmanager/webhook_token from ALERT_WEBHOOK_TOKEN."
     fi
 fi
 
@@ -67,13 +84,13 @@ echo ""
 echo "🎉 DevOps Monitoring Dashboard is starting up!"
 echo ""
 echo "📱 Access Points:"
-echo "   • Dashboard:     http://localhost:3000"
-echo "   • Prometheus:    http://localhost:9090"
-echo "   • Grafana:       http://localhost:3001 (admin/admin)"
-echo "   • Loki:          http://localhost:3100"
-echo "   • Alertmanager:  http://localhost:9093"
-echo "   • Node Exporter: http://localhost:9100"
-echo "   • cAdvisor:      http://localhost:8080"
+echo "   • Dashboard (UI): http://localhost:4000"
+echo "   • Grafana:        http://localhost:3000 (admin/admin)"
+echo "   • Prometheus:     http://localhost:9090"
+echo "   • Loki:           http://localhost:3100"
+echo "   • Alertmanager:   http://localhost:9093"
+echo "   • Node Exporter:  http://localhost:9100"
+echo "   • cAdvisor:       http://localhost:8080"
 echo ""
 echo "📋 Useful Commands:"
 echo "   • View logs:     docker compose logs -f"

@@ -143,9 +143,12 @@ services:
       - monitoring
   # DevOps Monitor UI - Development mode with hot reloading
   devops-monitor-ui:
-    build:
-      context: ./ui-next
-      dockerfile: Dockerfile.dev
+    # Dev runtime: the production image is a standalone `next start` build and
+    # cannot hot-reload, so run the dev server from the official Node image
+    # with the source mounted (see volumes below).
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev"
     container_name: devops-monitor-ui-dev
     ports:
       - "4000:3000"

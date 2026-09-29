@@ -32,36 +32,33 @@ export function useVersionMonitor({
     setError(null)
 
     try {
-      let versionData: ComponentVersion[]
-
       if (useDemoData) {
-        versionData = VersionMonitorService.getDemoVersions()
+        // Demo data only when explicitly requested
+        setVersions(VersionMonitorService.getDemoVersions())
         setIsDemoData(true)
-      } else {
-        versionData = await VersionMonitorService.getAllVersions()
-        
-        // Check if we got any real data
-        const hasRealData = versionData.some(v => v.currentVersion !== 'Unknown' && v.status === 'healthy')
-        
-        if (!hasRealData) {
-          // Fallback to demo data if no real data available
-          versionData = VersionMonitorService.getDemoVersions()
-          setIsDemoData(true)
-        } else {
-          setIsDemoData(false)
-        }
+        setLastRefresh(new Date())
+        return
       }
 
-      setVersions(versionData)
-      setLastRefresh(new Date())
+      const versionData = await VersionMonitorService.getAllVersions()
+      const hasRealData = versionData.some(v => v.currentVersion !== 'Unknown' && v.status === 'healthy')
+
+      if (!hasRealData) {
+        // Never fabricate versions: show an honest error so users do not
+        // mistake unreachable services for real update recommendations.
+        setError('Monitoring services are not reachable — unable to verify component versions.')
+        setVersions([])
+        setIsDemoData(false)
+      } else {
+        setVersions(versionData)
+        setIsDemoData(false)
+        setLastRefresh(new Date())
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch versions'
       setError(errorMessage)
-      
-      // Fallback to demo data on error
-      setVersions(VersionMonitorService.getDemoVersions())
-      setIsDemoData(true)
-      setLastRefresh(new Date())
+      setVersions([])
+      setIsDemoData(false)
     } finally {
       setIsLoading(false)
     }

@@ -23,11 +23,10 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Build the Docker image
-echo "🏗️  Building optimized Docker image (158MB)..."
-docker build -t devops-monitoring-dashboard:test .
-
-if [ $? -eq 0 ]; then
+# Build the Docker image (the Dockerfile lives in ui-next/, so point the
+# build at that context explicitly)
+echo "🏗️  Building optimized Docker image..."
+if docker build -f ui-next/Dockerfile -t devops-monitoring-dashboard:test ui-next; then
     echo "✅ Docker build successful!"
     echo ""
     echo "📦 Image details:"

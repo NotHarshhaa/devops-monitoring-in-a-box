@@ -7,12 +7,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { NotificationService } from '@/lib/notification-service'
+import { getNotificationService } from '@/lib/notification-service'
 import { requireAuth, WRITE_ROLES } from '@/lib/server/api-auth'
 
 export const dynamic = 'force-dynamic'
 
-const notificationService = new NotificationService()
+const notificationService = getNotificationService()
 
 const SUPPORTED_CHANNELS = ['slack', 'teams', 'discord', 'email', 'webhook'] as const
 

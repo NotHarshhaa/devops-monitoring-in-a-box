@@ -82,7 +82,7 @@ NC='\033[0m' # No Color
 
 # Get the directory of the script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UI_DIR="$SCRIPT_DIR/ui-next"
+UI_DIR="$(dirname "$SCRIPT_DIR")/ui-next"
 
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║                                                          ║${NC}"
