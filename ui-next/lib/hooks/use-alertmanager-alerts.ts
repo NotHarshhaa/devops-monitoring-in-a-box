@@ -41,21 +41,25 @@ export function useAlertmanagerAlerts(): UseAlertmanagerAlertsReturn {
 
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
-    setError(null);
 
     try {
       const alertData = await alertmanagerAPI.getAlerts();
       setAlerts(alertData);
-      
+
       // Update available services and severities
       const uniqueServices = alertmanagerAPI.getUniqueServices(alertData);
       const uniqueSeverities = alertmanagerAPI.getUniqueSeverities(alertData);
-      
+
       setServices(uniqueServices);
       setSeverities(uniqueSeverities);
+      setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch alerts');
-      console.error('Error fetching alerts:', err);
+      // Alertmanager unreachable is an expected condition (e.g. the stack is
+      // not running), not a bug: surface it in the UI state without spamming
+      // the console on every 30s poll.
+      const message = err instanceof Error ? err.message : 'Failed to fetch alerts';
+      setError(message);
+      console.warn('Alertmanager alerts unavailable:', message);
     } finally {
       setLoading(false);
     }

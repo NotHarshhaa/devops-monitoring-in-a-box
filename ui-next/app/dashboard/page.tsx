@@ -366,7 +366,7 @@ export default function DashboardPage() {
   const metricsRange = useAllMetricsRange(TIME_RANGE_HOURS[selectedTimeRange] ?? '24');
 
   // Real alerts from Alertmanager
-  const { alerts, refresh: refreshAlerts } = useAlertmanagerAlerts();
+  const { alerts, error: alertsError, refresh: refreshAlerts } = useAlertmanagerAlerts();
 
   // Real upstream service health from the dashboard's own health endpoint
   const [healthServices, setHealthServices] = useState<HealthService[]>([]);
@@ -730,7 +730,13 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
                 <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
-                  {alerts.length === 0 ? (
+                  {alertsError ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <HugeiconsIcon icon={AlertCircleIcon} className="size-8 mx-auto mb-2" />
+                      <p className="text-sm">Alerts are unavailable.</p>
+                      <p className="text-xs mt-1 break-words">{alertsError}</p>
+                    </div>
+                  ) : alerts.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <HugeiconsIcon icon={Clock01Icon} className="size-8 mx-auto mb-2" />
                       <p className="text-sm">No active alerts. All systems nominal.</p>

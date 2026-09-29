@@ -61,8 +61,11 @@ export function useLokiLogs(): UseLokiLogsReturn {
       setLogs(logEntries);
     } catch (err) {
       if (requestId !== latestRequestIdRef.current) return;
-      setError(err instanceof Error ? err.message : 'Failed to fetch logs');
-      console.error('Error fetching logs:', err);
+      // Loki unreachable is an expected condition (stack not running), not a
+      // bug: surface it in the UI state without console.error noise.
+      const message = err instanceof Error ? err.message : 'Failed to fetch logs';
+      setError(message);
+      console.warn('Loki logs unavailable:', message);
     } finally {
       if (requestId === latestRequestIdRef.current) {
         setLoading(false);
