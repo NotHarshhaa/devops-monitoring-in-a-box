@@ -26,7 +26,7 @@ With just **one command**, you get:
 * 🐳 **cAdvisor** → Container CPU, memory, and lifecycle resource monitoring
 * 🛰️ **Blackbox Exporter** → Synthetic HTTP/HTTPS, TCP, DNS, and ICMP uptime probing
 * 🔒 **SSL/TLS Certificate Tracker** → Domain certificate expiration, validity days, and SAN inspector
-* ⏱️ **SLI/SLA Availability Engine** → 99.9% / 99.99% uptime heatmaps and MTTR tracking
+* ⏱️ **SLI/SLA Availability Engine** → 24h/7d/30d uptime windows and 30-day heatmaps computed live from Blackbox probe data
 * 🔔 **Multi-Channel Notification Service** → Automated webhook dispatching and masking
 * 🎨 **Radix-Sera Unified UI** → Modern Next.js 16 web interface styled with shadcn UI and Hugeicons
 
@@ -49,15 +49,21 @@ With just **one command**, you get:
 - **Certificate Metadata**: Displays Certificate Authority (Issuer CA), Subject, Validity ranges, Serial Numbers, and Subject Alternative Names (SANs).
 
 ### ⏱️ 3. SLI / SLA Availability & Outage Tracker
-- **Uptime Heatmaps**: Interactive 30-day timeline bars showing daily uptime percentages.
-- **Key Reliability Metrics**: Mean Time to Recovery (MTTR), 24h/7d/30d availability SLAs, and active outage counters.
-- **Synthetics Integration**: Automatically correlates with Prometheus Blackbox Exporter probe results.
+- **Uptime Heatmaps**: 30-day timeline bars computed live from Prometheus `probe_success` series (one bar per day).
+- **Real Availability Windows**: 24h / 7d / 30d uptime percentages via `avg_over_time(probe_success[...])` — no fabricated numbers; when probes have no data yet, the UI says so.
+- **Synthetics Integration**: Correlates automatically with Prometheus Blackbox Exporter probe results.
 
-### 🔕 4. Alertmanager Quick Silence Management
-- **One-Click Silences**: Create 1h, 2h, 4h, or 24h silences directly from the alert cards.
+### 🔕 4. Full Silence Management
+- **Silence Anything, Any Duration**: Create silences from an alert card (pre-filled with its matchers) or from scratch — 30 minutes to 7 days, with author and comment.
+- **Silence Manager**: List all active silences with matchers and time remaining, and expire them in one click when an incident is over.
 - **Inhibitor Rules**: Pre-configured alert inhibition prevents alert fatigue when root hosts go down.
 
-### 🛡️ 5. Zero-Vulnerability Hardened Docker Container
+### ⚡ 5. Live Log Tail & Shareable Views
+- **Live Tail**: Stream newly ingested log lines into the Logs page with one click (3-second polling, deduplicated, pauses when the tab is hidden).
+- **URL-Synced Filters**: Log, alert and time-range filters live in the URL (`/logs?range=12h&sev=error`), so any view is a shareable bookmark.
+- **Real Data Everywhere**: The dashboard renders live Prometheus metrics, Alertmanager alerts and probe health — with honest empty/error states instead of mock numbers.
+
+### 🛡️ 6. Zero-Vulnerability Hardened Docker Container
 - **Docker Scout Verified**: Clean scan with **0 Critical CVEs**.
 - **Process Supervision (`tini`)**: Proper PID 1 signal forwarding (`SIGTERM`/`SIGINT`) and zombie reaping.
 - **Least-Privilege Execution**: Runs under a dedicated non-root `nextjs` user with secured `.next/cache` permissions.
@@ -149,6 +155,15 @@ docker compose up -d
 docker pull harshhaareddy/devops-monitoring-box:latest
 docker run -d -p 4000:3000 --name devops-monitor harshhaareddy/devops-monitoring-box:latest
 ```
+
+#### **Option 4: Local UI Development**
+```bash
+cd ui-next
+npm install          # also generates the Prisma client
+npm run db:push      # create the local SQLite database
+npm run dev          # http://localhost:3000 (demo login enabled outside production)
+```
+The UI expects the monitoring backends at their default ports (or `PROMETHEUS_URL`, `LOKI_URL`, ... in `ui-next/.env.local`). Without them, pages render honest "service unavailable" states instead of errors.
 
 ---
 
@@ -254,7 +269,8 @@ For a complete breakdown of all directories and files, see **[Project Structure 
 * 🖥️ **Unified Dashboard**: Single-page application for all monitoring needs
 * 📱 **Responsive Design**: Works perfectly on desktop, tablet, and mobile
 * 🌙 **Dark/Light Theme**: Automatic theme switching with user preference
-* ⚡ **Real-time Updates**: Live data refresh without page reloads
+* ⚡ **Real-time Updates**: Live data refresh without page reloads, plus a one-click live log tail
+* 🔗 **Cross-Page Navigation**: Every page links to its related pages, and the sidebar shows live stack health
 * 🎯 **Intuitive Navigation**: Easy-to-use sidebar navigation
 
 ### 🔐 Authentication & Security
@@ -372,9 +388,11 @@ Every proxied request requires a signed-in user, and each upstream path is match
 ## 🔒 Security Notes
 
 * `NEXTAUTH_SECRET` and `ALERT_WEBHOOK_TOKEN` are **required** — Compose fails rather than accepting a shared/default signing key or an unauthenticated Alertmanager webhook. Generate both and the matching `alertmanager/webhook_token` file with `./scripts/setup-env.sh` or `.\scripts\devops-monitor.ps1 init-env`.
+* **Demo login accounts** (`demo@example.com / demo123`) are active by default in development builds. In production builds they are disabled unless `ENABLE_DEMO_AUTH=true` — note the bundled `docker-compose.yml` sets it for the out-of-the-box demo experience; set it to `false` (or remove it) before exposing the stack.
 * Change default Grafana credentials before exposing the stack in production.
 * Prometheus admin API (`--web.enable-admin-api`) is disabled by default.
 * `/api/notifications` never returns plain SMTP passwords or channel webhook URLs in client payloads; they are masked, and saving preserves stored secrets.
+* The SSL certificate endpoint requires a signed-in session and validates ports — it cannot be used anonymously to scan internal hosts.
 * Published ports `9090`, `3100`, `9093`, and `9115` are optional for convenience. The dashboard proxies internal traffic via Docker networks, so external ports can be removed in hardened environments.
 
 ---
