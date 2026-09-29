@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -41,13 +41,16 @@ import { alertmanagerAPI } from "@/lib/alertmanager-api"
 import { toast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { PageConnections } from "@/components/page-connections"
+import { SilenceManager } from "@/components/silence-manager"
+import { readFiltersFromUrl, writeFiltersToUrl } from "@/lib/url-filters"
 
 // Alert component for expandable details
 interface AlertCardProps {
   alert: any;
   isExpanded: boolean;
   onToggle: () => void;
-  onSilence: (alert: any, durationHours: number) => void;
+  /** Opens the silence dialog pre-filled for this alert */
+  onSilence: (alert: any) => void;
 }
 
 const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle, onSilence }) => {
@@ -209,10 +212,10 @@ const AlertCard: React.FC<AlertCardProps> = ({ alert, isExpanded, onToggle, onSi
             variant="outline"
             size="sm"
             className="gap-1.5 h-8 sm:h-9 flex-1 sm:flex-initial bg-card border-border hover:bg-muted"
-            onClick={() => onSilence(alert, 2)}
+            onClick={() => onSilence(alert)}
           >
             <HugeiconsIcon icon={VolumeMute01Icon} className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Silence (2h)</span>
+            <span className="hidden sm:inline">Silence…</span>
             <span className="sm:hidden">Silence</span>
           </Button>
         </div>
@@ -331,6 +334,35 @@ export default function AlertsPage() {
   } = useAlertmanagerAlerts()
 
   const [expandedAlerts, setExpandedAlerts] = React.useState<Set<string>>(new Set())
+  const [silenceManager, setSilenceManager] = React.useState<{
+    open: boolean;
+    alert?: any;
+  }>({ open: false })
+  const urlFiltersAppliedRef = React.useRef(false)
+
+  // Seed filters from the URL once on mount (?q=&sev=&status=&svc=)
+  useEffect(() => {
+    if (urlFiltersAppliedRef.current) return
+    urlFiltersAppliedRef.current = true
+    const params = readFiltersFromUrl()
+    setFilters({
+      searchQuery: params.get('q') ?? '',
+      severity: params.get('sev') ?? 'all',
+      status: params.get('status') ?? 'all',
+      service: params.get('svc') ?? 'all',
+    })
+  }, [setFilters])
+
+  // Mirror filter changes into the URL so views are shareable
+  useEffect(() => {
+    if (!urlFiltersAppliedRef.current) return
+    writeFiltersToUrl({
+      q: filters.searchQuery || undefined,
+      sev: filters.severity,
+      status: filters.status,
+      svc: filters.service,
+    })
+  }, [filters])
 
   const handleSearchChange = (value: string) => {
     setFilters({ searchQuery: value })
@@ -360,38 +392,8 @@ export default function AlertsPage() {
     })
   }
 
-  const handleSilenceAlert = async (alert: any, durationHours: number) => {
-    const alertName = alertmanagerAPI.extractAlertName(alert.labels)
-    const now = new Date()
-    const endsAt = new Date(now.getTime() + durationHours * 60 * 60 * 1000)
-
-    // Match on the alert fingerprint when available so only this specific
-    // alert instance is silenced; fall back to the alert name otherwise.
-    const matchers = alert.fingerprint
-      ? [{ name: 'fingerprint', value: String(alert.fingerprint), isRegex: false }]
-      : [{ name: 'alertname', value: alertName, isRegex: false }]
-
-    try {
-      await alertmanagerAPI.createSilence({
-        matchers,
-        startsAt: now.toISOString(),
-        endsAt: endsAt.toISOString(),
-        createdBy: 'devops-monitoring-ui',
-        comment: `Silenced from UI for ${durationHours}h: ${alertName}`,
-      })
-      toast({
-        title: `Alert Silenced: ${alertName}`,
-        description: `Silenced for ${durationHours} hour(s) in Alertmanager.`,
-      })
-      refresh()
-    } catch (err) {
-      console.error('Failed to create silence:', err)
-      toast({
-        title: 'Failed to silence alert',
-        description: err instanceof Error ? err.message : 'Could not reach Alertmanager.',
-        variant: 'destructive',
-      })
-    }
+  const openSilenceDialog = (alert: any) => {
+    setSilenceManager({ open: true, alert })
   }
 
   return (
@@ -512,10 +514,10 @@ export default function AlertsPage() {
           className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4"
         >
           <div className="flex flex-wrap items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted" 
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
               onClick={refresh}
               disabled={loading}
             >
@@ -526,6 +528,17 @@ export default function AlertsPage() {
               )}
               <span className="hidden sm:inline">Refresh</span>
               <span className="sm:hidden">Sync</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
+              onClick={() => setSilenceManager({ open: true })}
+            >
+              <HugeiconsIcon icon={VolumeMute01Icon} className="h-4 w-4" />
+              <span className="hidden sm:inline">Silences</span>
+              <span className="sm:hidden">Mute</span>
             </Button>
           </div>
 
@@ -701,7 +714,7 @@ export default function AlertsPage() {
                         alert={alert}
                         isExpanded={expandedAlerts.has(alert.fingerprint)}
                         onToggle={() => toggleAlertExpansion(alert.fingerprint)}
-                        onSilence={handleSilenceAlert}
+                        onSilence={openSilenceDialog}
                       />
                     </motion.div>
                   ))
@@ -710,6 +723,16 @@ export default function AlertsPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Silence management (create + expire silences) */}
+        <SilenceManager
+          open={silenceManager.open}
+          onOpenChange={(open) =>
+            setSilenceManager((prev) => ({ open, alert: open ? prev.alert : undefined }))
+          }
+          alert={silenceManager.alert}
+          onSilencesChanged={refresh}
+        />
       </div>
     </div>
   )

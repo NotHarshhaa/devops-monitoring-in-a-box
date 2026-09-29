@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -10,6 +10,8 @@ import {
   FilterIcon,
   Download01Icon,
   RefreshIcon,
+  PlayIcon,
+  PauseIcon,
   Clock01Icon,
   Alert02Icon,
   CheckmarkCircle01Icon,
@@ -41,6 +43,7 @@ import {
 import { useLokiLogs } from "@/lib/hooks/use-loki-logs"
 import { lokiAPI } from "@/lib/loki-api"
 import { PageConnections } from "@/components/page-connections"
+import { readFiltersFromUrl, writeFiltersToUrl } from "@/lib/url-filters"
 
 // Time range options
 const timeRangeData = [
@@ -88,20 +91,50 @@ const getSeverityIcon = (severity: string) => {
 }
 
 export default function LogsPage() {
-  const { 
-    logs, 
-    loading, 
-    error, 
-    jobs, 
-    namespaces, 
-    severityLevels, 
-    refresh, 
-    setFilters, 
-    filters 
+  const {
+    logs,
+    loading,
+    error,
+    jobs,
+    namespaces,
+    severityLevels,
+    refresh,
+    setFilters,
+    filters,
+    isLive,
+    setIsLive,
+    liveIndicator
   } = useLokiLogs()
 
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState(filters.searchQuery)
+  const urlFiltersAppliedRef = useRef(false)
+
+  // Seed filters from the URL once on mount (?q=&range=&ns=&sev=)
+  useEffect(() => {
+    if (urlFiltersAppliedRef.current) return
+    urlFiltersAppliedRef.current = true
+    const params = readFiltersFromUrl()
+    const query = params.get('q') ?? ''
+    setFilters({
+      searchQuery: query,
+      timeRange: params.get('range') ?? '1h',
+      namespace: params.get('ns') ?? 'all',
+      severity: params.get('sev') ?? 'all',
+    })
+    if (query) setSearchQuery(query)
+  }, [setFilters])
+
+  // Mirror filter changes into the URL so views are shareable
+  useEffect(() => {
+    if (!urlFiltersAppliedRef.current) return
+    writeFiltersToUrl({
+      q: filters.searchQuery || undefined,
+      range: filters.timeRange !== '1h' ? filters.timeRange : undefined,
+      ns: filters.namespace,
+      sev: filters.severity,
+    })
+  }, [filters])
 
   const handleSearch = (value: string) => {
     setSearchQuery(value)
@@ -179,9 +212,9 @@ export default function LogsPage() {
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <Badge className="bg-card text-foreground border-border px-3 py-1.5 font-semibold text-sm">
-                    <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
-                    Live Logs
+                  <Badge className={`bg-card text-foreground border-border px-3 py-1.5 font-semibold text-sm ${isLive ? 'animate-pulse' : ''}`}>
+                    <HugeiconsIcon icon={Activity01Icon} className={`h-3 w-3 mr-1 ${liveIndicator ? 'text-emerald-500' : ''}`} />
+                    {isLive ? 'Live Tail' : 'Live Logs'}
                   </Badge>
                 </div>
               </div>
@@ -334,10 +367,21 @@ export default function LogsPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 mt-4">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted" 
+                <Button
+                  variant={isLive ? 'default' : 'outline'}
+                  size="sm"
+                  className={`gap-1.5 h-9 sm:h-10 border-border ${isLive ? '' : 'bg-card hover:bg-muted'}`}
+                  onClick={() => setIsLive(!isLive)}
+                  aria-pressed={isLive}
+                >
+                  <HugeiconsIcon icon={isLive ? PauseIcon : PlayIcon} className="h-4 w-4" />
+                  {isLive ? 'Pause Live Tail' : 'Start Live Tail'}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
                   onClick={refresh}
                   disabled={loading}
                 >
@@ -359,8 +403,8 @@ export default function LogsPage() {
                 </Button>
 
                 <Badge className="bg-muted text-foreground">
-                  <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
-                  {loading ? 'Loading...' : 'Live'}
+                  <HugeiconsIcon icon={Activity01Icon} className={`h-3 w-3 mr-1 ${liveIndicator ? 'text-emerald-500' : ''}`} />
+                  {isLive ? (liveIndicator ? 'New logs' : 'Tailing') : loading ? 'Loading...' : 'Idle'}
                 </Badge>
               </div>
             </CardContent>

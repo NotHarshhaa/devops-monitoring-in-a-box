@@ -42,6 +42,7 @@ import {
 } from "@/lib/hooks/use-prometheus-metrics"
 import { useQueryClient } from "@tanstack/react-query"
 import { PageConnections } from "@/components/page-connections"
+import { readFiltersFromUrl, writeFiltersToUrl } from "@/lib/url-filters"
 
 // Time range options
 const timeRangeData = [
@@ -54,8 +55,18 @@ const timeRangeData = [
 ]
 
 export default function MetricsPage() {
-  const [timeRange, setTimeRange] = React.useState("24")
+  // Time range is mirrored into the URL (?range=<hours>) so views are shareable
+  const [timeRange, setTimeRange] = React.useState(() => {
+    if (typeof window === 'undefined') return "24"
+    const fromUrl = readFiltersFromUrl().get('range')
+    return fromUrl ?? "24"
+  })
   const queryClient = useQueryClient()
+
+  // Keep the URL in sync when the range changes
+  React.useEffect(() => {
+    writeFiltersToUrl({ range: timeRange !== '24' ? timeRange : undefined })
+  }, [timeRange])
   
   // Get time range for charts
   const { start, end } = getTimeRange(timeRange)

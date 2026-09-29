@@ -97,6 +97,22 @@ export class LokiAPI {
   }
 
   /**
+   * Merge freshly tailed entries into the loaded list without duplicates.
+   * Both lists are newest-first; entries already on screen win over tail
+   * duplicates, strictly-newer tail entries are prepended, and the result is
+   * capped at `limit` entries.
+   */
+  static mergeLogEntries(
+    existing: LokiLogEntry[],
+    incoming: LokiLogEntry[],
+    limit = 1000
+  ): LokiLogEntry[] {
+    const existingKeys = new Set(existing.map((e) => `${e.timestamp}|${e.line}`));
+    const fresh = incoming.filter((e) => !existingKeys.has(`${e.timestamp}|${e.line}`));
+    return [...fresh, ...existing].slice(0, limit);
+  }
+
+  /**
    * Get available labels
    */
   async getLabels(): Promise<string[]> {

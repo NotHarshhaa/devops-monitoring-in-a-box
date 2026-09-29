@@ -64,6 +64,7 @@ import { useAlertmanagerAlerts } from "@/lib/hooks/use-alertmanager-alerts"
 import { alertmanagerAPI } from "@/lib/alertmanager-api"
 import { VersionBadge } from "@/components/version-badge"
 import { PageConnections } from "@/components/page-connections"
+import { readFiltersFromUrl, writeFiltersToUrl } from "@/lib/url-filters"
 
 // Lazy load heavy components for better performance
 const DynamicMetrics = lazy(() => import("@/components/dynamic-metrics").then(module => ({ default: module.DynamicMetrics })))
@@ -360,8 +361,17 @@ function ServiceStatusCard({ service }: { service: HealthService }) {
 
 export default function DashboardPage() {
   const { dashboardConfig, isLoading, error } = useMultiTenantDashboardConfig();
-  const [selectedTimeRange, setSelectedTimeRange] = useState("24h");
+  // Time range is mirrored into the URL (?range=1h|24h|7d|30d) for shareable views
+  const [selectedTimeRange, setSelectedTimeRange] = useState(() => {
+    if (typeof window === 'undefined') return "24h"
+    const fromUrl = readFiltersFromUrl().get('range')
+    return fromUrl && TIME_RANGE_HOURS[fromUrl] ? fromUrl : "24h"
+  });
   const queryClient = useQueryClient();
+
+  React.useEffect(() => {
+    writeFiltersToUrl({ range: selectedTimeRange !== '24h' ? selectedTimeRange : undefined })
+  }, [selectedTimeRange]);
 
   // Real system metrics from Prometheus
   const allCurrentMetrics = useAllCurrentMetrics();
