@@ -1,16 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Modal } from "@/components/ui/modal"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { 
   PlusSignIcon, 
   Download01Icon, 
-  Settings01Icon, 
   Delete02Icon, 
   Edit02Icon,
   EyeIcon,
@@ -21,7 +25,6 @@ import {
   SparklesIcon,
   Layers01Icon,
   CodeSquareIcon,
-  StarIcon,
   Clock01Icon,
   UserGroupIcon,
   ArrowRight01Icon
@@ -31,23 +34,87 @@ import { TemplateImportService, type GitHubImportResult } from "@/lib/template-i
 import { type DashboardTemplate } from "@/lib/dashboard-templates"
 import { toast } from "@/hooks/use-toast"
 
+const TEMPLATES_STORAGE_KEY = "monitoring-imported-templates"
+
 interface DashboardTemplateManagerProps {
   onTemplateSelect: (template: DashboardTemplate) => void
   onTemplateCreate: (template: DashboardTemplate) => void
+  activeTab?: string
+  onTabChange?: (tab: string) => void
+  onTemplatesCountChange?: (count: number) => void
 }
 
-export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }: DashboardTemplateManagerProps) {
-  const [activeTab, setActiveTab] = useState("marketplace")
+export function DashboardTemplateManager({
+  onTemplateSelect,
+  onTemplateCreate,
+  activeTab: controlledActiveTab,
+  onTabChange,
+  onTemplatesCountChange,
+}: DashboardTemplateManagerProps) {
+  const [internalTab, setInternalTab] = useState("marketplace")
+  const activeTab = controlledActiveTab ?? internalTab
+  const setActiveTab = (tab: string) => {
+    setInternalTab(tab)
+    onTabChange?.(tab)
+  }
+
   const [importedTemplates, setImportedTemplates] = useState<DashboardTemplate[]>([])
   const [copiedTemplateId, setCopiedTemplateId] = useState<string | null>(null)
+  const [previewTemplate, setPreviewTemplate] = useState<DashboardTemplate | null>(null)
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [importJsonText, setImportJsonText] = useState("")
+  const [builderOpen, setBuilderOpen] = useState(false)
+  const [customDraft, setCustomDraft] = useState({
+    name: "",
+    description: "",
+    category: "system" as DashboardTemplate["category"],
+    difficulty: "beginner" as DashboardTemplate["difficulty"],
+    tags: "custom, prometheus",
+    metricTitle: "CPU Usage (%)",
+    metricQuery: '100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)',
+    metricUnit: "%",
+  })
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem(TEMPLATES_STORAGE_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed)) {
+            setImportedTemplates(parsed)
+            onTemplatesCountChange?.(parsed.length)
+          }
+        }
+      } catch {
+        // Ignore invalid persisted templates
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [onTemplatesCountChange])
+
+  const persistTemplates = (next: DashboardTemplate[]) => {
+    setImportedTemplates(next)
+    onTemplatesCountChange?.(next.length)
+    try {
+      localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(next))
+    } catch {
+      // Ignore storage errors
+    }
+  }
 
   const handleImportTemplate = (template: DashboardTemplate) => {
-    setImportedTemplates(prev => [...prev, template])
-    onTemplateCreate(template)
+    const alreadyExists = importedTemplates.some((t) => t.id === template.id)
+    const entry: DashboardTemplate = alreadyExists
+      ? { ...template, id: `${template.id}-${Date.now()}`, name: `${template.name} (Copy)` }
+      : template
+    persistTemplates([...importedTemplates, entry])
+    onTemplateCreate(entry)
+    setActiveTab("my-templates")
     
     toast({
       title: "Template Imported",
-      description: `${template.name} has been imported and dashboard created!`,
+      description: `${entry.name} has been added to My Templates.`,
     })
   }
 
@@ -64,7 +131,7 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
           variant: "destructive"
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Import Error",
         description: "An error occurred while importing the template",
@@ -74,7 +141,7 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
   }
 
   const handleDeleteTemplate = (templateId: string) => {
-    setImportedTemplates(prev => prev.filter(t => t.id !== templateId))
+    persistTemplates(importedTemplates.filter(t => t.id !== templateId))
     toast({
       title: "Template Deleted",
       description: "Template has been removed from your collection",
@@ -102,11 +169,101 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
     }
   }
 
-  const handleShareTemplate = (template: DashboardTemplate) => {
-    toast({
-      title: "Share Feature",
-      description: "Template sharing feature coming soon!",
-    })
+  const handleShareTemplate = async (template: DashboardTemplate) => {
+    try {
+      const jsonString = TemplateImportService.exportTemplate(template)
+      await navigator.clipboard.writeText(jsonString)
+      toast({
+        title: "Template JSON copied for sharing",
+        description: `Copied ${template.name} configuration to clipboard.`,
+      })
+    } catch {
+      toast({
+        title: "Share failed",
+        description: "Clipboard access is unavailable.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleCreateCustomTemplate = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!customDraft.name.trim() || !customDraft.metricQuery.trim()) {
+      toast({
+        title: "Missing required fields",
+        description: "Please provide both a template name and a PromQL query.",
+        variant: "destructive",
+      })
+      return
+    }
+    const panelTitle = customDraft.metricTitle.trim() || "Custom Metric"
+    const newTemplate: DashboardTemplate = {
+      id: `custom-${Date.now()}`,
+      name: customDraft.name.trim(),
+      description: customDraft.description.trim() || "Custom monitoring dashboard template",
+      category: customDraft.category,
+      tags: customDraft.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+      thumbnail: "/templates/custom.png",
+      author: "Custom Builder",
+      version: "1.0.0",
+      difficulty: customDraft.difficulty,
+      estimatedSetupTime: "5 min",
+      requirements: ["Prometheus"],
+      metrics: [panelTitle],
+      lastUpdated: new Date().toISOString().split("T")[0],
+      config: {
+        panels: [
+          {
+            id: 1,
+            title: panelTitle,
+            type: "stat",
+            targets: [
+              {
+                expr: customDraft.metricQuery.trim(),
+                legendFormat: customDraft.metricUnit.trim()
+                  ? `${panelTitle} (${customDraft.metricUnit.trim()})`
+                  : panelTitle,
+              },
+            ],
+            gridPos: { h: 8, w: 12, x: 0, y: 0 },
+          },
+        ],
+        variables: [],
+        annotations: [],
+        refresh: "30s",
+        timeRange: {
+          from: "now-1h",
+          to: "now",
+        },
+      },
+    }
+
+    handleImportTemplate(newTemplate)
+    setBuilderOpen(false)
+    setCustomDraft((prev) => ({ ...prev, name: "", description: "" }))
+  }
+
+  const handleJsonImportSubmit = () => {
+    const result = TemplateImportService.importFromJSON(importJsonText)
+    if (!result.success || !result.template) {
+      toast({
+        title: "Invalid template JSON",
+        description: result.error || "Could not parse the template JSON.",
+        variant: "destructive",
+      })
+      return
+    }
+    handleImportTemplate(result.template)
+    setImportJsonText("")
+    setImportModalOpen(false)
+  }
+
+  const handleInspectTemplate = (template: DashboardTemplate) => {
+    setPreviewTemplate(template)
+    onTemplateSelect(template)
   }
 
   return (
@@ -172,6 +329,7 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
               <DashboardTemplateMarketplace
                 onImportTemplate={handleImportTemplate}
                 onImportFromGitHub={handleGitHubImport}
+                onPreviewTemplate={handleInspectTemplate}
               />
             </TabsContent>
 
@@ -201,7 +359,7 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
                         </p>
                         <Button 
                           onClick={() => setActiveTab("marketplace")}
-                          className="gap-2 text-foreground border border-border bg-card hover:bg-muted text-xs sm:text-sm"
+                          className="gap-2 text-xs sm:text-sm"
                         >
                           <HugeiconsIcon icon={Download01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                           Browse Templates
@@ -259,7 +417,7 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
                           <div className="flex gap-1.5 sm:gap-2">
                             <Button 
                               size="sm" 
-                              onClick={() => onTemplateSelect(template)}
+                              onClick={() => handleInspectTemplate(template)}
                               className="flex-1 gap-1 text-xs bg-card border border-border hover:bg-muted text-foreground"
                             >
                               <HugeiconsIcon icon={EyeIcon} className="h-3 w-3" />
@@ -320,6 +478,110 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6">
+                  {builderOpen ? (
+                    <form onSubmit={handleCreateCustomTemplate} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="tpl-name">Template Name *</Label>
+                          <Input
+                            id="tpl-name"
+                            value={customDraft.name}
+                            onChange={(e) => setCustomDraft(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="e.g. API Gateway Latency"
+                            className="bg-card border-border"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="tpl-tags">Tags (comma-separated)</Label>
+                          <Input
+                            id="tpl-tags"
+                            value={customDraft.tags}
+                            onChange={(e) => setCustomDraft(prev => ({ ...prev, tags: e.target.value }))}
+                            placeholder="api, prometheus, latency"
+                            className="bg-card border-border"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Category</Label>
+                          <Select
+                            value={customDraft.category}
+                            onValueChange={(val) => setCustomDraft(prev => ({ ...prev, category: val as DashboardTemplate["category"] }))}
+                          >
+                            <SelectTrigger className="bg-card border-border">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="system">System</SelectItem>
+                              <SelectItem value="kubernetes">Kubernetes</SelectItem>
+                              <SelectItem value="database">Database</SelectItem>
+                              <SelectItem value="web-server">Web Server</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Difficulty</Label>
+                          <Select
+                            value={customDraft.difficulty}
+                            onValueChange={(val) => setCustomDraft(prev => ({ ...prev, difficulty: val as DashboardTemplate["difficulty"] }))}
+                          >
+                            <SelectTrigger className="bg-card border-border">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="beginner">Beginner</SelectItem>
+                              <SelectItem value="intermediate">Intermediate</SelectItem>
+                              <SelectItem value="advanced">Advanced</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tpl-desc">Description</Label>
+                        <Textarea
+                          id="tpl-desc"
+                          value={customDraft.description}
+                          onChange={(e) => setCustomDraft(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="What this dashboard tracks..."
+                          className="bg-card border-border"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-border pt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="tpl-metric-title">Primary Metric Title</Label>
+                          <Input
+                            id="tpl-metric-title"
+                            value={customDraft.metricTitle}
+                            onChange={(e) => setCustomDraft(prev => ({ ...prev, metricTitle: e.target.value }))}
+                            className="bg-card border-border"
+                          />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="tpl-metric-query">PromQL Query *</Label>
+                          <Input
+                            id="tpl-metric-query"
+                            value={customDraft.metricQuery}
+                            onChange={(e) => setCustomDraft(prev => ({ ...prev, metricQuery: e.target.value }))}
+                            className="bg-card border-border font-mono text-xs"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap justify-end gap-2 pt-2">
+                        <Button type="button" variant="outline" onClick={() => setBuilderOpen(false)} className="border-border hover:bg-muted">
+                          Cancel
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setImportModalOpen(true)} className="border-border hover:bg-muted gap-2">
+                          <HugeiconsIcon icon={CodeSquareIcon} className="h-4 w-4" />
+                          Import JSON Instead
+                        </Button>
+                        <Button type="submit" className="gap-2">
+                          <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4" />
+                          Save Template
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
                   <div className="text-center py-8 sm:py-12">
                     <motion.div
                       initial={{ scale: 0 }}
@@ -333,27 +595,121 @@ export function DashboardTemplateManager({ onTemplateSelect, onTemplateCreate }:
                       Template Builder
                     </h3>
                     <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 max-w-md mx-auto">
-                      Create custom dashboard templates with our visual builder and drag-and-drop interface
+                      Create custom dashboard templates with PromQL metrics or import a JSON definition
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-                      <Button className="gap-2 text-foreground border border-border bg-card hover:bg-muted text-xs sm:text-sm">
+                      <Button onClick={() => setBuilderOpen(true)} className="gap-2 text-xs sm:text-sm">
                         <HugeiconsIcon icon={Edit02Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                         Start Building
                         <HugeiconsIcon icon={ArrowRight01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
-                      <Button variant="outline" className="gap-2 text-xs sm:text-sm border-border hover:bg-muted">
+                      <Button variant="outline" onClick={() => setImportModalOpen(true)} className="gap-2 text-xs sm:text-sm border-border hover:bg-muted">
                         <HugeiconsIcon icon={CodeSquareIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="hidden sm:inline">Import Code</span>
                         <span className="sm:hidden">Import</span>
                       </Button>
                     </div>
                   </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Template Details Preview Modal */}
+      <Modal
+        open={Boolean(previewTemplate)}
+        onClose={() => setPreviewTemplate(null)}
+        title={previewTemplate?.name || "Template Preview"}
+        description={previewTemplate?.description}
+        className="max-w-2xl"
+      >
+        {previewTemplate && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="px-2 py-0.5">{previewTemplate.category}</Badge>
+              <Badge variant="outline" className="px-2 py-0.5">{previewTemplate.difficulty}</Badge>
+              <Badge variant="outline" className="px-2 py-0.5">{previewTemplate.estimatedSetupTime}</Badge>
+              <Badge variant="outline" className="px-2 py-0.5">v{previewTemplate.version}</Badge>
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-foreground">
+                Included Panels &amp; Queries ({previewTemplate.config.panels?.length ?? 0})
+              </h4>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {(previewTemplate.config.panels ?? []).length > 0 ? (
+                  previewTemplate.config.panels.map((panel: any, idx: number) => (
+                    <div key={panel.id ?? idx} className="p-3 border border-border bg-muted/40 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-foreground">{panel.title || `Panel ${idx + 1}`}</span>
+                        {panel.type && <Badge variant="secondary" className="text-xs px-2 py-0.5">{panel.type}</Badge>}
+                      </div>
+                      {(panel.targets ?? []).map((target: any, tIdx: number) => (
+                        <p key={tIdx} className="text-xs font-mono text-muted-foreground break-all">
+                          {target.expr || target.query || 'PromQL target'}
+                        </p>
+                      ))}
+                    </div>
+                  ))
+                ) : (
+                  (previewTemplate.metrics ?? []).map((metricName, idx) => (
+                    <div key={idx} className="p-2.5 border border-border bg-muted/40 text-xs font-mono text-foreground">
+                      {metricName}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-border">
+              <Button variant="outline" onClick={() => handleCopyTemplate(previewTemplate)} className="gap-2 border-border hover:bg-muted">
+                <HugeiconsIcon icon={Copy01Icon} className="h-4 w-4" />
+                Copy JSON
+              </Button>
+              <Button
+                onClick={() => {
+                  const target = previewTemplate
+                  setPreviewTemplate(null)
+                  handleImportTemplate(target)
+                }}
+                className="gap-2"
+              >
+                <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
+                Import to My Templates
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Import JSON Modal */}
+      <Modal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        title="Import Template JSON"
+        description="Paste a dashboard template JSON payload to validate and add it to My Templates."
+        className="max-w-xl"
+      >
+        <div className="space-y-4">
+          <Textarea
+            value={importJsonText}
+            onChange={(e) => setImportJsonText(e.target.value)}
+            placeholder='{"id":"custom-1","name":"My Dashboard","description":"Prometheus view","category":"system","config":{"panels":[],"variables":[],"annotations":[],"refresh":"30s","timeRange":{"from":"now-1h","to":"now"}},"metrics":["up"]}'
+            rows={8}
+            className="bg-card border-border font-mono text-xs"
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setImportModalOpen(false)} className="border-border hover:bg-muted">
+              Cancel
+            </Button>
+            <Button onClick={handleJsonImportSubmit} disabled={!importJsonText.trim()} className="gap-2">
+              <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
+              Import JSON
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </motion.div>
   )
 }

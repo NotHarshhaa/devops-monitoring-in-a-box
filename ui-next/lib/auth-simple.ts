@@ -49,7 +49,7 @@ if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_URL) {
 // demos, but they must never be silently active in production. They are
 // enabled by default outside production and can be controlled explicitly
 // with ENABLE_DEMO_AUTH=true|false in any environment.
-const isDemoAuthEnabled = () => {
+export const isDemoAuthEnabled = () => {
   if (process.env.ENABLE_DEMO_AUTH !== undefined) {
     return process.env.ENABLE_DEMO_AUTH === 'true'
   }
@@ -125,9 +125,19 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.role = (user as any).role
+      }
+      if (trigger === "update" && session) {
+        const nextName = (session as { name?: unknown }).name
+        const nextEmail = (session as { email?: unknown }).email
+        if (typeof nextName === "string" && nextName.trim()) {
+          token.name = nextName.trim()
+        }
+        if (typeof nextEmail === "string" && nextEmail.trim()) {
+          token.email = nextEmail.trim()
+        }
       }
       return token
     },

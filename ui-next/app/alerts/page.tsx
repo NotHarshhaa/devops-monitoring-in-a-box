@@ -229,25 +229,25 @@ const getSeverityBadge = (severity: string) => {
   switch (severity) {
     case "critical":
       return (
-        <Badge className="text-foreground">
+        <Badge className="px-2 py-0.5 border border-destructive/40 bg-destructive/15 text-destructive">
           Critical
         </Badge>
       )
     case "warning":
       return (
-        <Badge className="text-foreground">
+        <Badge className="px-2 py-0.5 border border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300">
           Warning
         </Badge>
       )
     case "info":
       return (
-        <Badge className="text-foreground">
+        <Badge className="px-2 py-0.5 border border-blue-500/40 bg-blue-500/15 text-blue-700 dark:text-blue-300">
           Info
         </Badge>
       )
     default:
       return (
-        <Badge className="text-foreground">
+        <Badge variant="outline" className="px-2 py-0.5">
           {severity.charAt(0).toUpperCase() + severity.slice(1)}
         </Badge>
       )
@@ -258,25 +258,25 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case "firing":
       return (
-        <Badge className="text-foreground">
+        <Badge className="px-2 py-0.5 border border-destructive/40 bg-destructive/15 text-destructive">
           Firing
         </Badge>
       )
     case "resolved":
       return (
-        <Badge className="text-foreground">
+        <Badge className="px-2 py-0.5 border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
           Resolved
         </Badge>
       )
     case "suppressed":
       return (
-        <Badge className="text-foreground">
+        <Badge className="px-2 py-0.5 border border-border bg-muted text-muted-foreground">
           Suppressed
         </Badge>
       )
     default:
       return (
-        <Badge className="text-foreground">
+        <Badge variant="outline" className="px-2 py-0.5">
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </Badge>
       )
@@ -542,7 +542,7 @@ export default function AlertsPage() {
             </Button>
           </div>
 
-          <Badge className="bg-muted text-foreground">
+          <Badge className="px-2.5 py-0.5 border border-border bg-muted text-foreground">
             <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
             {loading ? 'Loading...' : 'Live'}
           </Badge>
@@ -575,10 +575,11 @@ export default function AlertsPage() {
                       onChange={(e) => handleSearchChange(e.target.value)}
                     />
                   </div>
-                  <Button 
+                  <Button
+                    variant="outline"
                     onClick={refresh} 
                     disabled={loading} 
-                    className="h-9 sm:h-10 bg-muted text-foreground"
+                    className="h-9 sm:h-10 bg-card border-border hover:bg-muted text-foreground"
                   >
                     {loading ? (
                       <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin mr-2" />
@@ -694,7 +695,7 @@ export default function AlertsPage() {
                         Clear Filters
                       </Button>
                       <p className="text-xs text-muted-foreground">
-                        Expecting alerts? Check Alertmanager's status on the{' '}
+                        Expecting alerts? Check Alertmanager&apos;s status on the{' '}
                         <Link href="/services" className="underline underline-offset-2 hover:text-foreground">
                           Services page
                         </Link>

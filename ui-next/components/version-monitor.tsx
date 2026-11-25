@@ -40,8 +40,9 @@ export function VersionMonitor({
   const [isLoading, setIsLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
   const [useDemoData, setUseDemoData] = useState(false)
+  const [unreachableMessage, setUnreachableMessage] = useState<string | null>(null)
 
-  const fetchVersions = async () => {
+  const fetchVersions = async (notifyOnUnavailable = false) => {
     setIsLoading(true)
     try {
       const versionData = await VersionMonitorService.getAllVersions()
@@ -52,36 +53,48 @@ export function VersionMonitor({
       if (hasRealData) {
         setVersions(versionData)
         setUseDemoData(false)
+        setUnreachableMessage(null)
       } else {
         // Never fabricate versions: show an empty/error state so users do
         // not mistake unreachable services for real update recommendations.
+        const msg = "Monitoring services are not reachable — unable to verify component versions."
         setVersions([])
         setUseDemoData(false)
-        toast({
-          title: "Services Unreachable",
-          description: "Monitoring services are not reachable — unable to verify component versions.",
-          variant: "destructive"
-        })
+        setUnreachableMessage(msg)
+        if (notifyOnUnavailable) {
+          toast({
+            title: "Services Unreachable",
+            description: msg,
+            variant: "destructive"
+          })
+        }
       }
 
       setLastRefresh(new Date())
     } catch (error) {
       console.error('Failed to fetch versions:', error)
+      const msg = "Could not reach the monitoring services to check versions."
       setVersions([])
       setUseDemoData(false)
+      setUnreachableMessage(msg)
 
-      toast({
-        title: "Failed to Fetch Versions",
-        description: "Could not reach the monitoring services to check versions.",
-        variant: "destructive"
-      })
+      if (notifyOnUnavailable) {
+        toast({
+          title: "Failed to Fetch Versions",
+          description: msg,
+          variant: "destructive"
+        })
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchVersions()
+    const timer = window.setTimeout(() => {
+      void fetchVersions(false)
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -141,10 +154,12 @@ export function VersionMonitor({
 
   const getUpdateProgress = (component: ComponentVersion) => {
     if (!component.updateAvailable) return 100
-    // Simulate progress based on version difference
-    const current = parseFloat(component.currentVersion.replace('v', ''))
-    const latest = parseFloat(component.latestVersion.replace('v', ''))
-    return Math.min((current / latest) * 100, 95)
+    const current = parseFloat(component.currentVersion.replace(/^v/i, ''))
+    const latest = parseFloat(component.latestVersion.replace(/^v/i, ''))
+    if (!Number.isFinite(current) || !Number.isFinite(latest) || latest <= 0) {
+      return 50
+    }
+    return Math.max(0, Math.min(Math.round((current / latest) * 100), 95))
   }
 
   const upToDateCount = versions.filter(v => v.isUpToDate).length
@@ -179,7 +194,7 @@ export function VersionMonitor({
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchVersions}
+              onClick={() => fetchVersions(true)}
               disabled={isLoading}
               className="gap-2 bg-card border-border hover:bg-muted"
             >
@@ -274,7 +289,30 @@ export function VersionMonitor({
         </motion.div>
       )}
 
-      {/* Enhanced Version Cards */}
+      {/* Enhanced Version Cards or Empty / Unavailable State */}
+      {!isLoading && versions.length === 0 ? (
+        <Card className="border border-border bg-card">
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center gap-3">
+            <HugeiconsIcon icon={Alert02Icon} className="h-10 w-10 text-muted-foreground" />
+            <div className="space-y-1 max-w-md">
+              <h3 className="text-base font-semibold text-foreground">Component versions unavailable</h3>
+              <p className="text-sm text-muted-foreground">
+                {unreachableMessage || "Connect Prometheus, Grafana, Loki, or Alertmanager to inspect running component versions."}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchVersions(true)}
+              disabled={isLoading}
+              className="gap-2 border-border hover:bg-muted"
+            >
+              <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
+              Retry Check
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <AnimatePresence>
           {versions.map((component, index) => (
@@ -420,6 +458,7 @@ export function VersionMonitor({
           ))}
         </AnimatePresence>
       </div>
+      )}
     </div>
   )
 }

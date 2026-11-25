@@ -32,15 +32,19 @@ import {
 interface PluginConfigurationProps {
   pluginManager: PluginManager
   instance: PluginConfiguration
-  onSave: (config: PluginConfiguration) => void
+  onSave: (config: PluginConfiguration) => void | Promise<void>
   onTest: (config: PluginConfiguration) => Promise<boolean>
+  onCancel?: () => void
+  submitLabel?: string
 }
 
 export default function PluginConfigurationComponent({
   pluginManager,
   instance,
   onSave,
-  onTest
+  onTest,
+  onCancel,
+  submitLabel = 'Save Configuration'
 }: PluginConfigurationProps) {
   const [config, setConfig] = useState<Record<string, any>>(instance.config)
   const [credentials, setCredentials] = useState<Record<string, any>>(instance.credentials || {})
@@ -252,6 +256,7 @@ export default function PluginConfigurationComponent({
               size="sm"
               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
               onClick={() => setShowCredentials(prev => ({ ...prev, [key]: !showPassword }))}
+              aria-label={showPassword ? `Hide ${key}` : `Show ${key}`}
             >
               {showPassword ? (
                 <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4" />
@@ -359,7 +364,18 @@ export default function PluginConfigurationComponent({
       </Card>
 
       {/* Actions */}
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-3">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSaving || isTesting}
+            className="border-border hover:bg-muted"
+          >
+            Cancel
+          </Button>
+        )}
         <Button
           onClick={handleSave}
           disabled={isSaving}
@@ -373,7 +389,7 @@ export default function PluginConfigurationComponent({
           ) : (
             <>
               <HugeiconsIcon icon={FloppyDiskIcon} className="h-4 w-4" />
-              Save Configuration
+              {submitLabel}
             </>
           )}
         </Button>

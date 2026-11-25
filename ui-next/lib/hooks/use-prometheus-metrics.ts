@@ -90,10 +90,11 @@ export function useAllCurrentMetrics() {
   return usePrometheusQuery(['all-current-metrics'], () => prometheusAPI.getAllCurrentMetrics());
 }
 
-// Utility function to get time range based on selection
+// Utility function to get time range based on selection (bucketed per minute for stable cache keys)
 export function getTimeRange(timeRangeValue: string): { start: number; end: number } {
-  const now = Math.floor(Date.now() / 1000);
-  const hours = parseInt(timeRangeValue);
+  const now = Math.floor(Date.now() / 60000) * 60;
+  const parsed = Number.parseInt(timeRangeValue, 10);
+  const hours = Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
   const start = now - (hours * 60 * 60);
   
   return { start, end: now };

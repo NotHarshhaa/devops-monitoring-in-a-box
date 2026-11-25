@@ -58,6 +58,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
 import { useMultiTenantDashboardConfig } from "@/lib/hooks/use-multi-tenant-config"
 import { useAllCurrentMetrics, useAllMetricsRange } from "@/lib/hooks/use-prometheus-metrics"
 import { useAlertmanagerAlerts } from "@/lib/hooks/use-alertmanager-alerts"
@@ -362,15 +369,21 @@ function ServiceStatusCard({ service }: { service: HealthService }) {
 export default function DashboardPage() {
   const { dashboardConfig, isLoading, error } = useMultiTenantDashboardConfig();
   // Time range is mirrored into the URL (?range=1h|24h|7d|30d) for shareable views
-  const [selectedTimeRange, setSelectedTimeRange] = useState(() => {
-    if (typeof window === 'undefined') return "24h"
-    const fromUrl = readFiltersFromUrl().get('range')
-    return fromUrl && TIME_RANGE_HOURS[fromUrl] ? fromUrl : "24h"
-  });
+  const [selectedTimeRange, setSelectedTimeRange] = useState("24h");
+  const urlRangeInitializedRef = React.useRef(false);
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
-    writeFiltersToUrl({ range: selectedTimeRange !== '24h' ? selectedTimeRange : undefined })
+    if (!urlRangeInitializedRef.current) {
+      urlRangeInitializedRef.current = true;
+      const fromUrl = readFiltersFromUrl().get('range');
+      if (fromUrl && TIME_RANGE_HOURS[fromUrl]) {
+        const timer = window.setTimeout(() => setSelectedTimeRange(fromUrl), 0);
+        return () => window.clearTimeout(timer);
+      }
+      return;
+    }
+    writeFiltersToUrl({ range: selectedTimeRange !== '24h' ? selectedTimeRange : undefined });
   }, [selectedTimeRange]);
 
   // Real system metrics from Prometheus
@@ -398,22 +411,26 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchHealth();
+    const timer = window.setTimeout(() => {
+      void fetchHealth();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [fetchHealth]);
 
   // Merge CPU/memory/network range series into one chart dataset
   const performanceData = (() => {
     const timeMap = new Map<number, any>();
-    const series: Array<[any[], keyof Omit<any, 'time'>]> = [
-      [metricsRange.cpuRange.data ?? [], 'cpu'],
-      [metricsRange.memoryRange.data ?? [], 'memory'],
-      [metricsRange.networkRange.data ?? [], 'network'],
-    ];
-    series.forEach(([dataArray, key]) => {
-      (dataArray as any[]).forEach((item) => {
-        if (!timeMap.has(item.time)) timeMap.set(item.time, { time: item.time });
-        timeMap.get(item.time)[key] = item.value;
-      });
+    (metricsRange.cpuRange.data ?? []).forEach((item) => {
+      if (!timeMap.has(item.time)) timeMap.set(item.time, { time: item.time });
+      timeMap.get(item.time).cpu = item.value;
+    });
+    (metricsRange.memoryRange.data ?? []).forEach((item) => {
+      if (!timeMap.has(item.time)) timeMap.set(item.time, { time: item.time });
+      timeMap.get(item.time).memory = item.value;
+    });
+    (metricsRange.networkRange.data ?? []).forEach((item) => {
+      if (!timeMap.has(item.time)) timeMap.set(item.time, { time: item.time });
+      timeMap.get(item.time).network = Number(((item.inbound ?? 0) + (item.outbound ?? 0)).toFixed(2));
     });
     return Array.from(timeMap.values())
       .sort((a, b) => a.time - b.time)
@@ -449,17 +466,18 @@ export default function DashboardPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <VersionBadge variant="compact" />
-                <select
-                  value={selectedTimeRange}
-                  onChange={(e) => setSelectedTimeRange(e.target.value)}
-                  className="h-9 border border-border bg-background px-3 text-xs sm:text-sm"
-                >
-                  <option value="1h">Last Hour</option>
-                  <option value="24h">Last 24 Hours</option>
-                  <option value="7d">Last 7 Days</option>
-                  <option value="30d">Last 30 Days</option>
-                </select>
-                <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh}>
+                <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
+                  <SelectTrigger aria-label="Select time range" className="w-[140px] h-9 border border-border bg-background text-xs sm:text-sm">
+                    <SelectValue placeholder="Time Range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1h">Last Hour</SelectItem>
+                    <SelectItem value="24h">Last 24 Hours</SelectItem>
+                    <SelectItem value="7d">Last 7 Days</SelectItem>
+                    <SelectItem value="30d">Last 30 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" className="gap-2" onClick={handleRefresh} aria-label="Refresh dashboard metrics">
                   <HugeiconsIcon icon={RefreshIcon} className="size-3.5" />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
@@ -556,12 +574,20 @@ export default function DashboardPage() {
                     <AreaChart data={performanceData}>
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                       <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "0px" }} />
+                      <YAxis yAxisId="percent" domain={[0, 100]} tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
+                      <YAxis yAxisId="throughput" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v} MB/s`} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "0px" }}
+                        formatter={(value: any, name: any) => {
+                          const num = Number(value);
+                          if (Number.isNaN(num)) return [String(value), String(name)];
+                          return name === 'Network (MB/s)' ? [`${num.toFixed(2)} MB/s`, name] : [`${num.toFixed(1)}%`, name];
+                        }}
+                      />
                       <Legend />
-                      <Area type="monotone" dataKey="cpu" stackId="1" stroke="var(--chart-1, #525252)" fill="var(--chart-1, #525252)" fillOpacity={0.6} />
-                      <Area type="monotone" dataKey="memory" stackId="1" stroke="var(--chart-2, #737373)" fill="var(--chart-2, #737373)" fillOpacity={0.6} />
-                      <Area type="monotone" dataKey="network" stackId="1" stroke="var(--chart-3, #a3a3a3)" fill="var(--chart-3, #a3a3a3)" fillOpacity={0.6} />
+                      <Area yAxisId="percent" type="monotone" dataKey="cpu" name="CPU (%)" stroke="var(--chart-1, #525252)" fill="var(--chart-1, #525252)" fillOpacity={0.35} />
+                      <Area yAxisId="percent" type="monotone" dataKey="memory" name="Memory (%)" stroke="var(--chart-2, #737373)" fill="var(--chart-2, #737373)" fillOpacity={0.25} />
+                      <Area yAxisId="throughput" type="monotone" dataKey="network" name="Network (MB/s)" stroke="var(--chart-3, #a3a3a3)" fill="var(--chart-3, #a3a3a3)" fillOpacity={0.2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -611,10 +637,10 @@ export default function DashboardPage() {
           >
             <Card className="h-full border-border bg-card overflow-hidden">
               <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                      <div className="flex size-8 items-center justify-center border border-border bg-background shrink-0">
                         <HugeiconsIcon icon={Analytics01Icon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Traffic & Errors</span>
@@ -625,7 +651,7 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Sample data</span>
                     </CardDescription>
                   </div>
-                  <Badge variant="outline" className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
+                  <Badge variant="outline" className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm shrink-0">
                     Sample data
                   </Badge>
                 </div>
@@ -694,12 +720,12 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Service health</span>
                     </CardDescription>
                   </div>
-                  <Link href="/settings">
-                    <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                  <Button asChild variant="outline" size="sm" className="gap-2 text-xs sm:text-sm" aria-label="Configure services">
+                    <Link href="/settings">
                       <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span className="hidden sm:inline">Configure</span>
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
@@ -735,10 +761,10 @@ export default function DashboardPage() {
           >
             <Card className="h-full border-border bg-card overflow-hidden">
               <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
-                    <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-bold tracking-wide">
+                      <div className="flex size-8 items-center justify-center border border-border bg-background shrink-0">
                         <HugeiconsIcon icon={Notification01Icon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Recent Alerts</span>
@@ -749,7 +775,7 @@ export default function DashboardPage() {
                       <span className="sm:hidden">System notifications</span>
                     </CardDescription>
                   </div>
-                  <Badge className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
+                  <Badge className="px-2 py-1 text-xs font-semibold shrink-0">
                     {alerts.length} active
                   </Badge>
                 </div>
@@ -774,13 +800,13 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border dark:border-border">
-                  <Link href="/alerts">
-                    <Button variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
+                  <Button asChild variant="outline" size="sm" className="w-full gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted text-xs sm:text-sm">
+                    <Link href="/alerts">
                       <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span className="hidden sm:inline">View All Alerts</span>
                       <span className="sm:hidden">All Alerts</span>
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -811,12 +837,12 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Real-time metrics</span>
                     </CardDescription>
                   </div>
-                  <Link href="/settings">
-                    <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                  <Button asChild variant="outline" size="sm" className="gap-2 text-xs sm:text-sm" aria-label="Configure services">
+                    <Link href="/settings">
                       <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span className="hidden sm:inline">Configure</span>
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
@@ -837,6 +863,7 @@ export default function DashboardPage() {
                     showCards={true}
                     showCharts={false}
                     groupBy={false}
+                    columns={2}
                   />
                 </Suspense>
               </CardContent>
@@ -851,10 +878,10 @@ export default function DashboardPage() {
           >
             <Card className="border-border bg-card overflow-hidden">
               <CardHeader className="border-b border-border bg-card p-4 sm:p-5">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
-                      <div className="flex size-8 items-center justify-center border border-border bg-background">
+                      <div className="flex size-8 items-center justify-center border border-border bg-background shrink-0">
                         <HugeiconsIcon icon={PieChartIcon} className="size-4 text-foreground" />
                       </div>
                       <span className="hidden sm:inline">Service Distribution</span>
@@ -865,25 +892,22 @@ export default function DashboardPage() {
                       <span className="sm:hidden">Sample breakdown</span>
                     </CardDescription>
                   </div>
-                  <Badge variant="outline" className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm">
+                  <Badge variant="outline" className="px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm shrink-0">
                     Sample data
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
-                <div className="h-[200px] sm:h-[250px]">
+                <div className="h-[220px] sm:h-[260px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RePieChart>
+                    <RePieChart margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
                       <Pie
                         data={serviceDistribution}
                         cx="50%"
-                        cy="50%"
+                        cy="46%"
                         labelLine={false}
-                        label={({ name, percent }) => {
-                          const displayName = name.length > 8 ? name.substring(0, 8) + '...' : name;
-                          return `${displayName} ${(percent * 100).toFixed(0)}%`
-                        }}
-                        outerRadius={typeof window !== 'undefined' && window.innerWidth < 640 ? 60 : 80}
+                        label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                        outerRadius={62}
                         fill="#737373"
                         dataKey="value"
                       >
@@ -891,6 +915,7 @@ export default function DashboardPage() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Tooltip contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "0px" }} />
                     </RePieChart>
                   </ResponsiveContainer>

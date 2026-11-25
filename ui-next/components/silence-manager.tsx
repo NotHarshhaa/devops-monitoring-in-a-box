@@ -71,6 +71,7 @@ export function SilenceManager({
   const [durationHours, setDurationHours] = useState('2')
   const [comment, setComment] = useState('Silenced from the monitoring UI')
   const [submitting, setSubmitting] = useState(false)
+  const [nowMs, setNowMs] = useState(() => Date.now())
 
   const activeSilenceCount = silences.filter((s) => s.status?.state !== 'expired').length
 
@@ -80,6 +81,7 @@ export function SilenceManager({
     try {
       const data = await alertmanagerAPI.getSilences()
       setSilences(data)
+      setNowMs(Date.now())
     } catch (err) {
       setSilencesError(err instanceof Error ? err.message : 'Failed to load silences')
     } finally {
@@ -90,14 +92,18 @@ export function SilenceManager({
   // Open in create mode when launched from a specific alert
   useEffect(() => {
     if (!open) return
-    if (alert) {
-      setView('create')
-      setAlertname(alertmanagerAPI.extractAlertName(alert.labels))
-      setInstance(alert.labels?.instance ?? '')
-    } else {
-      setView('list')
-      fetchSilences()
-    }
+    const timer = window.setTimeout(() => {
+      setNowMs(Date.now())
+      if (alert) {
+        setView('create')
+        setAlertname(alertmanagerAPI.extractAlertName(alert.labels))
+        setInstance(alert.labels?.instance ?? '')
+      } else {
+        setView('list')
+        fetchSilences()
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [open, alert, fetchSilences])
 
   const handleExpire = async (silenceId: string) => {
@@ -170,7 +176,7 @@ export function SilenceManager({
 
   const formatEndsAt = (value: string) => {
     const date = new Date(value)
-    const diffMs = date.getTime() - Date.now()
+    const diffMs = date.getTime() - nowMs
     if (diffMs <= 0) return 'expired'
     const minutes = Math.floor(diffMs / 60000)
     if (minutes < 60) return `in ${minutes}m`
@@ -308,7 +314,7 @@ export function SilenceManager({
           <div className="space-y-2">
             <Label>Duration</Label>
             <Select value={durationHours} onValueChange={setDurationHours}>
-              <SelectTrigger className="bg-card">
+              <SelectTrigger className="bg-card border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

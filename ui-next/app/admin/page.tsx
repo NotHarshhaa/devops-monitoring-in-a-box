@@ -1,10 +1,12 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSession } from "next-auth/react"
+import Link from "next/link"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -15,11 +17,13 @@ import {
   DatabaseIcon,
   StarIcon,
   EyeIcon,
-  Edit02Icon
+  Edit02Icon,
+  RefreshIcon
 } from "@hugeicons/core-free-icons"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { PageConnections } from "@/components/page-connections"
 import { DashboardSquare01Icon } from "@hugeicons/core-free-icons"
+import { useSiteConfig } from "@/hooks/use-site-config"
 
 // Sample data. There is no user-management API yet — user administration is
 // not implemented, so this page is presented as sample data instead of
@@ -63,9 +67,51 @@ const sampleSystemStats = {
   uptime: "99.9%"
 }
 
-export default function AdminPage() {
+const VALID_ADMIN_TABS = new Set(["users", "configs", "system"])
+
+function AdminPageContent() {
   const { data: session } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { config: siteConfig } = useSiteConfig()
+
+  const paramTab = searchParams.get("tab")
+  const [activeTab, setActiveTab] = useState(
+    paramTab && VALID_ADMIN_TABS.has(paramTab) ? paramTab : "users"
+  )
+  const [healthSummary, setHealthSummary] = useState<{ status?: string; services?: Array<{ key: string; name: string; status: string }> } | null>(null)
+  const [healthChecking, setHealthChecking] = useState(false)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (paramTab && VALID_ADMIN_TABS.has(paramTab)) {
+        setActiveTab(paramTab)
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [paramTab])
+
+  const loadHealthSummary = async () => {
+    setHealthChecking(true)
+    try {
+      const res = await fetch("/api/health", { cache: "no-store" })
+      if (res.ok) {
+        const data = await res.json()
+        setHealthSummary(data)
+      }
+    } catch {
+      // Ignore network errors cleanly
+    } finally {
+      setHealthChecking(false)
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadHealthSummary()
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   // Redirect if not admin
   useEffect(() => {
@@ -249,11 +295,11 @@ export default function AdminPage() {
         >
           <Card className="border border-border bg-card">
             <CardContent className="p-4 sm:p-6">
-              <Tabs defaultValue="users" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 h-10 sm:h-11 bg-muted p-1">
-                  <TabsTrigger value="users" className="text-xs sm:text-sm">User Management</TabsTrigger>
-                  <TabsTrigger value="configs" className="text-xs sm:text-sm">Configurations</TabsTrigger>
-                  <TabsTrigger value="system" className="text-xs sm:text-sm">System Settings</TabsTrigger>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-auto bg-muted p-1">
+                  <TabsTrigger value="users" className="text-xs sm:text-sm py-2">User Management</TabsTrigger>
+                  <TabsTrigger value="configs" className="text-xs sm:text-sm py-2">Configurations</TabsTrigger>
+                  <TabsTrigger value="system" className="text-xs sm:text-sm py-2">System Settings</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="users" className="mt-6">
@@ -326,13 +372,21 @@ export default function AdminPage() {
                           View and manage user-specific configurations
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="text-center py-8">
-                          <HugeiconsIcon icon={Settings01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2 text-foreground">Configuration Management</h3>
-                          <p className="text-muted-foreground">
-                            View and manage user-specific configurations here.
-                          </p>
+                      <CardContent className="p-4 sm:p-6 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 border border-border space-y-1">
+                            <p className="text-xs text-muted-foreground">Active Site Name</p>
+                            <p className="text-sm font-medium text-foreground">{siteConfig?.name || siteConfig?.seo?.title || "DevOps Monitoring in a Box"}</p>
+                          </div>
+                          <div className="p-4 border border-border space-y-1">
+                            <p className="text-xs text-muted-foreground">Company / Tenant Label</p>
+                            <p className="text-sm font-medium text-foreground">{siteConfig?.company?.name || "Default Workspace"}</p>
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <Button asChild variant="outline" className="border-border hover:bg-muted">
+                            <Link href="/settings">Open Full Configuration Editor</Link>
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -347,21 +401,50 @@ export default function AdminPage() {
                   >
                     <Card className="border border-border bg-card">
                       <CardHeader className="p-4 sm:p-6">
-                        <CardTitle className="flex items-center gap-2 text-foreground">
-                          <HugeiconsIcon icon={DatabaseIcon} className="h-5 w-5 text-foreground" />
-                          System Settings
-                        </CardTitle>
-                        <CardDescription className="mt-1 text-muted-foreground">
-                          Configure system-wide settings and preferences
-                        </CardDescription>
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <CardTitle className="flex items-center gap-2 text-foreground">
+                              <HugeiconsIcon icon={DatabaseIcon} className="h-5 w-5 text-foreground" />
+                              System Settings
+                            </CardTitle>
+                            <CardDescription className="mt-1 text-muted-foreground">
+                              Live runtime stack health and administrative diagnostics
+                            </CardDescription>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={loadHealthSummary}
+                            disabled={healthChecking}
+                            className="gap-2 border-border hover:bg-muted"
+                          >
+                            <HugeiconsIcon icon={RefreshIcon} className={`h-4 w-4 ${healthChecking ? "animate-spin" : ""}`} />
+                            Check Stack
+                          </Button>
+                        </div>
                       </CardHeader>
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="text-center py-8">
-                          <HugeiconsIcon icon={DatabaseIcon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2 text-foreground">System Settings</h3>
-                          <p className="text-muted-foreground">
-                            Configure system-wide settings and preferences here.
-                          </p>
+                      <CardContent className="p-4 sm:p-6 space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {(healthSummary?.services ?? []).map((svc) => (
+                            <div key={svc.key} className="flex items-center justify-between p-3 border border-border bg-muted/30">
+                              <span className="text-sm font-medium text-foreground">{svc.name}</span>
+                              <Badge
+                                variant="outline"
+                                className={`px-2 py-0.5 text-xs ${
+                                  svc.status === "up"
+                                    ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                                    : "border-destructive/40 bg-destructive/15 text-destructive"
+                                }`}
+                              >
+                                {svc.status.toUpperCase()}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex justify-end">
+                          <Button asChild variant="outline" size="sm" className="border-border hover:bg-muted">
+                            <Link href="/services">Open Services Inspector</Link>
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -373,5 +456,13 @@ export default function AdminPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading admin panel...</div>}>
+      <AdminPageContent />
+    </Suspense>
   )
 }

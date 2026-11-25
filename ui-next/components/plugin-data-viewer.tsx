@@ -20,6 +20,15 @@ import {
   EyeIcon,
   FilterIcon
 } from '@hugeicons/core-free-icons'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip
+} from 'recharts'
 import { 
   PluginManager, 
   PluginConfiguration, 
@@ -28,6 +37,7 @@ import {
   TimeRange, 
   getPluginManager 
 } from '@/lib/plugins'
+import { toast } from '@/hooks/use-toast'
 
 interface PluginDataViewerProps {
   instance: PluginConfiguration
@@ -36,27 +46,34 @@ interface PluginDataViewerProps {
 export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
   const [pluginManager] = useState<PluginManager>(getPluginManager())
   const [selectedDataType, setSelectedDataType] = useState<DataType>(DataType.METRICS)
-  const [selectedRenderType, setSelectedRenderType] = useState<RenderType>(RenderType.CHART)
-  const [timeRange, setTimeRange] = useState<TimeRange>({
+  const [selectedRenderType, setSelectedRenderType] = useState<RenderType>(RenderType.CARD)
+  const [timeRange, setTimeRange] = useState<TimeRange>(() => ({
     start: new Date(Date.now() - 24 * 60 * 60 * 1000), // 24 hours ago
     end: new Date()
-  })
+  }))
   const [data, setData] = useState<any[]>([])
+  const [showAll, setShowAll] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
 
   const plugin = pluginManager.registry.getPlugin(instance.pluginId)
 
-  const supportedDataTypes = plugin?.metadata.supportedDataTypes ?? []
+  const supportedDataTypes = React.useMemo(
+    () => plugin?.metadata.supportedDataTypes ?? [],
+    [plugin]
+  )
 
   useEffect(() => {
     if (supportedDataTypes.length > 0 && !supportedDataTypes.includes(selectedDataType)) {
-      setSelectedDataType(supportedDataTypes[0])
+      const timer = window.setTimeout(() => {
+        setSelectedDataType(supportedDataTypes[0])
+      }, 0)
+      return () => window.clearTimeout(timer)
     }
   }, [supportedDataTypes, selectedDataType])
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     if (!plugin) {
       return
     }
@@ -93,12 +110,14 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [plugin, instance.enabled, instance.pluginId, instance.instanceId, pluginManager, selectedDataType, timeRange])
 
   useEffect(() => {
-    fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDataType, timeRange])
+    const timer = window.setTimeout(() => {
+      void fetchData()
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [fetchData])
 
   if (!plugin) {
     return (
@@ -279,6 +298,7 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
                   onClick={fetchData}
                   disabled={isLoading || !instance.enabled}
                   className="border-border hover:bg-muted"
+                  aria-label="Refresh plugin data"
                 >
                   {isLoading ? (
                     <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" />
@@ -289,8 +309,23 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => {
+                    if (data.length === 0) return
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `${instance.pluginId}-${selectedDataType.toLowerCase()}-data.json`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                    toast({
+                      title: 'Plugin data exported',
+                      description: `Downloaded ${data.length} ${selectedDataType} records as JSON.`,
+                    })
+                  }}
                   disabled={data.length === 0}
                   className="border-border hover:bg-muted"
+                  aria-label="Export plugin data"
                 >
                   <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
                 </Button>
@@ -338,42 +373,129 @@ export default function PluginDataViewer({ instance }: PluginDataViewerProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {data.slice(0, 6).map((item, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <Card className="border border-border bg-card">
-                      <CardContent className="p-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-foreground">
-                              {item.metricName || item.eventType || item.level || 'Data Point'}
-                            </span>
-                            <Badge variant="outline" className="text-xs border-border">
-                              {selectedDataType}
-                            </Badge>
-                          </div>
-                          <div className="text-2xl font-bold text-foreground">
-                            {item.value || item.status || item.conclusion || 'N/A'}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {item.timestamp && new Date(item.timestamp).toLocaleString()}
-                          </div>
+              {selectedRenderType === RenderType.CHART && (
+                (() => {
+                  const chartSeries = (showAll ? data : data.slice(0, 12))
+                    .map((item, idx) => ({
+                      label: String(item.metricName || item.eventType || item.level || `#${idx + 1}`).slice(0, 18),
+                      value: typeof item.value === 'number' ? item.value : Number(item.value),
+                    }))
+                    .filter((pt) => Number.isFinite(pt.value))
+
+                  if (chartSeries.length === 0) {
+                    return (
+                      <div className="p-4 border border-border bg-muted/40 text-xs text-muted-foreground">
+                        Selected records are non-numeric — showing card breakdown below.
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <div className="h-64 w-full border border-border p-3">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartSeries}>
+                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <Tooltip contentStyle={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', borderRadius: '0px' }} />
+                          <Bar dataKey="value" fill="var(--foreground)" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )
+                })()
+              )}
+
+              {selectedRenderType === RenderType.TABLE ? (
+                <div className="overflow-x-auto border border-border">
+                  <table className="w-full text-left text-xs sm:text-sm">
+                    <thead className="border-b border-border bg-muted/50 text-muted-foreground">
+                      <tr>
+                        <th className="p-2.5 font-medium">Name / Event</th>
+                        <th className="p-2.5 font-medium">Value / Status</th>
+                        <th className="p-2.5 font-medium">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(showAll ? data : data.slice(0, 10)).map((item, index) => (
+                        <tr key={index} className="border-b border-border last:border-0">
+                          <td className="p-2.5 font-medium text-foreground">
+                            {item.metricName || item.eventType || item.level || item.message || 'Data Point'}
+                          </td>
+                          <td className="p-2.5 font-mono text-foreground">
+                            {item.value ?? item.status ?? item.conclusion ?? 'N/A'}
+                          </td>
+                          <td className="p-2.5 text-muted-foreground">
+                            {item.timestamp ? new Date(item.timestamp).toLocaleString() : '--'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : selectedRenderType === RenderType.ALERT ? (
+                <div className="space-y-2">
+                  {(showAll ? data : data.slice(0, 10)).map((item, index) => (
+                    <div key={index} className="flex items-start justify-between gap-3 p-3 border border-border bg-card">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-foreground shrink-0" />
+                          <span className="text-sm font-medium text-foreground truncate">
+                            {item.metricName || item.eventType || item.message || 'Event'}
+                          </span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
+                        <p className="text-xs text-muted-foreground">
+                          {item.timestamp ? new Date(item.timestamp).toLocaleString() : 'No timestamp'}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="px-2 py-0.5 text-xs shrink-0">
+                        {item.status ?? item.conclusion ?? item.level ?? String(item.value ?? 'INFO')}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {(showAll ? data : data.slice(0, 6)).map((item, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: Math.min(index, 6) * 0.05 }}
+                    >
+                      <Card className="border border-border bg-card">
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm font-medium text-foreground truncate">
+                                {item.metricName || item.eventType || item.level || 'Data Point'}
+                              </span>
+                              <Badge variant="outline" className="px-2 py-0.5 text-xs border-border shrink-0">
+                                {selectedDataType}
+                              </Badge>
+                            </div>
+                            <div className="text-2xl font-bold text-foreground">
+                              {item.value ?? item.status ?? item.conclusion ?? 'N/A'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {item.timestamp && new Date(item.timestamp).toLocaleString()}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
 
               {data.length > 6 && (
                 <div className="text-center">
-                  <Button variant="outline" className="border-border hover:bg-muted">
-                    View All {data.length} Records
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAll(prev => !prev)}
+                    className="border-border hover:bg-muted"
+                  >
+                    {showAll ? 'Show Fewer Records' : `View All ${data.length} Records`}
                   </Button>
                 </div>
               )}

@@ -62,7 +62,10 @@ export function SSLMonitor() {
   }
 
   useEffect(() => {
-    fetchCertificates()
+    const timer = window.setTimeout(() => {
+      void fetchCertificates()
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   const handleAddHost = async (e: React.FormEvent) => {
@@ -79,7 +82,9 @@ export function SSLMonitor() {
       const data = await res.json()
       if (data.success && data.certificate) {
         setCertificates((prev) => {
-          const filtered = prev.filter((c) => c.host !== data.certificate.host)
+          const filtered = prev.filter(
+            (c) => !(c.host === data.certificate.host && c.port === data.certificate.port)
+          )
           return [data.certificate, ...filtered]
         })
         setNewHost("")
@@ -195,7 +200,7 @@ export function SSLMonitor() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {certificates.map((cert) => (
             <motion.div
-              key={cert.host}
+              key={`${cert.host}:${cert.port}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}

@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import Link from "next/link"
+import { useSession } from "next-auth/react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -51,22 +53,25 @@ const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
 }
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useTheme()
+  const { data: session } = useSession()
   const [general, setGeneral] = useState<GeneralSettings>(DEFAULT_GENERAL_SETTINGS)
 
   // Load saved general settings on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(GENERAL_SETTINGS_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (parsed && typeof parsed === 'object') {
-          setGeneral({ ...DEFAULT_GENERAL_SETTINGS, ...parsed })
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem(GENERAL_SETTINGS_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (parsed && typeof parsed === 'object') {
+            setGeneral({ ...DEFAULT_GENERAL_SETTINGS, ...parsed })
+          }
         }
+      } catch (err) {
+        console.error('Failed to load general settings:', err)
       }
-    } catch (err) {
-      console.error('Failed to load general settings:', err)
-    }
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   const handleSaveGeneral = () => {
@@ -147,7 +152,7 @@ export default function SettingsPage() {
                   <div className="text-lg sm:text-xl font-bold text-foreground">
                     5
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Categories</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Settings Sections</div>
                 </motion.div>
 
                 <motion.div
@@ -160,9 +165,9 @@ export default function SettingsPage() {
                     <HugeiconsIcon icon={Notification01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    12
+                    5
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Notifications</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Alert Channels</div>
                 </motion.div>
 
                 <motion.div
@@ -175,9 +180,9 @@ export default function SettingsPage() {
                     <HugeiconsIcon icon={LockIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    8
+                    RBAC
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Security</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Access Control</div>
                 </motion.div>
 
                 <motion.div
@@ -190,9 +195,9 @@ export default function SettingsPage() {
                     <HugeiconsIcon icon={FloppyDiskIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    24
+                    {general.isAdvancedUser ? 'Advanced' : 'Standard'}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Options</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Profile Mode</div>
                 </motion.div>
               </div>
             </CardContent>
@@ -217,12 +222,12 @@ export default function SettingsPage() {
           <Card className="border border-border bg-card">
             <CardContent className="p-4 sm:p-6">
               <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-10 sm:h-11 bg-muted p-1">
-                  <TabsTrigger value="general" className="text-xs sm:text-sm">General</TabsTrigger>
-                  <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notifications</TabsTrigger>
-                  <TabsTrigger value="security" className="text-xs sm:text-sm">Security</TabsTrigger>
-                  <TabsTrigger value="configuration" className="text-xs sm:text-sm">Configuration</TabsTrigger>
-                  <TabsTrigger value="site" className="text-xs sm:text-sm">Site Config</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto bg-muted p-1">
+                  <TabsTrigger value="general" className="text-xs sm:text-sm py-2">General</TabsTrigger>
+                  <TabsTrigger value="notifications" className="text-xs sm:text-sm py-2">Notifications</TabsTrigger>
+                  <TabsTrigger value="security" className="text-xs sm:text-sm py-2">Security</TabsTrigger>
+                  <TabsTrigger value="configuration" className="text-xs sm:text-sm py-2">Configuration</TabsTrigger>
+                  <TabsTrigger value="site" className="text-xs sm:text-sm py-2">Site Config</TabsTrigger>
                 </TabsList>
 
                 {/* General Settings */}
@@ -289,12 +294,10 @@ export default function SettingsPage() {
 
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-foreground">Language</Label>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Button variant="outline" className="gap-2 h-10 sm:h-11 bg-card border-border hover:bg-muted">
-                                <HugeiconsIcon icon={GlobeIcon} className="h-4 w-4" />
-                                English
-                              </Button>
-                              <Badge variant="outline" className="h-10 sm:h-11 px-3 border-border text-foreground">Default</Badge>
+                            <div className="flex flex-wrap items-center gap-2 p-3 border border-border bg-muted/40">
+                              <HugeiconsIcon icon={GlobeIcon} className="h-4 w-4 text-foreground" />
+                              <span className="text-sm font-medium text-foreground">English (US)</span>
+                              <Badge variant="outline" className="px-2 py-0.5 border-border text-foreground ml-auto">Default</Badge>
                             </div>
                           </div>
                         </div>
@@ -341,10 +344,46 @@ export default function SettingsPage() {
                           Manage authentication and security settings
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="text-center py-8">
-                          <HugeiconsIcon icon={LockIcon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <p className="text-muted-foreground">Security settings configuration</p>
+                      <CardContent className="p-4 sm:p-6 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 border border-border space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm font-medium text-foreground">Session Authentication</span>
+                              <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                                {session?.user ? "Signed In" : "Guest"}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Protected routes and `/api/proxy/*` endpoints enforce authenticated NextAuth JWT sessions via proxy middleware and server guards.
+                            </p>
+                          </div>
+                          <div className="p-4 border border-border space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm font-medium text-foreground">Role-Based Access Control</span>
+                              <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                                {(session?.user as any)?.role || "VIEWER"}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Upstream write actions (e.g. creating Alertmanager silences or inspecting TLS targets) require write or admin session authorization.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-3 p-4 border border-border bg-muted/30">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Account & Session Controls</p>
+                            <p className="text-xs text-muted-foreground">Manage your active session or inspect environment authentication policies.</p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <Button asChild variant="outline" size="sm" className="border-border hover:bg-muted">
+                              <Link href="/profile">Open Profile</Link>
+                            </Button>
+                            {(session?.user as any)?.role === "ADMIN" && (
+                              <Button asChild variant="outline" size="sm" className="border-border hover:bg-muted">
+                                <Link href="/admin">Admin Panel</Link>
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

@@ -111,7 +111,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (!showDashboard) {
     return (
-      <div className="relative z-10 bg-background">
+      <div className="relative z-10 min-h-screen overflow-x-hidden bg-background">
         <PublicHeader />
         <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
           {children}
@@ -137,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             'bg-muted/20 p-4 sm:p-6 lg:p-8'
           )}
         >
-          <div className="mx-auto max-w-[1600px]">{children}</div>
+          <div className="mx-auto w-full min-w-0 max-w-[1600px]">{children}</div>
         </main>
       </div>
     </div>

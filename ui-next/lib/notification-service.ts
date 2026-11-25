@@ -17,8 +17,8 @@ export class NotificationService {
       const configPath = process.env.CONFIG_PATH || './config.json'
       const fs = await import('fs')
       
-      if (fs.existsSync(configPath)) {
-        const configFile = fs.readFileSync(configPath, 'utf8')
+      if (fs.existsSync(/*turbopackIgnore: true*/ configPath)) {
+        const configFile = fs.readFileSync(/*turbopackIgnore: true*/ configPath, 'utf8')
         const fullConfig = JSON.parse(configFile)
         this.config = fullConfig.notifications || this.getDefaultConfig()
       } else {
@@ -102,13 +102,13 @@ export class NotificationService {
       const fs = await import('fs')
       
       let fullConfig = {}
-      if (fs.existsSync(configPath)) {
-        const configFile = fs.readFileSync(configPath, 'utf8')
+      if (fs.existsSync(/*turbopackIgnore: true*/ configPath)) {
+        const configFile = fs.readFileSync(/*turbopackIgnore: true*/ configPath, 'utf8')
         fullConfig = JSON.parse(configFile)
       }
       
       fullConfig = { ...fullConfig, notifications: newConfig }
-      fs.writeFileSync(configPath, JSON.stringify(fullConfig, null, 2))
+      fs.writeFileSync(/*turbopackIgnore: true*/ configPath, JSON.stringify(fullConfig, null, 2))
     } catch (error) {
       console.error('Failed to save configuration:', error)
     }

@@ -23,54 +23,47 @@ import {
   DatabaseIcon,
   CloudServerIcon,
   PackageIcon,
-  GlobeIcon
+  GlobeIcon,
+  EyeIcon
 } from "@hugeicons/core-free-icons"
-import { dashboardTemplates, getTemplatesByCategory, searchTemplates, type DashboardTemplate } from "@/lib/dashboard-templates"
+import { dashboardTemplates, type DashboardTemplate } from "@/lib/dashboard-templates"
+import { filterDashboardTemplates } from "@/lib/template-filters"
 import { toast } from "@/hooks/use-toast"
 
 interface TemplateMarketplaceProps {
   onImportTemplate: (template: DashboardTemplate) => void
   onImportFromGitHub: (url: string) => void
+  onPreviewTemplate?: (template: DashboardTemplate) => void
 }
 
-export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGitHub }: TemplateMarketplaceProps) {
+export function DashboardTemplateMarketplace({
+  onImportTemplate,
+  onImportFromGitHub,
+  onPreviewTemplate,
+}: TemplateMarketplaceProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [difficultyFilter, setDifficultyFilter] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [githubUrl, setGithubUrl] = useState("")
 
-  const filteredTemplates = useMemo(() => {
-    let templates = dashboardTemplates
-
-    // Filter by category
-    if (selectedCategory !== "all") {
-      templates = getTemplatesByCategory(selectedCategory)
-    }
-
-    // Filter by difficulty
-    if (difficultyFilter !== "all") {
-      templates = templates.filter(template => template.difficulty === difficultyFilter)
-    }
-
-    // Search filter
-    if (searchQuery) {
-      templates = searchTemplates(searchQuery)
-    }
-
-    return templates
-  }, [searchQuery, selectedCategory, difficultyFilter])
+  const filteredTemplates = useMemo(
+    () =>
+      filterDashboardTemplates(dashboardTemplates, {
+        category: selectedCategory,
+        difficulty: difficultyFilter,
+        searchQuery,
+      }),
+    [searchQuery, selectedCategory, difficultyFilter]
+  )
 
   const handleImportTemplate = (template: DashboardTemplate) => {
     onImportTemplate(template)
-    toast({
-      title: "Template Imported",
-      description: `${template.name} has been imported successfully!`,
-    })
   }
 
   const handleGitHubImport = () => {
-    if (!githubUrl) {
+    const trimmedUrl = githubUrl.trim()
+    if (!trimmedUrl) {
       toast({
         title: "Error",
         description: "Please enter a GitHub URL",
@@ -79,11 +72,7 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
       return
     }
 
-    onImportFromGitHub(githubUrl)
-    toast({
-      title: "GitHub Import Started",
-      description: "Importing template from GitHub...",
-    })
+    onImportFromGitHub(trimmedUrl)
     setGithubUrl("")
   }
 
@@ -257,13 +246,26 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
                       </div>
                     </div>
 
-                    <Button 
-                      onClick={() => handleImportTemplate(template)}
-                      className="w-full gap-2 border border-border bg-card hover:bg-muted text-foreground"
-                    >
-                      <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
-                      Import Template
-                    </Button>
+                    <div className="flex gap-2">
+                      {onPreviewTemplate && (
+                        <Button
+                          variant="outline"
+                          onClick={() => onPreviewTemplate(template)}
+                          className="gap-1.5 border-border hover:bg-muted"
+                          aria-label={`Preview ${template.name}`}
+                        >
+                          <HugeiconsIcon icon={EyeIcon} className="h-4 w-4" />
+                          Preview
+                        </Button>
+                      )}
+                      <Button 
+                        onClick={() => handleImportTemplate(template)}
+                        className="flex-1 gap-2 border border-border bg-card hover:bg-muted text-foreground"
+                      >
+                        <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
+                        Import Template
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -307,10 +309,22 @@ export function DashboardTemplateMarketplace({ onImportTemplate, onImportFromGit
                           </div>
                         </div>
                       </div>
-                      <Button onClick={() => handleImportTemplate(template)} className="gap-2 border border-border bg-card hover:bg-muted text-foreground">
-                        <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
-                        Import
-                      </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {onPreviewTemplate && (
+                          <Button
+                            variant="outline"
+                            onClick={() => onPreviewTemplate(template)}
+                            className="gap-1.5 border-border hover:bg-muted"
+                          >
+                            <HugeiconsIcon icon={EyeIcon} className="h-4 w-4" />
+                            Preview
+                          </Button>
+                        )}
+                        <Button onClick={() => handleImportTemplate(template)} className="gap-2 border border-border bg-card hover:bg-muted text-foreground">
+                          <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
+                          Import
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

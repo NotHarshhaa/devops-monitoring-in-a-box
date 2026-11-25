@@ -31,9 +31,9 @@ export function MetricsOverview() {
     return { trend: 'down' as const, color: 'success' as const };
   };
 
-  const cpuTrend = getTrendAndColor(cpuUsage.data || 0);
-  const memoryTrend = getTrendAndColor(memoryUsage.data || 0);
-  const diskTrend = getTrendAndColor(diskUsage.data || 0);
+  const cpuTrend = getTrendAndColor(cpuUsage.data ?? 0);
+  const memoryTrend = getTrendAndColor(memoryUsage.data ?? 0);
+  const diskTrend = getTrendAndColor(diskUsage.data ?? 0);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -60,7 +60,7 @@ export function MetricsOverview() {
 
   return (
     <motion.div 
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -69,11 +69,11 @@ export function MetricsOverview() {
         <MetricsCard
           title="CPU Usage"
           description="Current CPU utilization"
-          value={cpuUsage.data || 0}
+          value={cpuUsage.data ?? 0}
           unit="%"
-          percentage={cpuUsage.data || 0}
+          percentage={cpuUsage.data ?? 0}
           trend={cpuTrend.trend}
-          trendValue={cpuUsage.data ? `${cpuUsage.data.toFixed(1)}%` : undefined}
+          trendValue={cpuUsage.data != null ? `${cpuUsage.data.toFixed(1)}%` : undefined}
           isLoading={cpuUsage.isLoading}
           isError={cpuUsage.isError}
           errorMessage="Failed to load CPU usage"
@@ -86,11 +86,11 @@ export function MetricsOverview() {
         <MetricsCard
           title="Memory Usage"
           description="Current RAM utilization"
-          value={memoryUsage.data || 0}
+          value={memoryUsage.data ?? 0}
           unit="%"
-          percentage={memoryUsage.data || 0}
+          percentage={memoryUsage.data ?? 0}
           trend={memoryTrend.trend}
-          trendValue={memoryUsage.data ? `${memoryUsage.data.toFixed(1)}%` : undefined}
+          trendValue={memoryUsage.data != null ? `${memoryUsage.data.toFixed(1)}%` : undefined}
           isLoading={memoryUsage.isLoading}
           isError={memoryUsage.isError}
           errorMessage="Failed to load memory usage"
@@ -103,11 +103,11 @@ export function MetricsOverview() {
         <MetricsCard
           title="Disk Usage"
           description="Current storage utilization"
-          value={diskUsage.data || 0}
+          value={diskUsage.data ?? 0}
           unit="%"
-          percentage={diskUsage.data || 0}
+          percentage={diskUsage.data ?? 0}
           trend={diskTrend.trend}
-          trendValue={diskUsage.data ? `${diskUsage.data.toFixed(1)}%` : undefined}
+          trendValue={diskUsage.data != null ? `${diskUsage.data.toFixed(1)}%` : undefined}
           isLoading={diskUsage.isLoading}
           isError={diskUsage.isError}
           errorMessage="Failed to load disk usage"
@@ -120,7 +120,7 @@ export function MetricsOverview() {
         <MetricsCard
           title="Network Traffic"
           description="Total network I/O"
-          value={networkTraffic.data ? (networkTraffic.data.inbound + networkTraffic.data.outbound).toFixed(1) : 0}
+          value={networkTraffic.data != null ? (networkTraffic.data.inbound + networkTraffic.data.outbound).toFixed(1) : 0}
           unit="MB/s"
           isLoading={networkTraffic.isLoading}
           isError={networkTraffic.isError}
@@ -133,7 +133,7 @@ export function MetricsOverview() {
         <MetricsCard
           title="System Load"
           description="1-minute load average"
-          value={systemLoad.data ? systemLoad.data.load1.toFixed(2) : 0}
+          value={systemLoad.data != null ? systemLoad.data.load1.toFixed(2) : 0}
           isLoading={systemLoad.isLoading}
           isError={systemLoad.isError}
           errorMessage="Failed to load system load"
@@ -181,7 +181,7 @@ export function SystemLoadOverview() {
         <MetricsCard
           title="1 Minute Load"
           description="System load average (1 min)"
-          value={systemLoad.data?.load1 || 0}
+          value={systemLoad.data?.load1 ?? 0}
           isLoading={systemLoad.isLoading}
           isError={systemLoad.isError}
           errorMessage="Failed to load system load"
@@ -193,7 +193,7 @@ export function SystemLoadOverview() {
         <MetricsCard
           title="5 Minute Load"
           description="System load average (5 min)"
-          value={systemLoad.data?.load5 || 0}
+          value={systemLoad.data?.load5 ?? 0}
           isLoading={systemLoad.isLoading}
           isError={systemLoad.isError}
           errorMessage="Failed to load system load"
@@ -205,7 +205,7 @@ export function SystemLoadOverview() {
         <MetricsCard
           title="15 Minute Load"
           description="System load average (15 min)"
-          value={systemLoad.data?.load15 || 0}
+          value={systemLoad.data?.load15 ?? 0}
           isLoading={systemLoad.isLoading}
           isError={systemLoad.isError}
           errorMessage="Failed to load system load"

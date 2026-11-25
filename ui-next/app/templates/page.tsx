@@ -1,9 +1,10 @@
 "use client"
 
+import { useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { DashboardTemplateManager } from "@/components/dashboard-template-manager"
-import { type DashboardTemplate } from "@/lib/dashboard-templates"
+import { dashboardTemplates, type DashboardTemplate } from "@/lib/dashboard-templates"
 import { PageConnections } from "@/components/page-connections"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,12 +21,22 @@ import {
 } from "@hugeicons/core-free-icons"
 
 export default function TemplatesPage() {
+  const [activeTab, setActiveTab] = useState("marketplace")
+  const [importedCount, setImportedCount] = useState(0)
+  const [lastSelectedName, setLastSelectedName] = useState<string | null>(null)
+  const managerSectionRef = useRef<HTMLDivElement | null>(null)
+
+  const jumpToTab = (tab: string) => {
+    setActiveTab(tab)
+    managerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
   const handleTemplateSelect = (template: DashboardTemplate) => {
-    console.log("Selected template:", template)
+    setLastSelectedName(template.name)
   }
 
   const handleTemplateCreate = (template: DashboardTemplate) => {
-    console.log("Creating dashboard from template:", template)
+    setLastSelectedName(template.name)
   }
 
   return (
@@ -74,8 +85,8 @@ export default function TemplatesPage() {
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
                     <HugeiconsIcon icon={DashboardSpeed01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
-                  <div className="text-lg sm:text-xl font-bold text-foreground">50+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Templates</div>
+                  <div className="text-lg sm:text-xl font-bold text-foreground">{dashboardTemplates.length}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Built-in Templates</div>
                 </motion.div>
 
                 <motion.div
@@ -87,8 +98,8 @@ export default function TemplatesPage() {
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
                     <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
-                  <div className="text-lg sm:text-xl font-bold text-foreground">10k+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Downloads</div>
+                  <div className="text-lg sm:text-xl font-bold text-foreground">{importedCount}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Saved Locally</div>
                 </motion.div>
 
                 <motion.div
@@ -136,59 +147,83 @@ export default function TemplatesPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4"
         >
-          <Card className="border border-border bg-card transition-all duration-300 group cursor-pointer">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 group-hover:scale-110 transition-transform duration-300">
-                  <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+          <button
+            type="button"
+            onClick={() => jumpToTab("marketplace")}
+            className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Card className="border border-border bg-card hover:bg-muted/40 transition-all duration-300 group cursor-pointer h-full">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-3 group-hover:scale-110 transition-transform duration-300">
+                    <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Browse Templates</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Explore marketplace</p>
+                  </div>
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground transition-colors" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground text-sm sm:text-base">Browse Templates</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Explore marketplace</p>
-                </div>
-                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground transition-colors" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </button>
 
-          <Card className="border border-border bg-card transition-all duration-300 group cursor-pointer">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 group-hover:scale-110 transition-transform duration-300">
-                  <HugeiconsIcon icon={Layers01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+          <button
+            type="button"
+            onClick={() => jumpToTab("my-templates")}
+            className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Card className="border border-border bg-card hover:bg-muted/40 transition-all duration-300 group cursor-pointer h-full">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-3 group-hover:scale-110 transition-transform duration-300">
+                    <HugeiconsIcon icon={Layers01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base">My Templates</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {lastSelectedName ? `Last: ${lastSelectedName}` : "Manage collection"}
+                    </p>
+                  </div>
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground transition-colors" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground text-sm sm:text-base">My Templates</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Manage collection</p>
-                </div>
-                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground transition-colors" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </button>
 
-          <Card className="border border-border bg-card transition-all duration-300 group cursor-pointer">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 group-hover:scale-110 transition-transform duration-300">
-                  <HugeiconsIcon icon={SparklesIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+          <button
+            type="button"
+            onClick={() => jumpToTab("create")}
+            className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Card className="border border-border bg-card hover:bg-muted/40 transition-all duration-300 group cursor-pointer h-full">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-3 group-hover:scale-110 transition-transform duration-300">
+                    <HugeiconsIcon icon={SparklesIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Create New</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Build custom</p>
+                  </div>
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground transition-colors" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground text-sm sm:text-base">Create New</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Build custom</p>
-                </div>
-                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground transition-colors" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </button>
         </motion.div>
 
         {/* Template Manager */}
         <motion.div
+          ref={managerSectionRef}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <DashboardTemplateManager
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onTemplatesCountChange={setImportedCount}
             onTemplateSelect={handleTemplateSelect}
             onTemplateCreate={handleTemplateCreate}
           />

@@ -60,13 +60,13 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "up":
-        return <Badge className="text-foreground border border-border">Up</Badge>
+        return <Badge className="px-2 py-0.5 border border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">Up</Badge>
       case "down":
-        return <Badge className="text-foreground border border-border">Down</Badge>
+        return <Badge className="px-2 py-0.5 border border-destructive/40 bg-destructive/15 text-destructive">Down</Badge>
       case "checking":
-        return <Badge className="text-foreground border border-border">Checking</Badge>
+        return <Badge className="px-2 py-0.5 border border-border bg-muted text-muted-foreground">Checking</Badge>
       default:
-        return <Badge variant="outline">Unknown</Badge>
+        return <Badge variant="outline" className="px-2 py-0.5">Unknown</Badge>
     }
   }
 
@@ -86,13 +86,13 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
     >
       <Card className="h-full flex flex-col border border-border bg-card transition-all duration-300 overflow-hidden group">
         <CardHeader className="pb-3 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="p-2 sm:p-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <div className="p-1.5 sm:p-2 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
                 <HugeiconsIcon icon={CloudServerIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-base sm:text-lg truncate text-foreground transition-colors">
+                <CardTitle className="text-sm sm:text-base tracking-wide break-normal leading-snug text-foreground transition-colors">
                   {service.name}
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm mt-1 line-clamp-2 text-muted-foreground">
@@ -127,7 +127,7 @@ const ServiceHealthCard: React.FC<ServiceHealthCardProps> = ({
                 <div className="space-y-1">
                   <p className="text-xs sm:text-sm text-muted-foreground">Response Time</p>
                   <p className="text-xs sm:text-sm font-medium text-foreground">
-                    {service.responseTime ? healthAPI.formatResponseTime(service.responseTime) : 'N/A'}
+                    {service.responseTime != null ? healthAPI.formatResponseTime(service.responseTime) : 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -337,7 +337,7 @@ export default function ServicesPage() {
                     <HugeiconsIcon icon={FlashIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {healthData?.services.filter(s => s.responseTime && s.responseTime < 100).length || 0}
+                    {healthData?.services.filter(s => s.status === 'up' && s.responseTime != null && s.responseTime < 100).length || 0}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Fast Response</div>
                 </motion.div>
@@ -455,9 +455,9 @@ export default function ServicesPage() {
               )}
 
               {/* Service Grid and Quick Links */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 2xl:grid-cols-3 gap-4 sm:gap-6">
                 {/* Services List */}
-                <div className="lg:col-span-2">
+                <div className="2xl:col-span-2">
                   {loading ? (
                     <div className="flex items-center justify-center p-8 sm:p-12">
                       <div className="text-center space-y-4">

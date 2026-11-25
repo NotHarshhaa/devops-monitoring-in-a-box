@@ -122,7 +122,10 @@ export default function LogsPage() {
       namespace: params.get('ns') ?? 'all',
       severity: params.get('sev') ?? 'all',
     })
-    if (query) setSearchQuery(query)
+    const timer = window.setTimeout(() => {
+      if (query) setSearchQuery(query)
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [setFilters])
 
   // Mirror filter changes into the URL so views are shareable
@@ -312,7 +315,7 @@ export default function LogsPage() {
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-                <div className="lg:col-span-2">
+                <div className="md:col-span-2 lg:col-span-2">
                   <div className="relative">
                     <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -402,7 +405,7 @@ export default function LogsPage() {
                   <span className="sm:hidden">Save</span>
                 </Button>
 
-                <Badge className="bg-muted text-foreground">
+                <Badge className="px-2.5 py-0.5 border border-border bg-muted text-foreground">
                   <HugeiconsIcon icon={Activity01Icon} className={`h-3 w-3 mr-1 ${liveIndicator ? 'text-emerald-500' : ''}`} />
                   {isLive ? (liveIndicator ? 'New logs' : 'Tailing') : loading ? 'Loading...' : 'Idle'}
                 </Badge>
@@ -484,7 +487,7 @@ export default function LogsPage() {
                       Clear Filters
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      Not seeing expected logs? Check Loki's status on the{' '}
+                      Not seeing expected logs? Check Loki&apos;s status on the{' '}
                       <Link href="/services" className="underline underline-offset-2 hover:text-foreground">
                         Services page
                       </Link>
@@ -528,17 +531,17 @@ export default function LogsPage() {
                             </div>
                             
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge className={`text-xs ${getSeverityColor(severity)}`}>
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <Badge className={`px-2 py-0.5 text-xs border border-border ${getSeverityColor(severity)}`}>
                                   {severity.toUpperCase()}
                                 </Badge>
                                 {log.labels?.job && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="px-2 py-0.5 text-xs">
                                     {log.labels.job}
                                   </Badge>
                                 )}
                                 {log.labels?.namespace && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="px-2 py-0.5 text-xs">
                                     {log.labels.namespace}
                                   </Badge>
                                 )}

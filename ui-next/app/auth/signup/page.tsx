@@ -134,7 +134,7 @@ export default function SignUpPage() {
         }),
       })
 
-      const data = await response.json()
+      const data = await response.json().catch(() => ({}))
 
       if (!response.ok) {
         throw new Error(data.message || "Registration failed")
@@ -214,9 +214,9 @@ export default function SignUpPage() {
   return (
     <div className="flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="w-full max-w-4xl relative z-10"
       >
         <Card className="bg-card border border-border">
@@ -224,9 +224,9 @@ export default function SignUpPage() {
             {/* Left Side - Branding & Info */}
             <div className="lg:w-2/5 p-8 lg:p-12 text-foreground border-b lg:border-b-0 lg:border-r border-border">
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={false}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.3 }}
                 className="text-center lg:text-left"
               >
                 <div className="w-16 h-16 bg-muted flex items-center justify-center mx-auto lg:mx-0 mb-6 border border-border">
@@ -277,24 +277,34 @@ export default function SignUpPage() {
               <CardContent className="space-y-4 sm:space-y-6 px-0">
                 {/* Back to Home Button */}
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
+                  transition={{ duration: 0.3 }}
                   className="flex justify-start"
                 >
-                  <Link href="/">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border border-border hover:bg-muted transition-all duration-200 px-4 py-2 gap-2"
-                    >
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="border border-border hover:bg-muted transition-all duration-200 px-4 py-2 gap-2"
+                  >
+                    <Link href="/">
                       <HugeiconsIcon icon={Home01Icon} className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-medium text-foreground">
                         Back to Home
                       </span>
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </motion.div>
+                <Alert className="border-border bg-muted">
+                  <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
+                    Self-service sign-up is disabled on managed demo instances. Use the{" "}
+                    <Link href="/auth/signin" className="text-foreground underline font-medium">
+                      Sign In page
+                    </Link>{" "}
+                    for demo access or contact an administrator.
+                  </AlertDescription>
+                </Alert>
                 {error && (
                   <Alert variant="destructive">
                     <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" />
@@ -314,9 +324,9 @@ export default function SignUpPage() {
 
                 {/* OAuth Providers */}
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
+                  transition={{ duration: 0.3 }}
                   className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                 >
                   <div className="relative">
@@ -347,9 +357,9 @@ export default function SignUpPage() {
                 </motion.div>
 
                 <motion.div 
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
+                  transition={{ duration: 0.3 }}
                   className="relative"
                 >
                   <div className="absolute inset-0 flex items-center">
@@ -364,10 +374,11 @@ export default function SignUpPage() {
 
                 {/* Registration Form */}
                 <motion.form 
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  onSubmit={handleSubmit} 
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleSubmit}
+                  noValidate
                   className="space-y-4"
                 >
                   <div className="space-y-2">
@@ -388,7 +399,7 @@ export default function SignUpPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
                       <Input
@@ -428,6 +439,7 @@ export default function SignUpPage() {
                           className="absolute right-1 top-1 h-9 w-9 hover:bg-muted"
                           onClick={() => setShowPassword(!showPassword)}
                           disabled={isLoading}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? (
                             <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4 text-muted-foreground" />
@@ -520,6 +532,7 @@ export default function SignUpPage() {
                         className="absolute right-1 top-1 h-9 w-9 hover:bg-muted"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         disabled={isLoading}
+                        aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                       >
                         {showConfirmPassword ? (
                           <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4 text-muted-foreground" />
@@ -535,7 +548,7 @@ export default function SignUpPage() {
 
                   <Button 
                     type="submit" 
-                    className="w-full h-11 text-foreground font-medium transition-all duration-200" 
+                    className="w-full h-11 font-medium transition-all duration-200" 
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -550,9 +563,9 @@ export default function SignUpPage() {
                 </motion.form>
 
                 <motion.div 
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
+                  transition={{ duration: 0.3 }}
                   className="text-center text-sm text-muted-foreground"
                 >
                   Already have an account?{" "}

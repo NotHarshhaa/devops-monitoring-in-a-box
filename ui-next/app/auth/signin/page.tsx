@@ -42,15 +42,18 @@ function SignInForm() {
 
   // Restore the remembered email saved by a previous "Remember me" login
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('remember-email')
-      if (saved) {
-        setEmail(saved)
-        setRememberMe(true)
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem('remember-email')
+        if (saved) {
+          setEmail(saved)
+          setRememberMe(true)
+        }
+      } catch {
+        // localStorage unavailable (e.g. storage disabled)
       }
-    } catch {
-      // localStorage unavailable (e.g. storage disabled)
-    }
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [])
 
   const copyToClipboard = async (text: string, type: 'email' | 'password') => {
@@ -127,21 +130,9 @@ function SignInForm() {
         router.push(callbackUrl)
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       setError("An error occurred. Please try again.")
     } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleOAuthSignIn = async (provider: string) => {
-    setIsLoading(true)
-    setError("")
-
-    try {
-      await signIn(provider, { callbackUrl })
-    } catch (error) {
-      setError("An error occurred. Please try again.")
       setIsLoading(false)
     }
   }
@@ -149,9 +140,9 @@ function SignInForm() {
   return (
     <div className="flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="w-full max-w-4xl relative z-10"
       >
         <Card className="bg-card border border-border">
@@ -159,9 +150,9 @@ function SignInForm() {
             {/* Left Side - Branding & Info */}
             <div className="lg:w-2/5 p-8 lg:p-12 text-foreground border-b lg:border-b-0 lg:border-r border-border">
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={false}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.3 }}
                 className="text-center lg:text-left"
               >
                 <div className="w-16 h-16 bg-muted flex items-center justify-center mx-auto lg:mx-0 mb-6 border border-border">
@@ -183,11 +174,13 @@ function SignInForm() {
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-sm text-foreground">demo@example.com</span>
                         <Button
+                          type="button"
                           size="sm"
                           variant="ghost"
                           onClick={() => copyToClipboard('demo@example.com', 'email')}
                           className="h-8 w-8 p-0 hover:bg-card text-foreground transition-colors"
                           title="Copy email"
+                          aria-label="Copy demo email"
                         >
                           {copiedEmail ? (
                             <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-foreground" />
@@ -202,11 +195,13 @@ function SignInForm() {
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-sm text-foreground">demo123</span>
                         <Button
+                          type="button"
                           size="sm"
                           variant="ghost"
                           onClick={() => copyToClipboard('demo123', 'password')}
                           className="h-8 w-8 p-0 hover:bg-card text-foreground transition-colors"
                           title="Copy password"
+                          aria-label="Copy demo password"
                         >
                           {copiedPassword ? (
                             <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-foreground" />
@@ -252,23 +247,24 @@ function SignInForm() {
               <CardContent className="space-y-4 sm:space-y-6 px-0">
                 {/* Back to Home Button */}
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
+                  transition={{ duration: 0.3 }}
                   className="flex justify-start"
                 >
-                  <Link href="/">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border border-border hover:bg-muted transition-all duration-200 px-4 py-2 gap-2"
-                    >
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="border border-border hover:bg-muted transition-all duration-200 px-4 py-2 gap-2"
+                  >
+                    <Link href="/">
                       <HugeiconsIcon icon={Home01Icon} className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-medium text-foreground">
                         Back to Home
                       </span>
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </motion.div>
                 {error && (
                   <Alert variant="destructive">
@@ -289,9 +285,9 @@ function SignInForm() {
 
                 {/* OAuth Providers */}
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
+                  transition={{ duration: 0.3 }}
                   className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                 >
                   <div className="relative">
@@ -322,9 +318,9 @@ function SignInForm() {
                 </motion.div>
 
                 <motion.div 
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
+                  transition={{ duration: 0.3 }}
                   className="relative"
                 >
                   <div className="absolute inset-0 flex items-center">
@@ -339,10 +335,11 @@ function SignInForm() {
 
                 {/* Credentials Form */}
                 <motion.form 
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                  onSubmit={handleCredentialsSignIn} 
+                  transition={{ duration: 0.3 }}
+                  onSubmit={handleCredentialsSignIn}
+                  noValidate
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -383,6 +380,7 @@ function SignInForm() {
                           className="absolute right-1 top-1 h-9 w-9 hover:bg-muted"
                           onClick={() => setShowPassword(!showPassword)}
                           disabled={isLoading}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? (
                             <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4 text-muted-foreground" />
@@ -424,7 +422,7 @@ function SignInForm() {
 
                   <Button 
                     type="submit" 
-                    className="w-full h-11 text-foreground font-medium transition-all duration-200" 
+                    className="w-full h-11 font-medium transition-all duration-200" 
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -439,12 +437,12 @@ function SignInForm() {
                 </motion.form>
 
                 <motion.div 
-                  initial={{ opacity: 0 }}
+                  initial={false}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.7 }}
+                  transition={{ duration: 0.3 }}
                   className="text-center text-sm text-muted-foreground"
                 >
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link href="/auth/signup" className="text-foreground hover:underline font-medium">
                     Sign up
                   </Link>

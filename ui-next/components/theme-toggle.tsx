@@ -17,20 +17,9 @@ export function ThemeToggle({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    const timer = window.setTimeout(() => setMounted(true), 0)
+    return () => window.clearTimeout(timer)
   }, [])
-
-  if (!mounted) {
-    return (
-      <div
-        className={cn(
-          'inline-flex h-9 min-w-[6.75rem] border border-border bg-muted/40',
-          className
-        )}
-        aria-hidden
-      />
-    )
-  }
 
   return (
     <div
@@ -42,7 +31,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       )}
     >
       {options.map(({ value, label, icon: Icon }) => {
-        const active = theme === value
+        const active = mounted && (theme ?? 'system') === value
         return (
           <button
             key={value}

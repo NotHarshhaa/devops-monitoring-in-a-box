@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -7,20 +8,33 @@ import {
   Settings01Icon,
   Activity01Icon,
   Download01Icon,
-  Upload01Icon,
-  FilterIcon,
   RefreshIcon,
   PlugIcon,
-  StarIcon,
   DashboardSquare01Icon
 } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import PluginManagerComponent from '@/components/plugin-manager'
+import PluginManagerComponent, { type PluginManagerStats } from '@/components/plugin-manager'
 import { PageConnections } from '@/components/page-connections'
+import { toast } from '@/hooks/use-toast'
 
 export default function PluginsPage() {
+  const [stats, setStats] = useState<PluginManagerStats>({
+    available: 0,
+    installed: 0,
+    enabled: 0,
+    categories: 0,
+  })
+  const [refreshSignal, setRefreshSignal] = useState(0)
+
+  const handleRefresh = () => {
+    setRefreshSignal((prev) => prev + 1)
+    toast({
+      title: 'Plugins refreshed',
+      description: 'Reloaded registered plugin catalog and installed instances.',
+    })
+  }
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="px-2 sm:px-4 py-3 sm:py-6 max-w-7xl mx-auto space-y-3 sm:space-y-6">
@@ -68,7 +82,7 @@ export default function PluginsPage() {
                     <HugeiconsIcon icon={PlugIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    12
+                    {stats.available}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Available</div>
                 </motion.div>
@@ -83,7 +97,7 @@ export default function PluginsPage() {
                     <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    8
+                    {stats.installed}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Installed</div>
                 </motion.div>
@@ -98,7 +112,7 @@ export default function PluginsPage() {
                     <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    6
+                    {stats.enabled}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground">Active</div>
                 </motion.div>
@@ -110,12 +124,12 @@ export default function PluginsPage() {
                   className="text-center p-3 sm:p-4 border border-border"
                 >
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted border border-border flex items-center justify-center mx-auto mb-2">
-                    <HugeiconsIcon icon={StarIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                    <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                   </div>
                   <div className="text-lg sm:text-xl font-bold text-foreground">
-                    4.8
+                    {stats.categories}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Avg Rating</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Categories</div>
                 </motion.div>
               </div>
             </CardContent>
@@ -141,37 +155,18 @@ export default function PluginsPage() {
             <Button 
               variant="outline" 
               size="sm" 
+              onClick={handleRefresh}
               className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
             >
               <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden sm:inline">Refresh Catalog</span>
               <span className="sm:hidden">Sync</span>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
-            >
-              <HugeiconsIcon icon={Upload01Icon} className="h-4 w-4" />
-              <span className="hidden sm:inline">Upload</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1.5 h-9 sm:h-10 bg-card border-border hover:bg-muted"
-            >
-              <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" />
-              <span className="hidden sm:inline">Filter</span>
-              <span className="sm:hidden">Sort</span>
             </Button>
           </div>
 
-          <Badge className="bg-muted text-foreground">
+          <Badge className="px-2.5 py-0.5 border border-border bg-muted text-foreground">
             <HugeiconsIcon icon={Activity01Icon} className="h-3 w-3 mr-1" />
-            System Ready
+            {stats.installed > 0 ? `${stats.enabled}/${stats.installed} Active` : 'Registry Ready'}
           </Badge>
         </motion.div>
 
@@ -194,7 +189,11 @@ export default function PluginsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
-              <PluginManagerComponent />
+              <PluginManagerComponent
+                showHeader={false}
+                onStatsChange={setStats}
+                refreshSignal={refreshSignal}
+              />
             </CardContent>
           </Card>
         </motion.div>

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useSession } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { useSession, signOut } from "next-auth/react"
 import { motion } from "framer-motion"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { 
@@ -21,20 +23,65 @@ import {
   EyeIcon,
   Activity01Icon,
   DatabaseIcon,
-  Analytics01Icon
+  Analytics01Icon,
+  LockIcon,
+  CheckmarkCircle01Icon,
+  DashboardSquare01Icon
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { PageConnections } from "@/components/page-connections"
-import { DashboardSquare01Icon } from "@hugeicons/core-free-icons"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { toast } from "@/hooks/use-toast"
+
+const PREFERENCES_STORAGE_KEY = "monitoring-user-preferences"
 
 export default function ProfilePage() {
   const { data: session, update } = useSession()
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState({
     name: session?.user?.name || "",
     email: session?.user?.email || "",
   })
+  const [preferences, setPreferences] = useState({
+    defaultTimeRange: "24h",
+    autoRefresh: true,
+    compactCards: false,
+  })
+  const [workspaceCounts, setWorkspaceCounts] = useState({
+    templates: 0,
+    plugins: 0,
+  })
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (!isEditing && session?.user) {
+        setFormData({
+          name: session.user.name || "",
+          email: session.user.email || "",
+        })
+      }
+      try {
+        const savedPrefs = localStorage.getItem(PREFERENCES_STORAGE_KEY)
+        if (savedPrefs) {
+          const parsed = JSON.parse(savedPrefs)
+          if (parsed && typeof parsed === "object") {
+            setPreferences(prev => ({ ...prev, ...parsed }))
+          }
+        }
+        const savedTemplates = localStorage.getItem("monitoring-imported-templates")
+        const savedPlugins = localStorage.getItem("monitoring-plugin-instances")
+        setWorkspaceCounts({
+          templates: savedTemplates ? JSON.parse(savedTemplates).length || 0 : 0,
+          plugins: savedPlugins ? JSON.parse(savedPlugins).length || 0 : 0,
+        })
+      } catch {
+        // Ignore storage read errors
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [session?.user, isEditing])
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -68,15 +115,53 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
-    await update({
-      ...session,
-      user: {
-        ...session?.user,
-        name: formData.name,
-        email: formData.email,
-      }
-    })
-    setIsEditing(false)
+    const trimmedName = formData.name.trim()
+    const trimmedEmail = formData.email.trim()
+    if (!trimmedName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      toast({
+        title: "Invalid profile details",
+        description: "Please provide a display name and valid email address.",
+        variant: "destructive",
+      })
+      return
+    }
+    setIsSaving(true)
+    try {
+      await update({
+        name: trimmedName,
+        email: trimmedEmail,
+      })
+      setFormData({ name: trimmedName, email: trimmedEmail })
+      setIsEditing(false)
+      toast({
+        title: "Profile updated",
+        description: "Your session profile details have been saved.",
+      })
+    } catch {
+      toast({
+        title: "Update failed",
+        description: "Could not update session profile.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleSavePreferences = () => {
+    try {
+      localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences))
+      toast({
+        title: "Preferences saved",
+        description: "Your monitoring workspace preferences were updated.",
+      })
+    } catch {
+      toast({
+        title: "Save failed",
+        description: "Unable to persist preferences in this browser.",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleCancel = () => {
@@ -185,16 +270,16 @@ export default function ProfilePage() {
               <CardContent className="p-4 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="text-muted-foreground">Member since</span>
-                    <span className="font-medium text-foreground">October 2023</span>
+                    <span className="text-muted-foreground">Authentication</span>
+                    <span className="font-medium text-foreground">Session JWT</span>
                   </div>
                   <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="text-muted-foreground">Last login</span>
-                    <span className="font-medium text-foreground">Today</span>
+                    <span className="text-muted-foreground">Account Role</span>
+                    <span className="font-medium text-foreground">{(session.user as any).role || "VIEWER"}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-muted-foreground">Status</span>
-                    <Badge variant="outline" className="bg-muted text-foreground text-xs border-border">
+                    <Badge variant="outline" className="px-2 py-0.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs border-emerald-500/40">
                       Active
                     </Badge>
                   </div>
@@ -214,9 +299,9 @@ export default function ProfilePage() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
                 <HugeiconsIcon icon={Analytics01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-foreground">3</div>
-              <div className="text-xs sm:text-sm text-foreground">My Dashboards</div>
-              <div className="text-xs text-muted-foreground mt-1">Custom dashboards created</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{workspaceCounts.templates}</div>
+              <div className="text-xs sm:text-sm text-foreground">Saved Templates</div>
+              <div className="text-xs text-muted-foreground mt-1">In local collection</div>
             </motion.div>
 
             <motion.div
@@ -228,9 +313,9 @@ export default function ProfilePage() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
                 <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-foreground">5</div>
-              <div className="text-xs sm:text-sm text-foreground">My Configurations</div>
-              <div className="text-xs text-muted-foreground mt-1">Saved configurations</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{workspaceCounts.plugins}</div>
+              <div className="text-xs sm:text-sm text-foreground">Configured Plugins</div>
+              <div className="text-xs text-muted-foreground mt-1">Saved instances</div>
             </motion.div>
 
             <motion.div
@@ -242,9 +327,9 @@ export default function ProfilePage() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
                 <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-foreground">127</div>
-              <div className="text-xs sm:text-sm text-foreground">Activity</div>
-              <div className="text-xs text-muted-foreground mt-1">Actions this month</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{preferences.defaultTimeRange}</div>
+              <div className="text-xs sm:text-sm text-foreground">Default Range</div>
+              <div className="text-xs text-muted-foreground mt-1">Preferred time window</div>
             </motion.div>
 
             <motion.div
@@ -256,9 +341,9 @@ export default function ProfilePage() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-muted flex items-center justify-center mx-auto mb-2">
                 <HugeiconsIcon icon={DatabaseIcon} className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-foreground">2.4 GB</div>
-              <div className="text-xs sm:text-sm text-foreground">Data Usage</div>
-              <div className="text-xs text-muted-foreground mt-1">Storage used</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{(session.user as any).role || "VIEWER"}</div>
+              <div className="text-xs sm:text-sm text-foreground">Access Tier</div>
+              <div className="text-xs text-muted-foreground mt-1">Role-based permissions</div>
             </motion.div>
           </div>
         </motion.div>
@@ -334,11 +419,11 @@ export default function ProfilePage() {
 
                         {isEditing && (
                           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
-                            <Button onClick={handleSave} className="h-10 sm:h-11 gap-2">
+                            <Button onClick={handleSave} disabled={isSaving} className="h-10 sm:h-11 gap-2">
                               <HugeiconsIcon icon={FloppyDiskIcon} className="h-4 w-4" />
-                              Save Changes
+                              {isSaving ? "Saving..." : "Save Changes"}
                             </Button>
-                            <Button variant="outline" onClick={handleCancel} className="h-10 sm:h-11 bg-card border-border hover:bg-muted">
+                            <Button variant="outline" onClick={handleCancel} disabled={isSaving} className="h-10 sm:h-11 bg-card border-border hover:bg-muted">
                               Cancel
                             </Button>
                           </div>
@@ -361,16 +446,56 @@ export default function ProfilePage() {
                           Preferences
                         </CardTitle>
                         <CardDescription className="mt-1 text-muted-foreground">
-                          Customize your dashboard and application preferences
+                          Customize your dashboard appearance and default workspace behavior
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="text-center py-8">
-                          <HugeiconsIcon icon={Settings01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2 text-foreground">Preferences</h3>
-                          <p className="text-muted-foreground">
-                            Customize your dashboard and application preferences here.
-                          </p>
+                      <CardContent className="p-4 sm:p-6 space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-border">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Color Theme</p>
+                            <p className="text-xs text-muted-foreground">Switch between light, dark, or system theme</p>
+                          </div>
+                          <ThemeToggle />
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-border">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Default Time Range</p>
+                            <p className="text-xs text-muted-foreground">Preferred initial range for dashboards</p>
+                          </div>
+                          <Select
+                            value={preferences.defaultTimeRange}
+                            onValueChange={(value) => setPreferences(prev => ({ ...prev, defaultTimeRange: value }))}
+                          >
+                            <SelectTrigger className="w-full sm:w-[160px] bg-card border-border">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1h">Last 1 Hour</SelectItem>
+                              <SelectItem value="6h">Last 6 Hours</SelectItem>
+                              <SelectItem value="24h">Last 24 Hours</SelectItem>
+                              <SelectItem value="7d">Last 7 Days</SelectItem>
+                              <SelectItem value="30d">Last 30 Days</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 p-4 border border-border">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Auto-Refresh Polling</p>
+                            <p className="text-xs text-muted-foreground">Automatically refresh live metrics & health probes</p>
+                          </div>
+                          <Switch
+                            checked={preferences.autoRefresh}
+                            onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, autoRefresh: checked }))}
+                          />
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button onClick={handleSavePreferences} className="gap-2">
+                            <HugeiconsIcon icon={FloppyDiskIcon} className="h-4 w-4" />
+                            Save Preferences
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -387,19 +512,54 @@ export default function ProfilePage() {
                       <CardHeader className="p-4 sm:p-6">
                         <CardTitle className="flex items-center gap-2 text-foreground">
                           <HugeiconsIcon icon={Shield01Icon} className="h-5 w-5 text-foreground" />
-                          Security
+                          Security & Session
                         </CardTitle>
                         <CardDescription className="mt-1 text-muted-foreground">
-                          Manage your account security and authentication settings
+                          Review your current authentication state and role permissions
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="text-center py-8">
-                          <HugeiconsIcon icon={Shield01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2 text-foreground">Security Settings</h3>
-                          <p className="text-muted-foreground">
-                            Manage your account security and authentication settings here.
+                      <CardContent className="p-4 sm:p-6 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 border border-border space-y-2">
+                            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                              <HugeiconsIcon icon={LockIcon} className="h-4 w-4" />
+                              Session Strategy
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Signed in with HTTP-only encrypted JWT session cookie via NextAuth.
+                            </p>
+                            <Badge variant="outline" className="px-2 py-0.5 text-xs">
+                              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 mr-1" />
+                              Verified Session
+                            </Badge>
+                          </div>
+
+                          <div className="p-4 border border-border space-y-2">
+                            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                              <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4" />
+                              Assigned Role: {(session.user as any).role || "VIEWER"}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {(session.user as any).role === "ADMIN"
+                                ? "Full administrative access including Alertmanager silences, system settings, and admin diagnostics."
+                                : (session.user as any).role === "EDITOR"
+                                ? "Can view metrics and manage operational alerts and templates."
+                                : "Read-only access to dashboards, metrics, logs, and alerts."}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border">
+                          <p className="text-xs text-muted-foreground">
+                            Need to switch accounts or revoke this session?
                           </p>
+                          <Button
+                            variant="outline"
+                            onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                            className="border-border hover:bg-muted"
+                          >
+                            Sign Out
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>

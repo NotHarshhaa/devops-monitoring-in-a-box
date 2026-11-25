@@ -21,26 +21,26 @@ export default function VersionPage() {
       {/* Header */}
       <div className="border-b border-border bg-card">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/dashboard">
-              <Button variant="ghost" className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Button asChild variant="ghost" className="gap-2">
+              <Link href="/dashboard">
                 <HugeiconsIcon icon={ArrowLeft02Icon} className="w-4 h-4" />
                 <span>Back to Dashboard</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <div className="flex items-center space-x-2">
-              <a href={`${repoUrl}/releases`} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="gap-2 border-border hover:bg-muted">
+              <Button asChild variant="outline" size="sm" className="gap-2 border-border hover:bg-muted">
+                <a href={`${repoUrl}/releases`} target="_blank" rel="noopener noreferrer">
                   <HugeiconsIcon icon={GithubIcon} className="w-4 h-4" />
                   View on GitHub
-                </Button>
-              </a>
-              <a href={`${repoUrl}/releases/latest`} target="_blank" rel="noopener noreferrer">
-                <Button size="sm" className="gap-2">
+                </a>
+              </Button>
+              <Button asChild size="sm" className="gap-2">
+                <a href={`${repoUrl}/releases/latest`} target="_blank" rel="noopener noreferrer">
                   <HugeiconsIcon icon={Download01Icon} className="w-4 h-4" />
                   Download
-                </Button>
-              </a>
+                </a>
+              </Button>
             </div>
           </div>
         </div>
@@ -71,19 +71,19 @@ export default function VersionPage() {
               Version 2.5.0 represents a complete overhaul of our monitoring dashboard,
               bringing modern design, better performance, and an enhanced user experience.
             </p>
-            <div className="flex items-center justify-center space-x-4">
-              <a href={repoUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="gap-2 border-border hover:bg-muted">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button asChild variant="outline" className="gap-2 border-border hover:bg-muted">
+                <a href={repoUrl} target="_blank" rel="noopener noreferrer">
                   <HugeiconsIcon icon={StarIcon} className="w-4 h-4" />
                   Star on GitHub
-                </Button>
-              </a>
-              <a href={`${repoUrl}/discussions`} target="_blank" rel="noopener noreferrer">
-                <Button className="gap-2">
+                </a>
+              </Button>
+              <Button asChild className="gap-2">
+                <a href={`${repoUrl}/discussions`} target="_blank" rel="noopener noreferrer">
                   <HugeiconsIcon icon={FavouriteIcon} className="w-4 h-4" />
                   Support the Project
-                </Button>
-              </a>
+                </a>
+              </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-6 flex items-center justify-center gap-1">
               Made with <HugeiconsIcon icon={FavouriteIcon} className="w-4 h-4 text-foreground" /> by the DevOps Monitor Team

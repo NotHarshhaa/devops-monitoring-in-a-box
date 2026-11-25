@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import tls from 'tls';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth-simple';
+import { parseSslTarget } from '@/lib/ssl-target';
 
 export interface SSLCertificateInfo {
   host: string;
@@ -60,7 +61,8 @@ function probeSSLCertificate(host: string, port = 443, timeoutMs = 8000): Promis
 
           const validTo = new Date(cert.valid_to);
           const now = new Date();
-          const daysRemaining = Math.max(0, Math.floor((validTo.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+          const msRemaining = validTo.getTime() - now.getTime();
+          const daysRemaining = Math.max(0, Math.floor(msRemaining / (1000 * 60 * 60 * 24)));
           const altNames = cert.subjectaltname
             ? cert.subjectaltname.split(', ').map((s: string) => s.replace(/^DNS:/, ''))
             : [];
@@ -76,7 +78,7 @@ function probeSSLCertificate(host: string, port = 443, timeoutMs = 8000): Promis
           resolve({
             host: cleanHost,
             port,
-            valid: isAuthorized && daysRemaining > 0,
+            valid: isAuthorized && msRemaining > 0,
             issuer: issuerStr,
             subject: subjectStr,
             validFrom: cert.valid_from,
@@ -190,7 +192,14 @@ export async function GET(request: NextRequest) {
     }
 
     if (target) {
-      const info = await probeSSLCertificate(target, port);
+      const parsed = parseSslTarget(target, searchParams.get('port'));
+      if (!parsed) {
+        return NextResponse.json(
+          { success: false, error: 'Target must be a valid host and port (1-65535)' },
+          { status: 400 }
+        );
+      }
+      const info = await probeSSLCertificate(parsed.host, parsed.port);
       return NextResponse.json({ success: true, certificate: info });
     }
 
@@ -217,15 +226,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing target hostname' }, { status: 400 });
     }
 
-    const parsedPort = parsePort(port ? String(port) : null);
-    if (parsedPort === null) {
+    const parsed = parseSslTarget(target, port);
+    if (!parsed) {
       return NextResponse.json(
-        { error: 'Port must be an integer between 1 and 65535' },
+        { error: 'Target hostname or port (1-65535) is invalid' },
         { status: 400 }
       );
     }
 
-    const info = await probeSSLCertificate(target, parsedPort);
+    const info = await probeSSLCertificate(parsed.host, parsed.port);
     return NextResponse.json({ success: true, certificate: info });
   } catch {
     return NextResponse.json(

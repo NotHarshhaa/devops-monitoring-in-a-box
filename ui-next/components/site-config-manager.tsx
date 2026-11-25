@@ -101,11 +101,11 @@ export function SiteConfigManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Site Configuration</h2>
           <p className="text-muted-foreground">
-            Manage your site's SEO, branding, and general settings
+            Manage your site&apos;s SEO, branding, and general settings
           </p>
         </div>
         <div className="flex gap-2">
@@ -121,7 +121,7 @@ export function SiteConfigManager() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 bg-muted p-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto bg-muted p-1">
           <TabsTrigger value="basic" className="flex items-center gap-2">
             <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4" />
             Basic
@@ -149,7 +149,7 @@ export function SiteConfigManager() {
             <CardHeader>
               <CardTitle className="text-foreground">Basic Information</CardTitle>
               <CardDescription className="text-muted-foreground">
-                Configure your site's basic information and contact details
+                Configure your site&apos;s basic information and contact details
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -271,7 +271,7 @@ export function SiteConfigManager() {
             <CardHeader>
               <CardTitle className="text-foreground">Branding & Visual Identity</CardTitle>
               <CardDescription className="text-muted-foreground">
-                Customize your site's visual appearance and branding
+                Customize your site&apos;s visual appearance and branding
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

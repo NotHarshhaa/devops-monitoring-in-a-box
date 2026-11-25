@@ -56,20 +56,26 @@ const timeRangeData = [
 
 export default function MetricsPage() {
   // Time range is mirrored into the URL (?range=<hours>) so views are shareable
-  const [timeRange, setTimeRange] = React.useState(() => {
-    if (typeof window === 'undefined') return "24"
-    const fromUrl = readFiltersFromUrl().get('range')
-    return fromUrl ?? "24"
-  })
+  const [timeRange, setTimeRange] = React.useState("24")
+  const urlRangeInitializedRef = React.useRef(false)
   const queryClient = useQueryClient()
 
-  // Keep the URL in sync when the range changes
+  // Seed from URL once on mount and keep the URL in sync when the range changes
   React.useEffect(() => {
+    if (!urlRangeInitializedRef.current) {
+      urlRangeInitializedRef.current = true
+      const fromUrl = readFiltersFromUrl().get('range')
+      if (fromUrl && timeRangeData.some((r) => r.value.toString() === fromUrl)) {
+        const timer = window.setTimeout(() => setTimeRange(fromUrl), 0)
+        return () => window.clearTimeout(timer)
+      }
+      return
+    }
     writeFiltersToUrl({ range: timeRange !== '24' ? timeRange : undefined })
   }, [timeRange])
   
   // Get time range for charts
-  const { start, end } = getTimeRange(timeRange)
+  const { start, end } = React.useMemo(() => getTimeRange(timeRange), [timeRange])
   
   // Fetch metrics data
   const allMetricsRange = useAllMetricsRange(timeRange)
@@ -620,10 +626,12 @@ export default function MetricsPage() {
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 80 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
-                          {allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 80 
+                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.cpu != null && allCurrentMetrics.data.cpu > 80 ? 'bg-destructive/15 text-destructive border-destructive/40' : allCurrentMetrics.data?.cpu != null ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
+                          {allCurrentMetrics.data?.cpu == null
+                            ? allCurrentMetrics.isLoading ? 'Checking...' : 'Unavailable'
+                            : allCurrentMetrics.data.cpu > 80 
                             ? 'High'
-                            : allCurrentMetrics.data?.cpu && allCurrentMetrics.data.cpu > 60
+                            : allCurrentMetrics.data.cpu > 60
                             ? 'Moderate'
                             : 'Normal'
                           }
@@ -688,7 +696,7 @@ export default function MetricsPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Available</span>
                           <span className="font-medium text-foreground">
-                            {allCurrentMetrics.data?.memory ? `${(100 - allCurrentMetrics.data.memory).toFixed(1)}%` : '--'}
+                            {allCurrentMetrics.data?.memory != null ? `${(100 - allCurrentMetrics.data.memory).toFixed(1)}%` : '--'}
                           </span>
                         </div>
                       </div>
@@ -709,10 +717,12 @@ export default function MetricsPage() {
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 90 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
-                          {allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 90 
+                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.memory != null && allCurrentMetrics.data.memory > 90 ? 'bg-destructive/15 text-destructive border-destructive/40' : allCurrentMetrics.data?.memory != null ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
+                          {allCurrentMetrics.data?.memory == null
+                            ? allCurrentMetrics.isLoading ? 'Checking...' : 'Unavailable'
+                            : allCurrentMetrics.data.memory > 90 
                             ? 'Critical'
-                            : allCurrentMetrics.data?.memory && allCurrentMetrics.data.memory > 75
+                            : allCurrentMetrics.data.memory > 75
                             ? 'Warning'
                             : 'Healthy'
                           }
@@ -777,7 +787,7 @@ export default function MetricsPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Available</span>
                           <span className="font-medium text-foreground">
-                            {allCurrentMetrics.data?.disk ? `${(100 - allCurrentMetrics.data.disk).toFixed(1)}%` : '--'}
+                            {allCurrentMetrics.data?.disk != null ? `${(100 - allCurrentMetrics.data.disk).toFixed(1)}%` : '--'}
                           </span>
                         </div>
                       </div>
@@ -798,10 +808,12 @@ export default function MetricsPage() {
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 90 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
-                          {allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 90 
+                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${ allCurrentMetrics.data?.disk != null && allCurrentMetrics.data.disk > 90 ? 'bg-destructive/15 text-destructive border-destructive/40' : allCurrentMetrics.data?.disk != null ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground' }`}>
+                          {allCurrentMetrics.data?.disk == null
+                            ? allCurrentMetrics.isLoading ? 'Checking...' : 'Unavailable'
+                            : allCurrentMetrics.data.disk > 90 
                             ? 'Critical'
-                            : allCurrentMetrics.data?.disk && allCurrentMetrics.data.disk > 80
+                            : allCurrentMetrics.data.disk > 80
                             ? 'Warning'
                             : 'Healthy'
                           }
@@ -887,11 +899,17 @@ export default function MetricsPage() {
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6">
                       <div className="text-center">
-                        <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-foreground border border-border bg-muted">
-                          Active
+                        <div className={`inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium border border-border ${allCurrentMetrics.data?.network ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40' : 'bg-muted text-muted-foreground'}`}>
+                          {allCurrentMetrics.isLoading
+                            ? 'Checking...'
+                            : allCurrentMetrics.data?.network
+                              ? 'Active'
+                              : 'Unavailable'}
                         </div>
                         <p className="text-sm text-muted-foreground mt-2">
-                          Network interfaces are operational
+                          {allCurrentMetrics.data?.network
+                            ? 'Network interfaces are reporting live throughput'
+                            : 'Prometheus metrics unreachable — connect stack to inspect throughput'}
                         </p>
                       </div>
                     </CardContent>

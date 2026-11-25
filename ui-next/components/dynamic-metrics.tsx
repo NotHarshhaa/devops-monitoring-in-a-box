@@ -34,6 +34,7 @@ interface DynamicMetricsProps {
   showCharts?: boolean;
   showCards?: boolean;
   groupBy?: boolean;
+  columns?: 2 | 4;
 }
 
 interface MetricLiveState {
@@ -47,7 +48,8 @@ export function DynamicMetrics({
   className,
   showCharts = true,
   showCards = true,
-  groupBy = true
+  groupBy = true,
+  columns = 4
 }: DynamicMetricsProps) {
   const {
     metrics,
@@ -56,6 +58,7 @@ export function DynamicMetrics({
     error
   } = useMultiTenantMetricsConfig();
 
+  const [rangeBucketEnd] = React.useState(() => Math.floor(Date.now() / 60000) * 60);
   const refreshMs = config.prometheus.refreshInterval;
   const enabledMetrics = (metrics ?? []).filter(m => m.query);
 
@@ -74,7 +77,7 @@ export function DynamicMetrics({
   // Range queries for the chart view (only fetched when charts are shown)
   const rangeQueries = useQueries({
     queries: (showCharts ? enabledMetrics : []).map((metric) => {
-      const end = Math.floor(Date.now() / 1000);
+      const end = rangeBucketEnd;
       const start = end - 60 * 60; // last hour
       return {
         queryKey: ['dynamic-metric-range', metric.name, metric.query, start],
@@ -266,7 +269,12 @@ export function DynamicMetrics({
           </div>
           
           {showCards && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className={cn(
+              "grid gap-4",
+              columns === 2
+                ? "grid-cols-1 sm:grid-cols-2"
+                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6"
+            )}>
               {metrics.map((metric, index) => renderMetricCard(metric, index))}
             </div>
           )}
@@ -321,7 +329,12 @@ export function DynamicMetrics({
         animate="visible"
       >
         {showCards && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className={cn(
+            "grid gap-4",
+            columns === 2
+              ? "grid-cols-1 sm:grid-cols-2"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6"
+          )}>
             {metrics.map((metric, index) => renderMetricCard(metric, index))}
           </div>
         )}
@@ -614,12 +627,12 @@ export function DynamicMetricsSummary({
               transition={{ duration: 0.3, delay: 1.0 }}
               className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-border dark:border-border"
             >
-              <Link href="/settings" className="w-full sm:w-auto">
-                <Button variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted w-full sm:w-auto">
+              <Button asChild variant="outline" className="gap-2 border-border dark:border-border hover:bg-muted dark:hover:bg-muted w-full sm:w-auto">
+                <Link href="/settings">
                   <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4" />
                   Configure Metrics
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </motion.div>
           </CardContent>
         </Card>

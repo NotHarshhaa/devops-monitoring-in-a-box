@@ -118,7 +118,7 @@ export function UserMenu() {
                 <HugeiconsIcon icon={Shield01Icon} className="size-4" />
                 Admin Panel
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/admin/users')}>
+              <DropdownMenuItem onClick={() => router.push('/admin?tab=users')}>
                 <HugeiconsIcon icon={UserGroupIcon} className="size-4" />
                 User Management
               </DropdownMenuItem>

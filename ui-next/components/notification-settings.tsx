@@ -748,7 +748,7 @@ export function NotificationSettings({ config, onConfigChange }: NotificationSet
                 <div className="text-center py-8 text-muted-foreground">
                   <HugeiconsIcon icon={Link01Icon} className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No webhook endpoints configured</p>
-                  <p className="text-sm">Click "Add Endpoint" to create your first webhook</p>
+                  <p className="text-sm">Click &ldquo;Add Endpoint&rdquo; to create your first webhook</p>
                 </div>
               )}
             </CardContent>
