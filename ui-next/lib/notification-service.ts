@@ -1,11 +1,11 @@
 import axios from 'axios'
-import nodemailer from 'nodemailer'
+import nodemailer, { type Transporter } from 'nodemailer'
 import { NotificationsConfig, NotificationChannelConfig } from './config/types'
 
 export class NotificationService {
   private config: NotificationsConfig | null = null
   private configPromise: Promise<void> | null = null
-  private emailTransporter: nodemailer.Transporter | null = null
+  private emailTransporter: Transporter | null = null
 
   constructor() {
     this.configPromise = this.loadConfiguration()

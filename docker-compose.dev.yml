@@ -21,6 +21,10 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     networks:
       - monitoring
@@ -39,6 +43,10 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     networks:
       - monitoring
@@ -55,6 +63,10 @@ services:
       - ./loki/config.yml:/etc/loki/local-config.yaml
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     networks:
       - monitoring
@@ -67,6 +79,10 @@ services:
       - ./loki/promtail-config.yml:/etc/promtail/config.yml
       - /var/log:/var/log
     command: -config.file=/etc/promtail/config.yml
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     networks:
       - monitoring
@@ -86,6 +102,10 @@ services:
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     networks:
       - monitoring
@@ -105,6 +125,10 @@ services:
       - '--path.rootfs=/rootfs'
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     networks:
       - monitoring
@@ -136,17 +160,22 @@ services:
       - ./exporters/blackbox/config.yml:/etc/blackbox_exporter/config.yml:ro
     command:
       - '--config.file=/etc/blackbox_exporter/config.yml'
+    cap_drop:
+      - ALL
     cap_add:
       - NET_RAW
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
     networks:
       - monitoring
   # DevOps Monitor UI - Development mode with hot reloading
   devops-monitor-ui:
-    # Dev runtime: the production image is a standalone `next start` build and
-    # cannot hot-reload, so run the dev server from the official Node image
+    # Dev runtime: the production image is a standalone distroless build and
+    # cannot hot-reload, so run the dev server from the Chainguard Wolfi Node image
     # with the source mounted (see volumes below).
-    image: node:20-alpine
+    image: cgr.dev/chainguard/node:latest
+    user: "0:0"
     working_dir: /app
     command: sh -c "npm ci && npm run dev"
     container_name: devops-monitor-ui-dev
@@ -161,6 +190,7 @@ services:
       - PORT=3000
       - WATCHPACK_POLLING=true
       - DOCKER_ENV=true
+      - CONFIG_PATH=/tmp/config.json
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set - run scripts/setup-env.sh or devops-monitor.ps1 init-env}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:4000}
       - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
@@ -170,6 +200,10 @@ services:
       - BLACKBOX_URL=${BLACKBOX_URL:-http://blackbox-exporter:9115}
       - BLACKBOX_ENABLED=${BLACKBOX_ENABLED:-true}
       - ALERT_WEBHOOK_TOKEN=${ALERT_WEBHOOK_TOKEN:?ALERT_WEBHOOK_TOKEN must be set - run scripts/setup-env.sh or devops-monitor.ps1 init-env}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     networks:
       - monitoring

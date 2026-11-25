@@ -44,6 +44,13 @@ services:
       - '--storage.tsdb.wal-compression'
       - '--storage.tsdb.head-chunks-write-queue-size=2500'
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
     deploy:
       resources:
         limits:
@@ -88,6 +95,10 @@ services:
       - GF_LOG_LEVEL=info
       - GF_LOG_MODE=file
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     deploy:
       resources:
         limits:
@@ -120,6 +131,10 @@ services:
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     deploy:
       resources:
         limits:
@@ -148,6 +163,10 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     command: -config.file=/etc/promtail/config.yml
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     deploy:
       resources:
         limits:
@@ -189,6 +208,13 @@ services:
       # produce reconnect noise. Remove this flag and add real peers for HA.
       - '--cluster.listen-address='
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
     deploy:
       resources:
         limits:
@@ -231,6 +257,11 @@ services:
       - '--no-collector.infiniband'
       - '--no-collector.wifi'
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
     deploy:
       resources:
         limits:
@@ -295,8 +326,13 @@ services:
     command:
       - '--config.file=/etc/blackbox_exporter/config.yml'
     # Required for the icmp module; harmless for HTTP/TCP probes.
+    cap_drop:
+      - ALL
     cap_add:
       - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
     restart: unless-stopped
     deploy:
       resources:
@@ -355,7 +391,16 @@ services:
       # Demo sign-in accounts are disabled in production builds unless this is
       # explicitly set to "true". Set to "false" to force them off anywhere.
       - ENABLE_DEMO_AUTH=${ENABLE_DEMO_AUTH:-true}
+      - CONFIG_PATH=/tmp/config.json
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+      - /app/.next/cache:rw,noexec,nosuid,nodev,uid=65532,gid=65532,size=64m
     deploy:
       resources:
         limits:
@@ -365,7 +410,7 @@ services:
           cpus: '0.25'
           memory: 256M
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      test: ["CMD", "/usr/bin/node", "-e", "fetch('http://127.0.0.1:3000/api/health?live=1').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3

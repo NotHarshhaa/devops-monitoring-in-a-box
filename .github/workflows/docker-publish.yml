@@ -159,16 +159,23 @@ jobs:
           type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         cache-to: ${{ github.event.inputs.cache_enabled == 'true' && 'type=gha,mode=max' || '' }}
         
-    - name: Run Docker Scout (security scan)
+    - name: Run Docker Scout (0-CVE gate)
       if: ${{ github.event.inputs.push_to_registry != 'false' }}
       uses: docker/scout-action@v1
       with:
         command: cves
         # On push events, workflow_dispatch inputs are empty — fall back to metadata version / latest
         image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_version || steps.meta.outputs.version || 'latest' }}
-        only-severities: critical
+        only-severities: critical,high,medium,low
         exit-code: true
         write-comment: true
+
+    - name: Run Trivy image scan (0-CVE gate)
+      if: ${{ github.event.inputs.push_to_registry != 'false' }}
+      run: |
+        TARGET_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_version || steps.meta.outputs.version || 'latest' }}"
+        docker run --rm aquasecurity/trivy:0.69.0 \
+          image --exit-code 1 --severity CRITICAL,HIGH,MEDIUM,LOW --scanners vuln,secret "$TARGET_IMAGE"
         
     - name: Set build result
       id: build_result
@@ -237,8 +244,8 @@ jobs:
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🔒 Security Status" >> $GITHUB_STEP_SUMMARY
-        echo "- **CRITICAL vulnerabilities**: 0 (workflow fails if found)" >> $GITHUB_STEP_SUMMARY
-        echo "- **HIGH vulnerabilities**: Reported (not blocking)" >> $GITHUB_STEP_SUMMARY
+        echo "- **CRITICAL / HIGH / MEDIUM / LOW vulnerabilities**: 0 (enforced via Docker Scout & Trivy)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Base runtime**: Chainguard distroless Wolfi glibc-dynamic (non-root 65532:65532)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
         if [ "${{ github.event.inputs.push_to_registry }}" != "false" ]; then

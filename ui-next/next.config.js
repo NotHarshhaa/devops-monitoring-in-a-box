@@ -5,6 +5,9 @@ const nextConfig = {
   compress: true,
   // Enable standalone output for Docker deployment
   output: 'standalone',
+  outputFileTracingExcludes: {
+    '*': ['node_modules/sharp/**', 'node_modules/@img/**'],
+  },
   experimental: {
     optimizePackageImports: [
       '@hugeicons/react',
@@ -18,6 +21,7 @@ const nextConfig = {
     ]
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'http',

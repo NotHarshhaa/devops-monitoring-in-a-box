@@ -32,8 +32,17 @@ if docker build -f ui-next/Dockerfile -t devops-monitoring-dashboard:test ui-nex
     echo "📦 Image details:"
     docker images devops-monitoring-dashboard:test
     echo ""
-    echo "🧪 To test the container:"
-    echo "   docker run -p 3000:3000 devops-monitoring-dashboard:test"
+    if command -v trivy &> /dev/null; then
+        echo "🛡️  Scanning image with Trivy (0 CVEs required)..."
+        trivy image --exit-code 1 --severity CRITICAL,HIGH,MEDIUM,LOW --scanners vuln,secret devops-monitoring-dashboard:test
+    fi
+    if docker scout version &> /dev/null; then
+        echo "🛡️  Scanning image with Docker Scout..."
+        docker scout cves --only-severity critical,high,medium,low --exit-code devops-monitoring-dashboard:test
+    fi
+    echo ""
+    echo "🧪 To test the container (hardened read-only runtime):"
+    echo "   docker run --rm -p 3000:3000 --read-only --cap-drop=ALL --security-opt=no-new-privileges:true --tmpfs /tmp:rw,noexec,nosuid,size=64m --tmpfs /app/.next/cache:rw,noexec,nosuid,uid=65532,gid=65532,size=64m -e NEXTAUTH_SECRET=local-test-secret-at-least-32-chars devops-monitoring-dashboard:test"
     echo ""
     echo "🔍 To inspect the image:"
     echo "   docker inspect devops-monitoring-dashboard:test"

@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
           cache-dependency-path: ui-next/package-lock.json
 
@@ -35,6 +35,9 @@ jobs:
       # that the build depends on.
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=low
 
       - name: Lint
         run: npm run lint
@@ -133,3 +136,23 @@ jobs:
           docker compose -f docker-compose.yml config >/dev/null
           docker compose -f docker-compose.dev.yml config >/dev/null
           echo "Compose configuration is valid"
+
+  docker-security:
+    name: Docker image build & 0-CVE scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build UI Docker image
+        run: docker build -f ui-next/Dockerfile -t devops-monitoring-ui:ci ui-next
+
+      - name: Verify image 0-CVE gate (Trivy)
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasecurity/trivy:0.69.0 \
+            image --exit-code 1 --severity CRITICAL,HIGH,MEDIUM,LOW --scanners vuln,secret devops-monitoring-ui:ci
