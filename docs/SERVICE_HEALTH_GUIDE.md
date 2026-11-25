@@ -205,11 +205,12 @@ docker ps | grep -E "(prometheus|grafana|loki|alertmanager)"
 
 # Test connectivity
 curl -I http://localhost:9090/api/v1/status/config
-curl -I http://localhost:3000/api/health
+curl -I http://localhost:3000/api/health        # Grafana
+curl -I http://localhost:4000/api/health?live=1 # DevOps Monitor UI
 curl -I http://localhost:3100/ready
 
 # Check Docker Compose status
-docker-compose ps
+docker compose ps
 ```
 
 #### 2. Some Services Down
@@ -247,7 +248,8 @@ docker-compose ps
 ```bash
 # Test individual service endpoints
 curl -v http://localhost:9090/api/v1/status/config
-curl -v http://localhost:3000/api/health
+curl -v http://localhost:3000/api/health        # Grafana
+curl -v http://localhost:4000/api/health        # DevOps Monitor UI
 curl -v http://localhost:3100/ready
 curl -v http://localhost:9093/api/v2/status
 curl -v http://localhost:9100/metrics

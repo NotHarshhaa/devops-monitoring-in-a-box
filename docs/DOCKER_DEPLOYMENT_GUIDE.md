@@ -12,27 +12,36 @@ This guide covers the complete Docker deployment setup for the DevOps Monitoring
 
 ### Local Testing
 
-1. **Build the Docker image locally:**
+1. **Build the Docker image locally (Dockerfile lives in `ui-next/`):**
    ```bash
-   docker build -t devops-monitoring-dashboard:latest .
+   docker build -f ui-next/Dockerfile -t devops-monitoring-dashboard:latest ui-next
+   # Or run the automated build + 0-CVE scan script:
+   ./scripts/test-docker-build.sh
    ```
 
-2. **Run the container:**
+2. **Run the container (hardened read-only mode):**
    ```bash
-   docker run -p 3000:3000 devops-monitoring-dashboard:latest
+   docker run --rm -p 4000:3000 \
+     --read-only --cap-drop=ALL --security-opt=no-new-privileges:true \
+     --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m \
+     --tmpfs /app/.next/cache:rw,noexec,nosuid,nodev,uid=65532,gid=65532,size=64m \
+     -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
+     -e NEXTAUTH_URL="http://localhost:4000" \
+     devops-monitoring-dashboard:latest
    ```
 
 3. **Verify the dashboard:**
-   - Open your browser and navigate to `http://localhost:3000`
+   - Open your browser and navigate to `http://localhost:4000`
    - You should see the DevOps Monitoring Dashboard
 
 ### Docker Image Details
 
-- **Base Image:** Node.js 18 Alpine
-- **Multi-stage Build:** Optimized for production
-- **Port:** 3000
-- **Health Check:** Built-in health monitoring
-- **Security:** Runs as non-root user
+- **Builder Base:** `cgr.dev/chainguard/node:latest` (Wolfi Linux, multi-arch OCI digest-pinned)
+- **Runner Base:** `cgr.dev/chainguard/glibc-dynamic:latest` (distroless, no shell/BusyBox/npm/package manager)
+- **Platforms:** `linux/amd64`, `linux/arm64`
+- **Container Port:** `3000` (published as host port `4000` in `docker-compose.yml`)
+- **Health Check:** Exec-form native Node `fetch` probe against `http://127.0.0.1:3000/api/health?live=1`
+- **Security:** Runs as non-root `65532:65532` (`CONFIG_PATH=/tmp/config.json`) with **0 CVEs** across Trivy and Docker Scout
 
 ## 🚀 Automated Publishing
 
@@ -43,7 +52,7 @@ To enable automated Docker Hub publishing, you need to configure the following s
 #### Step 1: Get Docker Hub Credentials
 
 1. **Docker Hub Username:**
-   - Your Docker Hub username (e.g., `yourusername`)
+   - Your Docker Hub username (e.g., `your-dockerhub-username`)
 
 2. **Docker Hub Access Token:**
    - Go to [Docker Hub Security Settings](https://hub.docker.com/settings/security)
@@ -105,10 +114,10 @@ The GitHub Actions workflow automatically triggers on:
 
 ### Image Tags
 
-When you push a tag like `v1.0.0`, the following tags will be created:
+When you push a tag like `v1.0.0`, the following tags will be created under `${DOCKERHUB_USERNAME}/devops-monitoring-box`:
 
-- `yourusername/devops-monitoring-dashboard:latest`
-- `yourusername/devops-monitoring-dashboard:v1.0.0`
+- `<your-dockerhub-username>/devops-monitoring-box:latest`
+- `<your-dockerhub-username>/devops-monitoring-box:v1.0.0`
 
 ## 🏗️ Full Stack Deployment
 
@@ -118,21 +127,25 @@ For a complete monitoring stack deployment, use the provided `docker-compose.yml
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
 cd devops-monitoring-in-a-box
 
+# Generate required secrets (.env + alertmanager/webhook_token)
+./scripts/setup-env.sh
+
 # Start the full stack
-docker-compose up -d
+docker compose up -d
 ```
 
 This will start:
-- **Dashboard** (port 3000) - Your Next.js monitoring UI
-- **Prometheus** (port 9090) - Metrics collection
-- **Grafana** (port 3001) - Visualization dashboards
-- **Loki** (port 3100) - Log aggregation
-- **Alertmanager** (port 9093) - Alert management
-- **Node Exporter** (port 9100) - System metrics
-- **cAdvisor** (port 8080) - Container metrics
+- **Dashboard** (port `4000` → container `3000`) - Your Next.js monitoring UI
+- **Prometheus** (port `9090`) - Metrics collection
+- **Grafana** (port `3000`) - Visualization dashboards
+- **Loki** (port `3100`) - Log aggregation
+- **Alertmanager** (port `9093`) - Alert management
+- **Node Exporter** (port `9100`) - System metrics
+- **cAdvisor** (port `8080`) - Container metrics
+- **Blackbox Exporter** (port `9115`) - Synthetic HTTP/TCP/ICMP probing
 
 ### Using Only the Dashboard
 
@@ -140,10 +153,16 @@ If you only want to run the dashboard:
 
 ```bash
 # Pull the latest image
-docker pull yourusername/devops-monitoring-dashboard:latest
+docker pull harshhaareddy/devops-monitoring-box:latest
 
-# Run the container
-docker run -p 3000:3000 yourusername/devops-monitoring-dashboard:latest
+# Run the hardened container
+docker run -d -p 4000:3000 --name devops-monitor \
+  --read-only --cap-drop=ALL --security-opt=no-new-privileges:true \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m \
+  --tmpfs /app/.next/cache:rw,noexec,nosuid,nodev,uid=65532,gid=65532,size=64m \
+  -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
+  -e NEXTAUTH_URL="http://localhost:4000" \
+  harshhaareddy/devops-monitoring-box:latest
 ```
 
 ## 🔧 Configuration
@@ -155,10 +174,11 @@ The dashboard supports the following environment variables:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NODE_ENV` | `production` | Node.js environment |
-| `PORT` | `3000` | Application port |
+| `PORT` | `3000` | Internal container port |
 | `HOSTNAME` | `0.0.0.0` | Host binding |
+| `CONFIG_PATH` | `/tmp/config.json` | Runtime notification config path (writable under `--read-only`) |
 | `SITE_NAME` | `Monitoring in a Box` | Site title |
-| `SITE_URL` | `http://localhost:3000` | Site URL |
+| `SITE_URL` | `http://localhost:4000` | Public site URL |
 | `SITE_DESCRIPTION` | `Comprehensive DevOps monitoring...` | Site description |
 
 ### Custom Configuration
@@ -167,17 +187,20 @@ You can override the default configuration by:
 
 1. **Environment Variables:**
    ```bash
-   docker run -p 3000:3000 \
+   docker run -p 4000:3000 \
+     -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
      -e SITE_NAME="My Company Monitoring" \
      -e SITE_URL="https://monitoring.mycompany.com" \
-     yourusername/devops-monitoring-dashboard:latest
+     harshhaareddy/devops-monitoring-box:latest
    ```
 
 2. **Configuration Files:**
    ```bash
-   docker run -p 3000:3000 \
-     -v $(pwd)/config.json:/app/config.json \
-     yourusername/devops-monitoring-dashboard:latest
+   docker run -p 4000:3000 \
+     -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
+     -e CONFIG_PATH=/data/config.json \
+     -v $(pwd)/config.json:/data/config.json \
+     harshhaareddy/devops-monitoring-box:latest
    ```
 
 ## 🐛 Troubleshooting
@@ -186,12 +209,12 @@ You can override the default configuration by:
 
 1. **Build Fails:**
    - Check that all dependencies are properly installed
-   - Verify the Dockerfile syntax
+   - Verify you are building with context `./ui-next` (`docker build -f ui-next/Dockerfile ui-next`)
    - Ensure the Next.js build completes successfully
 
 2. **Container Won't Start:**
-   - Check port conflicts (ensure port 3000 is available)
-   - Verify environment variables
+   - Check port conflicts (ensure host port `4000` is available)
+   - Verify `NEXTAUTH_SECRET` and writable `/tmp` & `/app/.next/cache` tmpfs mounts when running `--read-only`
    - Check container logs: `docker logs <container-id>`
 
 3. **GitHub Actions Fails:**
@@ -201,34 +224,35 @@ You can override the default configuration by:
 
 ### Health Checks
 
-The container includes built-in health checks:
+The container includes a built-in native Node health check (`/api/health?live=1`):
 
 ```bash
 # Check container health
 docker ps
 
 # View health check logs
-docker inspect <container-id> | grep -A 10 Health
+docker inspect --format '{{json .State.Health}}' <container-id>
 ```
 
 ## 🔒 Security Features
 
 ### **Automated Security Scanning**
-- **Docker Scout** integration scans every build
-- **Vulnerability detection** for critical and high severity issues
-- **Build failure** on security issues
-- **Security reports** in pull requests
+- **Docker Scout** (`docker/scout-action@v1`) and **Trivy** (`ghcr.io/aquasecurity/trivy:0.69.0`) scan built images
+- **0-CVE Enforcement** across `CRITICAL`, `HIGH`, `MEDIUM`, and `LOW` severities (workflow fails if any CVE is found)
+- **Production dependency audit** (`npm audit --omit=dev --audit-level=low`) enforced in CI
+- **Security reports** surfaced in workflow summaries and pull requests
 
 ### **Security Measures**
-- **Updated dependencies** to latest secure versions
-- **Alpine Linux** base image with security updates
-- **Non-root user** execution
-- **Minimal attack surface** with multi-stage builds
+- **Updated dependencies** with zero production runtime vulnerabilities
+- **Distroless Chainguard Wolfi** runtime (`glibc-dynamic`, digest-pinned, no shell/BusyBox/npm/package manager)
+- **Non-root execution** (`65532:65532`) with `--read-only`, `cap_drop: [ALL]`, and `no-new-privileges:true` in Compose
+- **Minimal attack surface** with multi-stage builds and BuildKit `--ignore-scripts` dependency installation
 
 ## 📚 Additional Resources
 
-- [Security Guide](SECURITY_GUIDE.md) - Comprehensive security documentation
+- [Main README Security Notes](../README.md#-security-notes) - Compose and runtime hardening summary
+- [Production Setup Guide](PRODUCTION_SETUP.md) - Production secrets and environment checklist
 - [Docker Hub Documentation](https://docs.docker.com/docker-hub/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Next.js Docker Deployment](https://nextjs.org/docs/deployment#docker-image)
-- [Docker Multi-stage Builds](https://docs.docker.com/develop/dev-best-practices/dockerfile_best-practices/#use-multi-stage-builds)
+- [Next.js Docker Deployment](https://nextjs.org/docs/app/getting-started/deploying)
+- [Docker Multi-stage Builds](https://docs.docker.com/build/building/multi-stage/)

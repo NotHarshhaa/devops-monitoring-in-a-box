@@ -719,7 +719,9 @@ metrics:
 
 #### 4. Configuration API
 ```typescript
-// REST API for configuration management
+// Active runtime notification configuration endpoint:
+// GET / POST /api/notifications (persists to CONFIG_PATH, default /tmp/config.json in Docker)
+// Reference future full-config REST pattern:
 GET /api/config
 POST /api/config
 PUT /api/config

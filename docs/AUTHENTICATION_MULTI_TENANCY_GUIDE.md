@@ -96,9 +96,11 @@ model Configuration {
 
 ### **2. NextAuth.js Configuration**
 
+> **Note:** The active implementation uses `ui-next/lib/auth-simple.ts` (`CredentialsProvider` with `getAuthSecret()` and `ENABLE_DEMO_AUTH`) and `ui-next/proxy.ts` for route protection. Below is the extended Prisma + OAuth architecture pattern matching `ui-next/prisma/schema.prisma`.
+
 #### **Authentication Providers**
 ```typescript
-// lib/auth.ts
+// Example Prisma + OAuth NextAuth configuration (active app uses lib/auth-simple.ts)
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -146,9 +148,9 @@ export const authOptions: NextAuthOptions = {
 
 ### **3. Route Protection Middleware**
 
-#### **Authentication Middleware**
+#### **Authentication Proxy / Middleware**
 ```typescript
-// middleware.ts
+// Adapted from ui-next/proxy.ts (Next.js 16 proxy convention)
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
@@ -385,8 +387,9 @@ The system includes pre-configured demo users for testing:
 DATABASE_URL="file:./dev.db"
 
 # NextAuth.js
-NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:4000"   # Use http://localhost:3000 for local npm run dev
 NEXTAUTH_SECRET="your-secret-key-here"
+ENABLE_DEMO_AUTH="true"                # Set false for hardened production deployments
 
 # OAuth Providers (optional)
 GOOGLE_CLIENT_ID=""
@@ -435,23 +438,17 @@ npm run dev
 
 ## 🔧 **API Endpoints**
 
-### **Authentication Endpoints**
+### **Active Authentication Endpoints**
 - `POST /api/auth/register` - User registration
-- `POST /api/auth/signin` - User sign in
-- `POST /api/auth/signout` - User sign out
-- `GET /api/auth/session` - Get current session
+- `POST /api/auth/forgot-password` - Password reset request
+- `POST /api/auth/signin` - User sign in (NextAuth `[...nextauth]`)
+- `POST /api/auth/signout` - User sign out (NextAuth `[...nextauth]`)
+- `GET /api/auth/session` - Get current session (NextAuth `[...nextauth]`)
 
-### **User Management Endpoints**
-- `GET /api/users` - List users (Admin only)
-- `POST /api/users` - Create user (Admin only)
-- `PUT /api/users/[id]` - Update user (Admin only)
-- `DELETE /api/users/[id]` - Delete user (Admin only)
-
-### **Configuration Endpoints**
-- `GET /api/config` - Get user configuration
-- `POST /api/config` - Update user configuration
-- `GET /api/config/export` - Export user configuration
-- `POST /api/config/import` - Import user configuration
+### **Planned / Reference Multi-Tenant Endpoints**
+*(Schema-backed patterns for full database-persisted deployments; not active in default standalone mode)*
+- `GET /api/users`, `POST /api/users`, `PUT /api/users/[id]`, `DELETE /api/users/[id]` - Admin user management
+- `GET /api/config`, `POST /api/config`, `GET /api/config/export`, `POST /api/config/import` - User configuration CRUD (runtime notifications currently use `/api/notifications`)
 
 ## 🎯 **Key Benefits**
 

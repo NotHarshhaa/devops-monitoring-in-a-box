@@ -4,72 +4,74 @@ A modern monitoring dashboard for DevOps infrastructure, built with Next.js and 
 
 ## Tech Stack
 
-- **Next.js** - React framework with server-side rendering and file-based routing
-- **Tailwind CSS** - Utility-first CSS framework
-- **shadcn/ui** - High-quality UI components built with Radix UI and Tailwind
-- **Lucide Icons** - Beautiful, consistent icons
+- **Next.js 16** - React framework with App Router, Turbopack, and standalone output
+- **Tailwind CSS v4** - Utility-first CSS framework (`@tailwindcss/postcss`)
+- **shadcn/ui** - Accessible UI components built with Radix UI and Tailwind
+- **Hugeicons & Lucide Icons** - Clean icon sets (`@hugeicons/react` & `lucide-react`)
 - **Recharts** - Composable charting library for visualizing metrics
 - **React Query** - Data fetching and state management
 - **Framer Motion** - Animation library
 - **next-themes** - Theme management (dark/light mode)
+- **Vitest** - Unit testing (`npm run verify` runs ESLint, `tsc`, Vitest, and Next.js build)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm/yarn
+- Node.js 20+ (24 LTS recommended) and npm
 
 ### Installation
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/devops-monitoring-in-a-box.git
+git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
 cd devops-monitoring-in-a-box/ui-next
 ```
 
 2. Install dependencies
 ```bash
 npm install
-# or
-yarn
 ```
 
 3. Start the development server
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:3000](http://localhost:3000) in your browser (Docker Compose serves the built UI on [http://localhost:4000](http://localhost:4000))
 
 ## Project Structure
 
 ```
 devops-monitoring-in-a-box/ui-next/
-├── app/                    # Next.js app directory
-│   ├── dashboard/          # Dashboard page
-│   ├── services/           # Services page
-│   ├── metrics/            # Metrics page
-│   ├── logs/               # Logs page
-│   ├── alerts/             # Alerts page
-│   ├── settings/           # Settings page
-│   ├── globals.css         # Global styles
+├── app/                    # Next.js App Router pages & API routes
+│   ├── admin/              # Admin center page
+│   ├── alerts/             # Alerts & silence management
+│   ├── api/                # auth, health, notifications, proxy, ssl routes
+│   ├── auth/               # signin, signup, forgot-password, error pages
+│   ├── dashboard/          # Main monitoring dashboard
+│   ├── logs/               # Loki log search & live tail
+│   ├── metrics/            # Prometheus metrics charts
+│   ├── plugins/            # Plugin manager & data viewer
+│   ├── profile/            # User profile page
+│   ├── services/           # Service health, Blackbox SLA, SSL tracker
+│   ├── settings/           # Notification & site settings
+│   ├── templates/          # Grafana dashboard template marketplace
+│   ├── version/            # Component version monitor
+│   ├── globals.css         # Tailwind v4 & shadcn global styles
 │   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Root page (redirects to dashboard)
-├── components/             # React components
-│   ├── ui/                 # UI components from shadcn/ui
-│   ├── sidebar.tsx         # Sidebar component
-│   ├── theme-provider.tsx  # Theme provider component
-│   ├── theme-toggle.tsx    # Theme toggle component
-│   └── query-provider.tsx  # React Query provider
-├── lib/                    # Utility functions
-│   └── utils.ts            # Utility functions
+│   └── page.tsx            # Root redirect
+├── components/             # React components (app-shell.tsx, ui/, etc.)
+├── hooks/                  # React hooks
+├── lib/                    # Service API clients, auth-simple, config, server helpers
+├── prisma/                 # Prisma SQLite schema & seed script
 ├── public/                 # Static assets
-├── next.config.js          # Next.js configuration
-├── package.json            # Project dependencies
-├── postcss.config.js       # PostCSS configuration
-├── tailwind.config.js      # Tailwind CSS configuration
+├── tests/                  # Vitest unit tests
+├── Dockerfile              # Multi-stage Chainguard Wolfi distroless build
+├── next.config.js          # Next.js configuration (standalone output)
+├── package.json            # Dependencies and npm scripts
+├── postcss.config.mjs      # Tailwind CSS v4 PostCSS plugin configuration
+├── proxy.ts                # NextAuth session & route protection proxy
 └── tsconfig.json           # TypeScript configuration
 ```
 
@@ -87,18 +89,17 @@ devops-monitoring-in-a-box/ui-next/
 
 The UI connects to the following monitoring services:
 
-- **Prometheus** - For system metrics
+- **Prometheus** - For system metrics and Blackbox probe metrics
 - **Loki** - For log aggregation
-- **Alertmanager** - For alert management
+- **Alertmanager** - For alert management & silences
 
-API proxying is configured in `next.config.js` to avoid CORS issues.
+Authenticated API proxying is handled server-side through `app/api/proxy/[service]/[...path]/route.ts` with allowlisted paths in `lib/server/upstream.ts` to keep monitoring backends private and avoid CORS issues.
 
-## Build for Production
+## Build & Verify
 
 ```bash
-npm run build
-# or
-yarn build
+npm run verify   # ESLint, TypeScript check, Vitest unit suite, and production build
+npm run build    # Prisma generate + Next.js standalone production build
 ```
 
 ## Contributing

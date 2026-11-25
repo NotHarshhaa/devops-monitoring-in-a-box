@@ -19,9 +19,9 @@ Configure your Monitoring in a Box platform using environment variables. Create 
 ```bash
 # Site Information
 SITE_NAME="Monitoring in a Box"                    # Your platform name
-SITE_URL="http://localhost:3000"                   # Your platform URL
+SITE_URL="http://localhost:4000"                   # Public UI URL (3000 in local npm run dev)
 SITE_DESCRIPTION="Modern monitoring solution"      # Site description
-SITE_VERSION="1.0.0"                              # Platform version
+SITE_VERSION="2.5.0"                               # Platform version
 
 # SEO Configuration
 SEO_TITLE="Monitoring in a Box - Infrastructure Monitoring"
@@ -29,18 +29,20 @@ SEO_DESCRIPTION="Comprehensive DevOps monitoring solution"
 SEO_KEYWORDS="devops,monitoring,infrastructure,metrics"
 SEO_AUTHOR="Monitoring in a Box Team"
 SEO_ROBOTS="index,follow"
-SEO_CANONICAL="http://localhost:3000"
+SEO_CANONICAL="http://localhost:4000"
 ```
 
 ### 🔐 Authentication & Security
 ```bash
-# Authentication
+# Authentication (generate with ./scripts/setup-env.sh)
 NEXTAUTH_SECRET="your-secret-key-here"             # Required for JWT tokens
-NEXTAUTH_URL="http://localhost:3000"               # Your app URL
+NEXTAUTH_URL="http://localhost:4000"               # Public UI URL (3000 in local npm run dev)
+ALERT_WEBHOOK_TOKEN="your-webhook-token-here"      # Required by Compose for Alertmanager webhook
+ENABLE_DEMO_AUTH="false"                           # Set true only for demo environments
+CONFIG_PATH="/tmp/config.json"                     # Writable notification config path
 
-# Database
-DATABASE_URL="file:./dev.db"                       # SQLite for development
-# DATABASE_URL="postgresql://user:pass@localhost:5432/monitoring"  # PostgreSQL for production
+# Database (SQLite used by ui-next/prisma/schema.prisma)
+DATABASE_URL="file:./dev.db"
 
 # Session Configuration
 SESSION_MAX_AGE="30d"                              # Session duration
@@ -259,7 +261,7 @@ K8S_INGRESS_CLASS="nginx"                          # Ingress class
 
 3. **Restart services**:
    ```bash
-   docker-compose down && docker-compose up -d
+   docker compose down && docker compose up -d
    ```
 
 ### Using Configuration Files
@@ -277,11 +279,14 @@ K8S_INGRESS_CLASS="nginx"                          # Ingress class
 
 ### Configuration Validation
 ```bash
-# Validate configuration
-npm run validate-config
+# Validate Compose and monitoring YAML/rules (PowerShell on Windows)
+.\scripts\devops-monitor.ps1 validate
 
-# Test configuration
-npm run test-config
+# Or validate Compose directly
+docker compose config
+
+# Run UI lint, TypeScript check, Vitest tests, and Next.js build
+cd ui-next && npm run verify
 ```
 
 ## Quick Setup Examples
@@ -312,15 +317,15 @@ SMTP_PASS=your-app-password
 SLACK_WEBHOOK_URL=https://hooks.slack.com/...
 ```
 
-### Docker Compose Environment
+### Docker Compose Overrides
 ```yaml
-# docker-compose.override.yml
-version: '3.8'
+# docker-compose.override.yml (optional local overrides for docker-compose.yml)
 services:
-  ui-next:
+  devops-monitor-ui:
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://monitoring:password@postgres:5432/monitoring
+      - DOCKER_ENV=true
+      - CONFIG_PATH=/tmp/config.json
       - PROMETHEUS_URL=http://prometheus:9090
       - GRAFANA_URL=http://grafana:3000
       - LOKI_URL=http://loki:3100
@@ -425,14 +430,14 @@ LOG_LEVEL=debug npm start
 
 ### Health Checks
 ```bash
-# Check all services
-curl http://localhost:3000/api/health
+# Check overall stack health summary (Compose UI runs on port 4000)
+curl http://localhost:4000/api/health
 
-# Check individual components
-curl http://localhost:3000/api/health/prometheus
-curl http://localhost:3000/api/health/grafana
-curl http://localhost:3000/api/health/loki
-curl http://localhost:3000/api/health/alertmanager
+# Lightweight liveness probe (used by container HEALTHCHECK)
+curl http://localhost:4000/api/health?live=1
+
+# Strict readiness check (returns 503 if any upstream service is down)
+curl http://localhost:4000/api/health?strict=true
 ```
 
 ## Best Practices
@@ -470,10 +475,8 @@ curl http://localhost:3000/api/health/alertmanager
 For additional help with configuration:
 
 - 📖 **Documentation**: [Complete Documentation](README.md)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
-- 💬 **Community**: [Discord Server](https://discord.gg/monitoring-in-a-box)
-- 📧 **Email**: support@monitoringinabox.com
+- 🐛 **Issues**: [GitHub Issues](https://github.com/NotHarshhaa/devops-monitoring-in-a-box/issues)
 
 ---
 
-**Need help?** Check our [troubleshooting guide](TROUBLESHOOTING.md) or reach out to our community!
+**Need help?** Check the [Setup Troubleshooting](SETUP.md#troubleshooting) section or open a GitHub issue!

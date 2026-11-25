@@ -6,26 +6,32 @@ This document provides a comprehensive overview of the Monitoring in a Box proje
 
 ```bash
 devops-monitoring-in-a-box/
+├── .github/workflows/           # CI (ci.yml) & Docker release (docker-publish.yml)
 ├── README.md                    # Project overview and quick start
+├── DOCKER_README.md             # Docker quick-start guide
 ├── env.example                  # Environment variables template
 ├── site-config.json             # Site configuration (SEO, branding, etc.)
 ├── config.json                  # Monitoring configuration
-├── docker-compose.yml           # Production monitoring stack
+├── config.yaml                  # Extended YAML configuration
+├── docker-compose.yml           # Hardened production monitoring stack
 ├── docker-compose.dev.yml       # Development setup with hot reloading
+├── docker-compose.logging.yml   # Logging configuration overrides
 ├── devops-monitor.sh            # Main management script wrapper
 ├── scripts/                     # Management and setup scripts
 │   ├── README.md                # Scripts documentation
 │   ├── devops-monitor.sh        # Main management script
+│   ├── devops-monitor.ps1       # Native Windows PowerShell management script
 │   ├── start.sh                 # Quick start script
 │   ├── stop.sh                  # Stop all services
 │   ├── start-ui.sh              # Start UI development server
 │   ├── start-full-stack.sh      # Full stack startup script
 │   ├── setup-ui-next.sh         # UI setup script
-│   ├── setup-env.sh             # Environment setup script
+│   ├── setup-env.sh             # Environment & secret generation script
 │   ├── generate-env.sh          # Environment generation script
-│   └── test-docker-build.sh     # Docker build testing script
-├── LICENSE                      # MIT License
-└── package-lock.json            # NPM lock file
+│   ├── health-check.sh          # Stack health probe script
+│   ├── build-and-push.sh        # Multi-arch build and push helper
+│   └── test-docker-build.sh     # Docker build + Trivy/Scout 0-CVE check script
+└── LICENSE                      # MIT License
 ```
 
 ## 📜 Management Scripts
@@ -34,28 +40,28 @@ devops-monitoring-in-a-box/
 scripts/
 ├── README.md                    # Scripts documentation and usage guide
 ├── devops-monitor.sh            # Main management script for the stack
+├── devops-monitor.ps1           # Windows PowerShell CLI (start, health, validate, verify, probe)
 ├── start.sh                     # Quick start script
 ├── stop.sh                      # Quick stop script
-├── start-ui.sh                  # UI development server startup
+├── start-ui.sh                  # Start UI development server
 ├── start-full-stack.sh          # Full stack startup script
 ├── setup-ui-next.sh             # UI setup and configuration
-├── setup-env.sh                 # Environment setup script
+├── setup-env.sh                 # Environment & Alertmanager secret generation
 ├── generate-env.sh              # Environment generation script
-└── test-docker-build.sh         # Docker build testing script
+├── health-check.sh              # Service endpoint health probe helper
+├── build-and-push.sh            # Docker Hub build & push helper
+└── test-docker-build.sh         # Docker build + Trivy/Scout security verification
 ```
 
 **Purpose**: Centralized location for all management and setup scripts.
 
 **Key Scripts:**
-- **`devops-monitor.sh`** - Main management script with start/stop/status/logs commands
-- **`start.sh`** - Quick start for the monitoring stack
-- **`stop.sh`** - Quick stop for all services
-- **`start-ui.sh`** - Start UI development server
-- **`start-full-stack.sh`** - Full stack startup with all services
+- **`devops-monitor.sh` / `devops-monitor.ps1`** - Cross-platform stack CLI (`start`, `stop`, `status`, `health`, `logs`, `validate`, `verify`)
+- **`start.sh` / `stop.sh`** - Quick start and stop helpers
+- **`start-ui.sh` / `start-full-stack.sh`** - Local UI dev server and full stack launchers
 - **`setup-ui-next.sh`** - Complete UI setup and configuration
-- **`setup-env.sh`** - Environment configuration setup
-- **`generate-env.sh`** - Interactive environment file generation
-- **`test-docker-build.sh`** - Docker build testing and validation
+- **`setup-env.sh` / `generate-env.sh`** - Secure `.env` and `alertmanager/webhook_token` generators
+- **`test-docker-build.sh`** - Builds `ui-next/Dockerfile` and runs Trivy & Docker Scout 0-CVE checks
 
 ## 🔧 Core Monitoring Services
 
@@ -63,7 +69,10 @@ scripts/
 ```bash
 prometheus/
 ├── prometheus.yml               # Scrape configurations and targets
-└── alert_rules.yml              # Pre-configured alert rules
+├── alert_rules.yml              # Pre-configured alert rules
+├── recording_rules.yml          # Pre-aggregated recording rules
+├── probe_rules.yml              # Blackbox probe availability rules
+└── targets/                     # Hot-reloaded synthetic probe target files
 ```
 
 **Purpose**: Prometheus metrics collection and alerting configuration.
@@ -102,36 +111,26 @@ alertmanager/
 ### Next.js App Directory Structure
 ```bash
 ui-next/
-├── app/                         # Next.js 13+ app directory
-│   ├── admin/                   # Admin panel pages
-│   │   └── page.tsx             # Admin dashboard
-│   ├── alerts/                  # Alert management pages
-│   │   └── page.tsx             # Alert overview and management
+├── app/                         # Next.js 16 App Router pages & routes
+│   ├── admin/                   # Admin panel page
+│   ├── alerts/                  # Alert management & silence manager
 │   ├── api/                     # API routes
-│   │   ├── auth/                # Authentication API endpoints
-│   │   ├── config/              # Configuration API endpoints
-│   │   ├── health/              # Health check API endpoints
-│   │   └── webhooks/            # Webhook API endpoints
-│   ├── auth/                    # Authentication pages
-│   │   ├── login/               # Login page
-│   │   └── register/            # Registration page
-│   ├── dashboard/               # Main dashboard
-│   │   └── page.tsx             # Primary monitoring dashboard
-│   ├── logs/                    # Log viewing pages
-│   │   └── page.tsx             # Log search and visualization
-│   ├── metrics/                 # Metrics visualization
-│   │   └── page.tsx             # Metrics charts and analysis
-│   ├── plugins/                 # Plugin management
-│   │   └── page.tsx             # Plugin installation and configuration
-│   ├── profile/                 # User profile pages
-│   │   └── page.tsx             # User profile and settings
-│   ├── services/                # Service monitoring
-│   │   └── page.tsx             # Service health and status
-│   ├── settings/                # Settings and configuration
-│   │   └── page.tsx             # System settings and preferences
-│   ├── templates/               # Dashboard templates
-│   │   └── page.tsx             # Template management and marketplace
-│   ├── globals.css              # Global CSS styles
+│   │   ├── auth/                # NextAuth, register, forgot-password endpoints
+│   │   ├── health/              # Stack & liveness health endpoint
+│   │   ├── notifications/       # Config, send, test/[channel], webhook routes
+│   │   ├── proxy/               # Authenticated upstream proxy allowlist
+│   │   └── ssl/                 # Session-authenticated SSL/TLS checker
+│   ├── auth/                    # signin, signup, forgot-password, error pages
+│   ├── dashboard/               # Primary monitoring dashboard
+│   ├── logs/                    # Loki log search & live tail
+│   ├── metrics/                 # Prometheus metrics charts & analysis
+│   ├── plugins/                 # Plugin installation & data viewer
+│   ├── profile/                 # User profile & account settings
+│   ├── services/                # Service health, Blackbox SLA, SSL tracker
+│   ├── settings/                # System settings & notification channels
+│   ├── templates/               # Grafana template management & marketplace
+│   ├── version/                 # Monitoring component version tracker
+│   ├── globals.css              # Tailwind v4 & shadcn global styles
 │   ├── layout.tsx               # Root layout with metadata and providers
 │   └── page.tsx                 # Home page
 ```
@@ -139,6 +138,7 @@ ui-next/
 ### React Components
 ```bash
 ui-next/components/
+├── app-shell.tsx                # Navigation shell and responsive sidebar
 ├── client-only.tsx              # Client-side only wrapper component
 ├── config-loader.tsx            # Configuration management component
 ├── dashboard-template-manager.tsx    # Template management interface
@@ -153,7 +153,6 @@ ui-next/components/
 ├── plugin-manager.tsx           # Plugin management interface
 ├── query-provider.tsx           # React Query provider wrapper
 ├── session-provider.tsx         # Session management provider
-├── sidebar.tsx                  # Navigation sidebar component
 ├── site-config-manager.tsx      # Site configuration management UI
 ├── theme-provider.tsx           # Theme management provider
 ├── theme-toggle.tsx             # Theme switcher component
@@ -172,8 +171,9 @@ ui-next/hooks/
 ```bash
 ui-next/lib/
 ├── alertmanager-api.ts          # Alertmanager API client
-├── auth-simple.ts               # Simple authentication utilities
-├── auth.ts                      # Authentication utilities and providers
+├── auth-config-check.ts         # Startup NextAuth configuration validation
+├── auth-secret.ts               # Signing secret resolution helper
+├── auth-simple.ts               # Active NextAuth credentials provider & role logic
 ├── config/                      # Configuration management system
 │   ├── types.ts                 # TypeScript interfaces and types
 │   ├── site-config.ts           # Site configuration manager
@@ -181,13 +181,20 @@ ui-next/lib/
 │   └── multi-tenant-manager.ts  # Multi-tenant configuration manager
 ├── config.ts                    # General configuration utilities
 ├── dashboard-templates.ts       # Dashboard template management
-├── health-api.ts                # Health check API client
+├── health-api.ts                # Client health check API helpers
+├── hooks/                       # Service query hooks (metrics, logs, alerts, versions)
+├── http-client.ts               # Retry-aware Axios HTTP client
 ├── loki-api.ts                  # Loki API client for log queries
-├── notification-service.ts      # Notification service integration
-├── prisma-server.ts             # Prisma server-side utilities
-├── prisma.ts                    # Database client configuration
+├── notification-service.ts      # Notification service & secret masking
+├── plugins/                     # Plugin registry & implementations
+├── prisma-server.ts             # Prisma server-side client helper
 ├── prometheus-api.ts            # Prometheus API client
+├── server/                      # Server-only auth, health collector, upstream allowlist
+├── service-config.ts            # Upstream service endpoint resolver
+├── ssl-target.ts                # SSRF-safe SSL host/port validator
+├── template-filters.ts          # Template marketplace filtering helpers
 ├── template-import-service.ts   # Template import and export service
+├── url-filters.ts               # URL-synced search/filter helpers
 ├── utils.ts                     # General utility functions
 └── version-monitor.ts           # Version monitoring utilities
 ```
@@ -220,54 +227,52 @@ ui-next/public/
 └── apple-touch-icon.png         # iOS home screen icon
 ```
 
-### Utility Scripts
-```bash
-ui-next/scripts/
-└── generate-site-config.js      # Interactive site configuration generator
-```
-
-### Configuration Files
+### Configuration, Tests & Build Files
 ```bash
 ui-next/
-├── Dockerfile                   # Production Docker image configuration
-├── Dockerfile.dev               # Development Docker image configuration
-├── next.config.js               # Next.js framework configuration
+├── Dockerfile                   # Multi-stage Chainguard Wolfi distroless build
+├── build-docker.sh              # Local/multi-arch Docker build helper
+├── eslint.config.mjs            # ESLint flat config
+├── next.config.js               # Next.js configuration (standalone output)
 ├── package.json                 # Dependencies and npm scripts
-├── tailwind.config.js           # Tailwind CSS configuration
+├── postcss.config.mjs           # Tailwind CSS v4 PostCSS config
+├── proxy.ts                     # NextAuth session & route protection proxy
+├── test-prisma.js               # Database connection testing script
+├── tests/                       # Vitest unit tests
 ├── tsconfig.json                # TypeScript configuration
-├── middleware.ts                # Next.js middleware for authentication
-└── test-prisma.js               # Database connection testing script
+└── vitest.config.ts             # Vitest test runner configuration
 ```
 
 ## 📚 Documentation
 
 ```bash
 docs/
-├── README.md                    # Documentation index and overview
-├── SETUP.md                     # Detailed setup instructions
-├── CONFIGURATION_GUIDE.md       # Complete configuration reference
-├── PROJECT_STRUCTURE.md         # This file - project structure overview
-├── PROMETHEUS_INTEGRATION.md    # Prometheus setup and configuration guide
-├── LOKI_INTEGRATION.md          # Loki log aggregation guide
-├── ALERTMANAGER_INTEGRATION.md  # Alert management and notifications guide
-├── AUTHENTICATION_MULTI_TENANCY_GUIDE.md # Authentication and multi-tenancy
-├── UI_README.md                 # UI application documentation
-├── CONFIG_SYSTEM_GUIDE.md       # Configuration system guide
-├── SITE_CONFIGURATION_GUIDE.md  # Site configuration and branding guide
-├── SERVICE_HEALTH_GUIDE.md      # Health monitoring and status checks
-├── UX_IMPROVEMENTS_GUIDE.md     # UI/UX enhancements and best practices
-├── PLUGIN_SYSTEM_GUIDE.md       # Plugin system documentation
+├── README.md                              # Documentation index and overview
+├── SETUP.md                               # Detailed setup instructions
+├── DOCKER_DEPLOYMENT_GUIDE.md             # Distroless build & CI release guide
+├── CONFIGURATION_GUIDE.md                 # Complete configuration reference
+├── CONFIGURATION_ENHANCEMENT_GUIDE.md     # Advanced configuration enhancements
+├── PROJECT_STRUCTURE.md                   # This file - project structure overview
+├── PROMETHEUS_INTEGRATION.md              # Prometheus setup and configuration guide
+├── LOKI_INTEGRATION.md                    # Loki log aggregation guide
+├── ALERTMANAGER_INTEGRATION.md            # Alert management and notifications guide
+├── AUTHENTICATION_MULTI_TENANCY_GUIDE.md  # Authentication and multi-tenancy
+├── UI_README.md                           # UI application documentation
+├── CONFIG_SYSTEM_GUIDE.md                 # Configuration system guide
+├── SERVICE_HEALTH_GUIDE.md                # Health monitoring and status checks
+├── UX_IMPROVEMENTS_GUIDE.md               # UI/UX enhancements and best practices
+├── PLUGIN_SYSTEM_GUIDE.md                 # Plugin system documentation
 ├── DASHBOARD_TEMPLATE_MANAGEMENT_GUIDE.md # Template management guide
-├── NOTIFICATIONS_INTEGRATION.md # Notification system setup guide
-└── PRODUCTION_SETUP.md          # Production deployment guide
+├── NOTIFICATIONS_INTEGRATION.md           # Notification system setup guide
+└── PRODUCTION_SETUP.md                    # Production deployment guide
 ```
 
 ## 🔌 System Exporters
 
 ```bash
 exporters/
-└── node-exporter/               # System metrics exporter configuration
-    └── [exporter configs]       # Node exporter setup and configuration
+└── blackbox/                    # Blackbox Exporter HTTP/TCP/ICMP probing config
+    └── config.yml
 ```
 
 ## 🎯 Key Features by Directory
@@ -279,16 +284,17 @@ exporters/
 - **Alerting**: Alertmanager with multi-channel notifications
 
 ### Modern Web Interface (`ui-next/`)
-- **Next.js 13+ App Router**: Modern React framework with app directory
+- **Next.js 16 App Router**: Modern React framework with Turbopack and standalone output
 - **TypeScript**: Full type safety throughout the application
-- **Tailwind CSS**: Utility-first CSS framework for styling
-- **Prisma**: Type-safe database client and migrations
-- **Authentication**: Secure user authentication and session management
-- **Real-time Updates**: Live data refresh and WebSocket connections
+- **Tailwind CSS v4**: Utility-first CSS framework (`@tailwindcss/postcss`)
+- **Prisma**: Type-safe database client (`@prisma/client` v6)
+- **Authentication**: NextAuth v4 credentials session management (`lib/auth-simple.ts`) and route proxy (`proxy.ts`)
+- **Real-time Updates**: Auto-refreshing queries, live Loki log tail, and server-side upstream proxy allowlist
 - **Responsive Design**: Mobile-first responsive design
 - **Theme Support**: Light/dark theme switching
 - **Plugin System**: Extensible plugin architecture
-- **Configuration Management**: Dynamic configuration system
+- **Configuration Management**: Dynamic configuration & notification service
+- **Distroless 0-CVE Container**: Chainguard Wolfi (`glibc-dynamic`) multi-stage runtime
 
 ### Documentation (`docs/`)
 - **Comprehensive Guides**: Detailed documentation for all features
@@ -301,14 +307,13 @@ exporters/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/devops-monitoring-in-a-box.git
+   git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
    cd devops-monitoring-in-a-box
    ```
 
-2. **Set up environment**:
+2. **Generate environment secrets and Alertmanager token**:
    ```bash
-   cp env.example .env
-   # Edit .env with your configuration
+   ./scripts/setup-env.sh
    ```
 
 3. **Start the monitoring stack**:
@@ -322,10 +327,12 @@ exporters/
    - **Prometheus**: http://localhost:9090
    - **Loki**: http://localhost:3100
    - **Alertmanager**: http://localhost:9093
+   - **Blackbox Exporter**: http://localhost:9115
 
 ## 📖 Related Documentation
 
 - **[Setup Guide](SETUP.md)** - Detailed setup instructions
+- **[Docker Deployment Guide](DOCKER_DEPLOYMENT_GUIDE.md)** - Distroless build & CI release workflow
 - **[Configuration Guide](CONFIGURATION_GUIDE.md)** - Complete configuration reference
 - **[UI Documentation](UI_README.md)** - Web interface features and usage
 - **[Plugin System](PLUGIN_SYSTEM_GUIDE.md)** - Plugin development and management
@@ -333,8 +340,8 @@ exporters/
 ## 🔧 Development
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Docker and Docker Compose
+- Node.js 20+ (24 LTS recommended) and npm
+- Docker and Docker Compose (v2+)
 - Git
 
 ### Development Setup
@@ -349,8 +356,8 @@ exporters/
 # Or manually:
 cd ui-next
 npm install
-cp ../env.example .env
 npm run dev
+npm run verify   # ESLint, TypeScript check, Vitest suite, Next.js build
 ```
 
 ### Building for Production
@@ -377,4 +384,4 @@ This project is licensed under the MIT License - see the [LICENSE](../LICENSE) f
 
 ---
 
-**Need help?** Check our [troubleshooting guide](TROUBLESHOOTING.md) or reach out to our community!
+**Need help?** Check the [Setup Troubleshooting](SETUP.md#troubleshooting) section or reach out to our community!

@@ -6,7 +6,9 @@ Welcome to the comprehensive documentation for the DevOps Monitoring in a Box pr
 
 ### 🚀 Getting Started
 - **[Setup Guide](SETUP.md)** - Complete setup instructions for the monitoring stack
+- **[Docker Deployment Guide](DOCKER_DEPLOYMENT_GUIDE.md)** - Distroless Wolfi container build, hardening, and Docker Hub publishing
 - **[Configuration Guide](CONFIGURATION_GUIDE.md)** - Complete configuration reference with environment variables
+- **[Production Setup Guide](PRODUCTION_SETUP.md)** - Production environment and security hardening checklist
 - **[Project Structure](PROJECT_STRUCTURE.md)** - Complete project structure overview
 - **[Main README](../README.md)** - Project overview and quick start guide
 
@@ -14,15 +16,16 @@ Welcome to the comprehensive documentation for the DevOps Monitoring in a Box pr
 
 #### Prometheus Integration
 - **[Prometheus Integration Guide](PROMETHEUS_INTEGRATION.md)** - Complete guide to Prometheus setup, configuration, and usage
-- **[Alert Rules Configuration](PROMETHEUS_INTEGRATION.md#alert-rules)** - Setting up and managing alert rules
+- **[Prometheus Queries Reference](PROMETHEUS_INTEGRATION.md#prometheus-queries-used)** - CPU, memory, disk, network, and load PromQL expressions
+- **[Alert Rules Configuration](ALERTMANAGER_INTEGRATION.md#configuration)** - Setting up and managing alert rules
 
 #### Grafana Dashboards
-- **[Dashboard Configuration](PROMETHEUS_INTEGRATION.md#grafana-dashboards)** - Creating and customizing monitoring dashboards
-- **[Data Source Setup](PROMETHEUS_INTEGRATION.md#data-sources)** - Configuring Prometheus as a data source
+- **[Grafana Dashboard Provisioning](SETUP.md#grafana-dashboard)** - Pre-configured dashboards and custom provisioning
+- **[Grafana Datasources](../grafana/datasources)** - Pre-provisioned Prometheus and Loki datasources
 
 #### Loki Log Management
 - **[Loki Integration Guide](LOKI_INTEGRATION.md)** - Centralized log aggregation and search
-- **[Log Shipping Configuration](LOKI_INTEGRATION.md#log-shipping)** - Setting up Promtail for log collection
+- **[Log Shipping Configuration](LOKI_INTEGRATION.md#configuration)** - Setting up Promtail for log collection
 
 #### AlertManager
 - **[AlertManager Integration](ALERTMANAGER_INTEGRATION.md)** - Alert routing, grouping, and notification management
@@ -52,7 +55,7 @@ Welcome to the comprehensive documentation for the DevOps Monitoring in a Box pr
 
 #### Service Health Monitoring
 - **[Service Health Guide](SERVICE_HEALTH_GUIDE.md)** - Monitoring service availability and performance
-- **[Health Check Endpoints](SERVICE_HEALTH_GUIDE.md#health-endpoints)** - API endpoints for service health
+- **[Health Check Endpoints](SERVICE_HEALTH_GUIDE.md#api-reference)** - API endpoints and health check methods
 
 #### User Experience
 - **[UX Improvements Guide](UX_IMPROVEMENTS_GUIDE.md)** - User interface enhancements and best practices
@@ -62,7 +65,7 @@ Welcome to the comprehensive documentation for the DevOps Monitoring in a Box pr
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Next.js UI    │    │   Prometheus    │    │     Grafana     │
-│   (Port 3000)   │◄──►│   (Port 9090)   │◄──►│   (Port 3001)   │
+│   (Port 4000)   │◄──►│   (Port 9090)   │◄──►│   (Port 3000)   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          │                       ▼                       │
@@ -82,32 +85,36 @@ Welcome to the comprehensive documentation for the DevOps Monitoring in a Box pr
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
    cd devops-monitoring-in-a-box
    ```
 
-2. **Start the monitoring stack**
+2. **Generate required secrets and start the stack**
    ```bash
-   ./start.sh
+   ./scripts/setup-env.sh
+   docker compose up -d
+   # Or use the wrapper script:
+   ./devops-monitor.sh start
    ```
 
 3. **Access the applications**
-   - **Web UI**: http://localhost:3000
-   - **Grafana**: http://localhost:3001
+   - **Web UI**: http://localhost:4000 (or http://localhost:3000 when running `npm run dev` locally)
+   - **Grafana**: http://localhost:3000
    - **Prometheus**: http://localhost:9090
    - **Loki**: http://localhost:3100
+   - **Alertmanager**: http://localhost:9093
 
 ## 📋 Prerequisites
 
-- Docker and Docker Compose
-- Node.js 18+ (for UI development)
+- Docker and Docker Compose (v2+)
+- Node.js 20+ (24 LTS recommended for local UI development)
 - Basic knowledge of monitoring concepts
 
 ## 🔐 Authentication
 
-The system supports multiple authentication methods:
-- **Demo Users**: Pre-configured users for testing
-- **OAuth Providers**: Google, GitHub integration
+The system uses NextAuth v4 (`ui-next/lib/auth-simple.ts`) with session protection (`ui-next/proxy.ts`):
+- **Demo Users**: Enabled outside production (`ENABLE_DEMO_AUTH=true` in Compose for out-of-the-box demos; set `false` for hardened production)
+- **Prisma Schema**: Includes optional OAuth account/session models for custom database-backed deployments
 - **Role-Based Access**: Admin, Editor, Viewer roles
 
 ### Demo Credentials
@@ -181,4 +188,4 @@ This project is licensed under the MIT License - see the [LICENSE](../LICENSE) f
 
 **Built with ❤️ by Harshhaa**
 
-*Last updated: September 2025*
+*Last updated: November 2026*

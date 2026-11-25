@@ -18,14 +18,23 @@ For production deployment, set these environment variables:
 NEXTAUTH_URL=https://your-domain.com
 NEXTAUTH_SECRET=your-secure-random-secret-key-here
 
-# Database
-DATABASE_URL=postgresql://username:password@host:port/database
+# Alertmanager webhook authentication (required by docker-compose.yml)
+ALERT_WEBHOOK_TOKEN=your-secure-webhook-token
+
+# Disable demo login accounts in exposed production deployments
+ENABLE_DEMO_AUTH=false
 ```
 
 ### Optional Variables
 
 ```bash
-# OAuth Providers
+# Runtime notification config location (defaults to /tmp/config.json in Docker)
+CONFIG_PATH=/tmp/config.json
+
+# SQLite database URL used by prisma/schema.prisma
+DATABASE_URL="file:./dev.db"
+
+# OAuth Providers (when extending auth with OAuth)
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GITHUB_CLIENT_ID=your-github-client-id
@@ -41,16 +50,16 @@ EMAIL_FROM=noreply@your-domain.com
 
 ## 🔐 Security Considerations
 
-1. **Generate a secure NEXTAUTH_SECRET**:
+1. **Generate `NEXTAUTH_SECRET` and `ALERT_WEBHOOK_TOKEN`** (`./scripts/setup-env.sh` or `.\scripts\devops-monitor.ps1 init-env`):
    ```bash
    openssl rand -base64 32
    ```
 
-2. **Use a production database** (PostgreSQL recommended)
+2. **Disable demo credentials** (`ENABLE_DEMO_AUTH=false`) and change default Grafana credentials before exposing the stack.
 
-3. **Configure OAuth providers** for secure authentication
+3. **Keep backend ports private** (Prometheus `9090`, Loki `3100`, Alertmanager `9093`, Blackbox `9115`) — the Next.js proxy communicates over the internal Docker network.
 
-4. **Set up proper email configuration** for notifications
+4. **Run with least privilege**: `docker-compose.yml` enforces `read_only: true`, `cap_drop: [ALL]`, `no-new-privileges:true`, and distroless `65532:65532` execution on the UI service.
 
 ## 📦 Deployment Platforms
 
@@ -62,10 +71,10 @@ EMAIL_FROM=noreply@your-domain.com
 
 ### Docker
 ```bash
-# Create .env file with your variables
-cp env.example .env
-# Edit .env with your production values
-docker-compose up -d
+# Generate .env and alertmanager/webhook_token safely
+./scripts/setup-env.sh
+# Edit .env with your production values (e.g., ENABLE_DEMO_AUTH=false)
+docker compose up -d
 ```
 
 ### Other Platforms

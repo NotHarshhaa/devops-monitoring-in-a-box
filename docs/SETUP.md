@@ -13,7 +13,7 @@ Before you begin, ensure you have the following installed on your system:
 
 - **RAM**: Minimum 2GB, Recommended 4GB+
 - **Storage**: At least 5GB free space
-- **Ports**: Ensure ports 3000, 9090, 3100, 9093, 8080, 9100 are available
+- **Ports**: Ensure ports `4000` (Web UI), `3000` (Grafana), `9090` (Prometheus), `3100` (Loki), `9093` (Alertmanager), `9115` (Blackbox), `8080` (cAdvisor), and `9100` (Node Exporter) are available
 
 ## 🔧 Installation Steps
 
@@ -76,19 +76,18 @@ brew install --cask docker
 
 Download and install Docker Desktop from [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 
-### 2. Install Docker Compose
+### 2. Install Docker Compose (v2 Plugin)
 
 #### Linux
 
-```bash
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+Modern Docker Engine installations include the Compose v2 plugin (`docker compose`). If missing:
 
-# Make it executable
-sudo chmod +x /usr/local/bin/docker-compose
+```bash
+# Install the Docker Compose v2 plugin on Debian/Ubuntu
+sudo apt update && sudo apt install -y docker-compose-plugin
 
 # Verify installation
-docker-compose --version
+docker compose version
 ```
 
 #### macOS/Windows
@@ -99,35 +98,40 @@ Docker Compose is included with Docker Desktop.
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/devops-monitoring-in-a-box.git
+git clone https://github.com/NotHarshhaa/devops-monitoring-in-a-box.git
 cd devops-monitoring-in-a-box
 
-# Make scripts executable
-chmod +x start.sh stop.sh
+# Generate required secrets (.env + alertmanager/webhook_token)
+chmod +x devops-monitor.sh scripts/*.sh
+./scripts/setup-env.sh
 
 # Start the monitoring stack
-./start.sh
+./devops-monitor.sh start
 ```
 
 ## 🚀 Quick Start
 
-### Option 1: Using the startup script (Recommended)
+### Option 1: Using the management script (Recommended)
 
 ```bash
-./start.sh
+./scripts/setup-env.sh
+./devops-monitor.sh start
 ```
 
 ### Option 2: Using Docker Compose directly
 
 ```bash
+# Generate required secrets first
+./scripts/setup-env.sh
+
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # Check status
-docker-compose ps
+docker compose ps
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ## 🌐 Accessing Your Monitoring Tools
@@ -136,10 +140,12 @@ Once all services are running, you can access:
 
 | Service | URL | Default Credentials |
 |---------|-----|-------------------|
-| **Grafana** | <http://localhost:3000> | admin / admin |
+| **DevOps Monitor UI** | <http://localhost:4000> | `demo@example.com` / `demo123` |
+| **Grafana** | <http://localhost:3000> | `admin` / `admin` |
 | **Prometheus** | <http://localhost:9090> | None |
 | **Loki** | <http://localhost:3100> | None |
 | **Alertmanager** | <http://localhost:9093> | None |
+| **Blackbox Exporter** | <http://localhost:9115> | None |
 | **cAdvisor** | <http://localhost:8080> | None |
 | **Node Exporter** | <http://localhost:9100> | None |
 
@@ -197,20 +203,20 @@ To add additional exporters (MySQL, Redis, etc.):
 docker info
 
 # Check service logs
-docker-compose logs [service-name]
+docker compose logs [service-name]
 
 # Check port availability
-netstat -tulpn | grep :3000
+netstat -tulpn | grep -E ':(3000|4000)'
 ```
 
 #### Can't access Grafana
 
 ```bash
 # Check if Grafana is running
-docker-compose ps grafana
+docker compose ps grafana
 
 # Check Grafana logs
-docker-compose logs grafana
+docker compose logs grafana
 
 # Verify port binding
 docker port grafana
@@ -220,10 +226,10 @@ docker port grafana
 
 ```bash
 # Check Prometheus logs
-docker-compose logs prometheus
+docker compose logs prometheus
 
 # Verify network connectivity
-docker-compose exec prometheus wget -qO- http://node-exporter:9100/metrics
+docker compose exec prometheus wget -qO- http://node-exporter:9100/metrics
 ```
 
 #### High resource usage
@@ -239,16 +245,16 @@ docker stats
 
 ```bash
 # Stop and remove all containers
-docker-compose down
+docker compose down
 
 # Remove all volumes (WARNING: This will delete all data)
-docker-compose down -v
+docker compose down -v
 
 # Remove all images
-docker-compose down --rmi all
+docker compose down --rmi all
 
 # Start fresh
-./start.sh
+./devops-monitor.sh start
 ```
 
 ## 📈 Monitoring Your Own Applications
