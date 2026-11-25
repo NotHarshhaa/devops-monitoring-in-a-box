@@ -154,5 +154,5 @@ jobs:
         run: |
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasecurity/trivy:0.69.0 \
+            ghcr.io/aquasecurity/trivy:0.69.0 \
             image --exit-code 1 --severity CRITICAL,HIGH,MEDIUM,LOW --scanners vuln,secret devops-monitoring-ui:ci

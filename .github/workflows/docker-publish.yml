@@ -174,7 +174,7 @@ jobs:
       if: ${{ github.event.inputs.push_to_registry != 'false' }}
       run: |
         TARGET_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.image_version || steps.meta.outputs.version || 'latest' }}"
-        docker run --rm aquasecurity/trivy:0.69.0 \
+        docker run --rm ghcr.io/aquasecurity/trivy:0.69.0 \
           image --exit-code 1 --severity CRITICAL,HIGH,MEDIUM,LOW --scanners vuln,secret "$TARGET_IMAGE"
         
     - name: Set build result
