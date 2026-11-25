@@ -51,6 +51,21 @@ export function getAuthSecret(): string {
     return DEV_FALLBACK_SECRET;
   }
 
+  // On Vercel, Edge proxy (middleware) and Node API routes run in separate
+  // isolates, so a per-process random secret would break session verification.
+  // Fall back to a deployment-scoped identifier when NEXTAUTH_SECRET is unset.
+  if (process.env.VERCEL === '1') {
+    const deploymentFallback =
+      process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_GIT_COMMIT_SHA || DEV_FALLBACK_SECRET;
+    if (!warned) {
+      warned = true;
+      console.warn(
+        '[auth] NEXTAUTH_SECRET is not set on Vercel; using deployment-scoped fallback secret.'
+      );
+    }
+    return deploymentFallback;
+  }
+
   if (!cachedSecret) {
     cachedSecret = randomSecret();
     console.error(

@@ -54,6 +54,11 @@ export const isDemoAuthEnabled = () => {
   if (configured) {
     return configured === 'true'
   }
+  // Vercel hosts the standalone frontend demo preview without a backend DB;
+  // allow demo accounts there unless ENABLE_DEMO_AUTH=false is explicitly set.
+  if (process.env.VERCEL === '1') {
+    return true
+  }
   return process.env.NODE_ENV !== 'production'
 }
 

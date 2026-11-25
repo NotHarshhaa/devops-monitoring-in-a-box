@@ -195,11 +195,10 @@ describe('DefaultPluginManager lifecycle', () => {
 
 describe('isDemoAuthEnabled & demo credentials authorize', () => {
   let savedDemoAuth: string | undefined;
-  let savedNodeEnv: string | undefined;
 
   beforeEach(() => {
     savedDemoAuth = process.env.ENABLE_DEMO_AUTH;
-    savedNodeEnv = process.env.NODE_ENV;
+    vi.stubEnv('VERCEL', '');
     vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
@@ -209,17 +208,23 @@ describe('isDemoAuthEnabled & demo credentials authorize', () => {
     } else {
       process.env.ENABLE_DEMO_AUTH = savedDemoAuth;
     }
-    vi.stubEnv('NODE_ENV', savedNodeEnv ?? 'test');
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
-  it('treats empty ENABLE_DEMO_AUTH string as unset and respects NODE_ENV defaults', () => {
+  it('treats empty ENABLE_DEMO_AUTH string as unset and respects NODE_ENV and Vercel defaults', () => {
     vi.stubEnv('NODE_ENV', 'development');
     process.env.ENABLE_DEMO_AUTH = '';
     expect(isDemoAuthEnabled()).toBe(true);
 
     vi.stubEnv('NODE_ENV', 'production');
     delete process.env.ENABLE_DEMO_AUTH;
+    expect(isDemoAuthEnabled()).toBe(false);
+
+    vi.stubEnv('VERCEL', '1');
+    expect(isDemoAuthEnabled()).toBe(true);
+
+    process.env.ENABLE_DEMO_AUTH = 'false';
     expect(isDemoAuthEnabled()).toBe(false);
 
     process.env.ENABLE_DEMO_AUTH = 'true';
