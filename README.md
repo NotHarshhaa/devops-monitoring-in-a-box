@@ -25,9 +25,11 @@ With just **one command**, you get:
 * 🖥️ **Node Exporter** → Real-time host and system metrics (CPU, RAM, Disk, Load, Network)
 * 🐳 **cAdvisor** → Container CPU, memory, and lifecycle resource monitoring
 * 🛰️ **Blackbox Exporter** → Synthetic HTTP/HTTPS, TCP, DNS, and ICMP uptime probing
-* 🔒 **SSL/TLS Certificate Tracker** → Domain certificate expiration, validity days, and SAN inspector
+* 🔒 **SSL/TLS Certificate Tracker** → Authenticated domain certificate expiration, validity days, and SAN inspector
 * ⏱️ **SLI/SLA Availability Engine** → 24h/7d/30d uptime windows and 30-day heatmaps computed live from Blackbox probe data
-* 🔔 **Multi-Channel Notification Service** → Automated webhook dispatching and masking
+* 🔔 **Multi-Channel Notification Service** → Email, Slack, Teams, Discord, and webhook routing with masked credentials
+* 🧩 **Plugins, Templates & Admin Workspace** → Extensible plugin manager, Grafana dashboard templates, and health/role administration
+* 🛡️ **0-CVE Distroless UI Container** → Hardened Chainguard Wolfi (`glibc-dynamic`) image passing Trivy, Docker Scout, and `npm audit --omit=dev` with zero vulnerabilities
 * 🎨 **Radix-Sera Unified UI** → Modern Next.js 16 web interface styled with shadcn UI and Hugeicons
 
 👉 Perfect for learning, testing, local homelabs, or full production deployments.
@@ -63,10 +65,17 @@ With just **one command**, you get:
 - **URL-Synced Filters**: Log, alert and time-range filters live in the URL (`/logs?range=12h&sev=error`), so any view is a shareable bookmark.
 - **Real Data Everywhere**: The dashboard renders live Prometheus metrics, Alertmanager alerts and probe health — with honest empty/error states instead of mock numbers.
 
-### 🛡️ 6. Zero-Vulnerability Hardened Docker Container
-- **Docker Scout Verified**: Clean scan with **0 Critical CVEs**.
-- **Process Supervision (`tini`)**: Proper PID 1 signal forwarding (`SIGTERM`/`SIGINT`) and zombie reaping.
-- **Least-Privilege Execution**: Runs under a dedicated non-root `nextjs` user with secured `.next/cache` permissions.
+### 🛡️ 6. Zero-Vulnerability Distroless Container & Hardening
+- **0 CVEs Across All Severities**: Clean **Trivy** (`0` vulnerabilities, `0` misconfigurations, `0` secrets), **Docker Scout** (`0C 0H 0M 0L`), and **`npm audit --omit=dev`** (`0` vulnerabilities) scans.
+- **Distroless Chainguard Wolfi Base**: Built multi-stage with multi-arch OCI digest-pinned `cgr.dev/chainguard/node` and `cgr.dev/chainguard/glibc-dynamic` (`linux/amd64` & `linux/arm64`) — removes `/bin/sh`, BusyBox, `wget`, `npm`, `npx`, `node-gyp`, Yarn, and package managers (`258MB` disk / `65.8MB` content, down from `290MB` / `73.3MB`).
+- **Least-Privilege Runtime**: Runs as non-root `65532:65532` with native PID 1 Node signal handling and an exec-form `fetch` `HEALTHCHECK` (`/api/health?live=1`).
+- **Compose & CI Security Controls**: Enforces `no-new-privileges:true`, `cap_drop: [ALL]`, `read_only: true`, and `noexec,nosuid,nodev` `tmpfs` mounts across Compose services, plus blocking 0-CVE Trivy, Docker Scout, and `npm audit` gates in GitHub Actions.
+
+### 🧩 7. Admin Center, Plugins, Templates & Auth Flows
+- **Admin & Profile Workspaces (`/admin`, `/profile`)**: Stack health overview, URL-synchronized admin tabs, configuration shortcuts, and account profile controls.
+- **Plugin Manager (`/plugins`)**: Install, configure, toggle, and inspect monitoring integrations (AWS CloudWatch, Jenkins CI/CD, GitHub Actions).
+- **Dashboard Templates (`/templates`) & Version Monitor (`/version`)**: Filterable Grafana template marketplace and monitoring stack version tracking.
+- **Hardened Auth & SSL Probing**: Complete `/auth/signin`, `/auth/signup`, and `/auth/forgot-password` flows on NextAuth `4.24.15`, plus session-protected SSL checks (`/api/ssl`).
 
 ---
 
@@ -134,8 +143,11 @@ cd devops-monitoring-in-a-box
 # Generate secure secrets (.env and Alertmanager token)
 ./scripts/setup-env.sh
 
-# Start the complete monitoring stack
+# Start the complete hardened monitoring stack
 docker compose up -d
+
+# Or run the hot-reload development stack (uses Chainguard Wolfi Node for the UI)
+docker compose -f docker-compose.dev.yml up -d
 ```
 
 #### **Option 2: Native PowerShell (Windows)**
@@ -150,10 +162,16 @@ docker compose up -d
 .\scripts\devops-monitor.ps1 clean       # remove containers and volumes
 ```
 
-#### **Option 3: Pre-built Docker Image**
+#### **Option 3: Pre-built Docker Image (Hardened Distroless)**
 ```bash
 docker pull harshhaareddy/devops-monitoring-box:latest
-docker run -d -p 4000:3000 --name devops-monitor harshhaareddy/devops-monitoring-box:latest
+docker run -d -p 4000:3000 --name devops-monitor \
+  --read-only --cap-drop=ALL --security-opt=no-new-privileges:true \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m \
+  --tmpfs /app/.next/cache:rw,noexec,nosuid,nodev,uid=65532,gid=65532,size=64m \
+  -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
+  -e NEXTAUTH_URL=http://localhost:4000 \
+  harshhaareddy/devops-monitoring-box:latest
 ```
 
 #### **Option 4: Local UI Development**
@@ -162,6 +180,8 @@ cd ui-next
 npm install          # also generates the Prisma client
 npm run db:push      # create the local SQLite database
 npm run dev          # http://localhost:3000 (demo login enabled outside production)
+npm run verify       # run ESLint, TypeScript check, Vitest suite, and Next.js build
+npm audit --omit=dev # verify 0 production runtime dependency vulnerabilities
 ```
 The UI expects the monitoring backends at their default ports (or `PROMETHEUS_URL`, `LOKI_URL`, ... in `ui-next/.env.local`). Without them, pages render honest "service unavailable" states instead of errors.
 
@@ -189,15 +209,8 @@ npm install
 npm run build
 ```
 
-#### **Railway (Full Stack)**
-[![Railway](https://img.shields.io/badge/Railway-Deploy-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app/template/your-template-id)
-
-```bash
-# Deploy full stack to Railway
-railway login
-railway init
-railway up
-```
+#### **Container Hosts / Railway CLI**
+Deploy the standalone UI image (`ui-next/Dockerfile`) or full Compose stack on any Docker host, VM, or Railway CLI workspace (`railway login && railway init && railway up`).
 
 ---
 
@@ -207,8 +220,8 @@ Once deployed, access your monitoring tools:
 
 | Service | Port / URL | Credentials | Description |
 |---------|------------|-------------|-------------|
-| 🎨 **DevOps Monitor UI** | [http://localhost:4000](http://localhost:4000) | demo@example.com / demo123 | Unified observability web application |
-| ❤️ **Health API** | [http://localhost:4000/api/health](http://localhost:4000/api/health) | - | Stack health, used by the container healthcheck |
+| 🎨 **DevOps Monitor UI** | [http://localhost:4000](http://localhost:4000) | demo@example.com / demo123 | Unified observability web application (`/dashboard`, `/metrics`, `/logs`, `/alerts`, `/services`, `/plugins`, `/templates`, `/admin`, `/profile`, `/settings`, `/version`) |
+| ❤️ **Health API** | [http://localhost:4000/api/health](http://localhost:4000/api/health) | - | Stack health report (`?live=1` liveness probe, `?strict=true` strict `503` readiness check) |
 | 📊 **Grafana** | [http://localhost:3000](http://localhost:3000) | `admin` / `admin` | Visualization dashboards with pre-provisioned datasources |
 | 📈 **Prometheus** | [http://localhost:9090](http://localhost:9090) | - | Metrics collection & PromQL engine |
 | 📜 **Loki** | [http://localhost:3100](http://localhost:3100) | - | Log aggregation and query service |
@@ -229,6 +242,8 @@ Once deployed, access your monitoring tools:
 | `./devops-monitor.sh logs` | `.\scripts\devops-monitor.ps1 logs` | View unified logs across services |
 | `./devops-monitor.sh stop` | `.\scripts\devops-monitor.ps1 stop` | Gracefully shut down all containers |
 | `./devops-monitor.sh clean` | `.\scripts\devops-monitor.ps1 clean` | Remove containers and data volumes |
+| `./scripts/test-docker-build.sh` | - | Build distroless UI image and enforce 0-CVE Trivy / Scout checks |
+| `./ui-next/build-docker.sh` | - | Build and optionally push single- or multi-arch (`amd64`/`arm64`) UI images |
 
 ---
 
@@ -246,10 +261,14 @@ Once deployed, access your monitoring tools:
 ### 🎯 **Key Files**
 - **`devops-monitor.sh`** - Main management script (Linux/macOS wrapper)
 - **`scripts/devops-monitor.ps1`** - Native Windows PowerShell management script
+- **`scripts/test-docker-build.sh`** - Local image build + Trivy & Docker Scout 0-CVE check script
 - **`env.example`** - Environment variables template
 - **`site-config.json`** - Site configuration (SEO, branding)
 - **`config.json`** - Monitoring configuration
-- **`docker-compose.yml`** - Production stack configuration
+- **`docker-compose.yml`** - Hardened production stack configuration
+- **`docker-compose.dev.yml`** - Hot-reload development Compose stack
+- **`ui-next/Dockerfile`** - Multi-stage Chainguard Wolfi distroless build
+- **`.github/workflows/`** - CI (`ci.yml`) and multi-arch Docker release (`docker-publish.yml`) with 0-CVE enforcement
 - **`prometheus/targets/*.yml`** - Uptime probe targets, hot-reloaded without restart
 
 For a complete breakdown of all directories and files, see **[Project Structure Guide](docs/PROJECT_STRUCTURE.md)**.
@@ -387,12 +406,14 @@ Every proxied request requires a signed-in user, and each upstream path is match
 
 ## 🔒 Security Notes
 
+* **Zero-Vulnerability Distroless UI Container**: `ui-next/Dockerfile` uses digest-pinned Chainguard Wolfi images (`cgr.dev/chainguard/node` -> `cgr.dev/chainguard/glibc-dynamic`), `--ignore-scripts` clean dependency installation, no runtime shell/BusyBox/npm, and runs as `65532:65532` — passing **Trivy**, **Docker Scout**, and `npm audit --omit=dev` with **0 vulnerabilities**.
+* **Hardened Runtime Controls**: Non-privileged Compose services drop all Linux capabilities (`cap_drop: [ALL]`, keeping only `NET_RAW` on `blackbox-exporter`) and set `no-new-privileges:true`. `devops-monitor-ui`, `prometheus`, `alertmanager`, `node-exporter`, and `blackbox-exporter` run with `read_only: true` root filesystems (`devops-monitor-ui` writes runtime notification config to `/tmp/config.json` and cache to `noexec,nosuid,nodev` `tmpfs` mounts).
 * `NEXTAUTH_SECRET` and `ALERT_WEBHOOK_TOKEN` are **required** — Compose fails rather than accepting a shared/default signing key or an unauthenticated Alertmanager webhook. Generate both and the matching `alertmanager/webhook_token` file with `./scripts/setup-env.sh` or `.\scripts\devops-monitor.ps1 init-env`.
 * **Demo login accounts** (`demo@example.com / demo123`) are active by default in development builds. In production builds they are disabled unless `ENABLE_DEMO_AUTH=true` — note the bundled `docker-compose.yml` sets it for the out-of-the-box demo experience; set it to `false` (or remove it) before exposing the stack.
 * Change default Grafana credentials before exposing the stack in production.
 * Prometheus admin API (`--web.enable-admin-api`) is disabled by default.
 * `/api/notifications` never returns plain SMTP passwords or channel webhook URLs in client payloads; they are masked, and saving preserves stored secrets.
-* The SSL certificate endpoint requires a signed-in session and validates ports — it cannot be used anonymously to scan internal hosts.
+* The SSL certificate endpoint requires a signed-in session and validates target hosts and ports (`ui-next/lib/ssl-target.ts`) — it cannot be used anonymously to scan internal hosts.
 * Published ports `9090`, `3100`, `9093`, and `9115` are optional for convenience. The dashboard proxies internal traffic via Docker networks, so external ports can be removed in hardened environments.
 
 ---
