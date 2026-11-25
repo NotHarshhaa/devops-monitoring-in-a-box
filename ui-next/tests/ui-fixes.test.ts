@@ -5,6 +5,7 @@ import { filterDashboardTemplates } from '@/lib/template-filters';
 import { dashboardTemplates } from '@/lib/dashboard-templates';
 import { TemplateImportService } from '@/lib/template-import-service';
 import { POST as forgotPasswordPost } from '@/app/api/auth/forgot-password/route';
+import { authOptions, isDemoAuthEnabled } from '@/lib/auth-simple';
 import { DefaultPluginManager } from '@/lib/plugins/manager';
 import { GitHubActionsPlugin } from '@/lib/plugins/github-actions';
 
@@ -189,5 +190,62 @@ describe('DefaultPluginManager lifecycle', () => {
 
     await manager.uninstallPlugin('github-actions', 'gh-1');
     expect(manager.getPluginInstances('github-actions')).toHaveLength(0);
+  });
+});
+
+describe('isDemoAuthEnabled & demo credentials authorize', () => {
+  let savedDemoAuth: string | undefined;
+  let savedNodeEnv: string | undefined;
+
+  beforeEach(() => {
+    savedDemoAuth = process.env.ENABLE_DEMO_AUTH;
+    savedNodeEnv = process.env.NODE_ENV;
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    if (savedDemoAuth === undefined) {
+      delete process.env.ENABLE_DEMO_AUTH;
+    } else {
+      process.env.ENABLE_DEMO_AUTH = savedDemoAuth;
+    }
+    vi.stubEnv('NODE_ENV', savedNodeEnv ?? 'test');
+    vi.restoreAllMocks();
+  });
+
+  it('treats empty ENABLE_DEMO_AUTH string as unset and respects NODE_ENV defaults', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    process.env.ENABLE_DEMO_AUTH = '';
+    expect(isDemoAuthEnabled()).toBe(true);
+
+    vi.stubEnv('NODE_ENV', 'production');
+    delete process.env.ENABLE_DEMO_AUTH;
+    expect(isDemoAuthEnabled()).toBe(false);
+
+    process.env.ENABLE_DEMO_AUTH = 'true';
+    expect(isDemoAuthEnabled()).toBe(true);
+  });
+
+  it('throws DEMO_AUTH_DISABLED when disabled and trims/lowercases email when enabled', async () => {
+    const provider = authOptions.providers[0] as unknown as {
+      options: { authorize: (c: Record<string, string>) => Promise<unknown> };
+    };
+
+    process.env.ENABLE_DEMO_AUTH = 'false';
+    await expect(
+      provider.options.authorize({ email: 'demo@example.com', password: 'demo123' })
+    ).rejects.toThrow('DEMO_AUTH_DISABLED');
+
+    process.env.ENABLE_DEMO_AUTH = 'true';
+    const user = await provider.options.authorize({
+      email: '  Demo@Example.com ',
+      password: 'demo123',
+    });
+    expect(user).toEqual({
+      id: '1',
+      email: 'demo@example.com',
+      name: 'Demo Admin',
+      role: 'ADMIN',
+    });
   });
 });

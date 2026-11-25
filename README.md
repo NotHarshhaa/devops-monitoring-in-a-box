@@ -171,6 +171,7 @@ docker run -d -p 4000:3000 --name devops-monitor \
   --tmpfs /app/.next/cache:rw,noexec,nosuid,nodev,uid=65532,gid=65532,size=64m \
   -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
   -e NEXTAUTH_URL=http://localhost:4000 \
+  -e ENABLE_DEMO_AUTH=true \
   harshhaareddy/devops-monitoring-box:latest
 ```
 

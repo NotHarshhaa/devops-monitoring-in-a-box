@@ -50,8 +50,9 @@ if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_URL) {
 // enabled by default outside production and can be controlled explicitly
 // with ENABLE_DEMO_AUTH=true|false in any environment.
 export const isDemoAuthEnabled = () => {
-  if (process.env.ENABLE_DEMO_AUTH !== undefined) {
-    return process.env.ENABLE_DEMO_AUTH === 'true'
+  const configured = process.env.ENABLE_DEMO_AUTH?.trim().toLowerCase()
+  if (configured) {
+    return configured === 'true'
   }
   return process.env.NODE_ENV !== 'production'
 }
@@ -77,8 +78,10 @@ export const authOptions: NextAuthOptions = {
             "[Auth] Login attempt rejected: demo credentials are disabled " +
             "(set ENABLE_DEMO_AUTH=true to allow them in this environment)."
           )
-          return null
+          throw new Error("DEMO_AUTH_DISABLED")
         }
+
+        const normalizedEmail = credentials.email.trim().toLowerCase()
 
         // For demo purposes, we'll use hardcoded credentials
         // In production, you should query the database
@@ -106,7 +109,7 @@ export const authOptions: NextAuthOptions = {
           }
         ]
 
-        const user = demoUsers.find(u => u.email === credentials.email && u.password === credentials.password)
+        const user = demoUsers.find(u => u.email === normalizedEmail && u.password === credentials.password)
         
         if (!user) {
           return null
